@@ -1,4 +1,6 @@
 ## Fintrax 
+
+
 Fintrax is a polished, local-first personal finance iOS app built with SwiftUI. It helps users track expenses, budgets, categories, income, payment reminders, analytics, and verified PDF reports from one professional finance workspace.
 
 ## App Screenshots
@@ -26,11 +28,9 @@ Fintrax is a polished, local-first personal finance iOS app built with SwiftUI. 
     <td><img width="300" alt="Fintrax screenshot 13" src="https://github.com/user-attachments/assets/cf79a64b-93fb-48cf-9817-752e93aa95d0" /></td>
     <td><img width="300" alt="Fintrax screenshot 14" src="https://github.com/user-attachments/assets/a508637b-a60d-41dd-b58d-1c658590ba66" /></td>
     <td><img width="300" alt="Fintrax screenshot 15" src="https://github.com/user-attachments/assets/f4f728e6-9e24-4368-8e7f-993964fe8481" /></td>
-    <td> <img width="300" alt="Fintrax screenshot 16" src="https://github.com/user-attachments/assets/30dd59b5-c1a8-426f-923b-1d3a78bf05fb" /></td>
+    <td><img width="300" alt="Fintrax screenshot 16" src="https://github.com/user-attachments/assets/220d3aaa-e01d-4a04-b3e3-6fc31437091b" /></td>
   </tr>
 </table>
-
-
 
 
 ## Tech Skills Demonstrated
@@ -45,6 +45,7 @@ Fintrax is a polished, local-first personal finance iOS app built with SwiftUI. 
 | Notifications | UserNotifications, local reminders, app icon badges, repeat-until-complete scheduling |
 | PDF Reporting | PDFKit preview, `UIGraphicsPDFRenderer`, verified stamp, watermark, scoped report export |
 | Product Thinking | Local-first privacy, optional PIN lock, focused tab structure, settings-driven tools |
+| Development Approach | Spec-Driven Development, OpenSpec planning, requirements-first implementation |
 
 ## Overview
 
@@ -73,6 +74,7 @@ Core goals:
 | PDF Preview | PDFKit |
 | PDF Rendering | UIKit PDF renderer |
 | Architecture | MVVM-oriented feature structure with shared repository services |
+| Delivery Approach | Spec-Driven Development with OpenSpec |
 | App Name | Fintrax |
 
 ## App Flow
@@ -345,6 +347,36 @@ Behavior:
 - If no PIN exists, enabling lock opens PIN setup.
 - If PIN lock is disabled, the app opens directly.
 - If PIN lock is enabled, the PIN screen appears on launch/return.
+
+## Spec-Driven Development & OpenSpec
+
+Fintrax was shaped using a Spec-Driven Development approach with OpenSpec. Instead of jumping directly into screens and code, the app idea was first broken down into requirements, feature behavior, user flows, and acceptance expectations. This helped convert a broad finance app concept into structured, buildable modules.
+
+### Why Spec-Driven Development?
+
+| Benefit | Impact on Fintrax |
+| --- | --- |
+| Clear requirements before implementation | Reduced ambiguity while building complex flows like expenses, budgets, analytics, reminders, and PDF reports |
+| Better feature planning | Helped decide what belongs in tabs versus Settings, keeping the app less cluttered |
+| Stronger architecture decisions | Supported repository-based data access, SwiftData persistence, and feature-oriented modules |
+| Easier iteration | UI and feature improvements could be added step-by-step without losing the original product direction |
+| Improved consistency | Dashboard, Expenses, Budget, Analytics, Settings, and report flows follow the same product language |
+| Lower regression risk | Requirements and expected behavior made it easier to check whether changes kept app data in sync |
+
+### OpenSpec Use Cases in This App
+
+| Use Case | How It Helped |
+| --- | --- |
+| Feature discovery | Converted ideas such as AI Analyze, PDF export, reminders, and PIN lock into clear feature scopes |
+| Screen planning | Defined what each screen should own and what should move into Settings or Analytics |
+| Data-flow planning | Clarified how expenses, categories, budgets, income, and reminders should stay synchronized |
+| UI refinement | Helped keep visual improvements aligned with a professional finance theme |
+| Notification behavior | Captured local notification limits, badge behavior, repeat reminders, and completion flows |
+| Report generation | Defined selected-scope exports, PDF preview, verified stamp, watermark, and chart inclusion |
+
+### Practical Outcome
+
+Using Spec-Driven Development with OpenSpec helped Fintrax evolve from a basic expense tracker into a more complete personal finance product. The approach made it easier to reason about product scope, avoid overloading the tab bar, keep finance data local-first, and build features in a way that can continue scaling.
 
 ## Architecture
 
