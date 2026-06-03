@@ -3,36 +3,6 @@
 
 Fintrax is a personal finance iOS app built with SwiftUI. It helps users track expenses, budgets, categories, income, payment reminders, analytics, and verified PDF reports from one professional finance workspace.
 
-## App Screenshots
-
-<table>
-  <tr>
-    <td><img width="200" alt="Fintrax screenshot 1" src="https://github.com/user-attachments/assets/092c30ed-7a11-4131-bf32-5665df497a08" /></td>
-    <td><img width="200" alt="Fintrax screenshot 2" src="https://github.com/user-attachments/assets/0fab0bcb-e6b6-442c-ac52-9ff73816c22f" /></td>
-    <td><img width="200" alt="Fintrax screenshot 3" src="https://github.com/user-attachments/assets/c455aa38-65d4-48ac-a0fd-dd59d251d6d0" /></td>
-    <td><img width="200" alt="Fintrax screenshot 4" src="https://github.com/user-attachments/assets/c01faffd-874f-4b85-b708-10a449337cdc" /></td>
-  </tr>
-  <tr>
-    <td><img width="200" alt="Fintrax screenshot 5" src="https://github.com/user-attachments/assets/7c08f32b-fe95-43bb-88d2-4919182f6ce0" /></td>
-    <td><img width="200" alt="Fintrax screenshot 6" src="https://github.com/user-attachments/assets/17411e44-67a9-44f1-acb8-30df8c8b5c2c" /></td>
-    <td><img width="200" alt="Fintrax screenshot 7" src="https://github.com/user-attachments/assets/e2995b74-451e-4819-96fd-944a21226e6c" /></td>
-    <td><img width="200" alt="Fintrax screenshot 8" src="https://github.com/user-attachments/assets/ca8d4dd6-0c69-4613-9824-2e553fa3e5c8" /></td>
-  </tr>
-  <tr>
-    <td><img width="300" alt="Fintrax screenshot 9" src="https://github.com/user-attachments/assets/b82ddec4-9b1d-49c7-bf53-04ec587b39ad" /></td>
-    <td><img width="300" alt="Fintrax screenshot 10" src="https://github.com/user-attachments/assets/5b9cab48-2c83-4b0c-a01b-f481f93e9455" /></td>
-    <td><img width="300" alt="Fintrax screenshot 11" src="https://github.com/user-attachments/assets/1779ab38-b537-48a9-93a9-1e715d735679" /></td>
-    <td><img width="300" alt="Fintrax screenshot 12" src="https://github.com/user-attachments/assets/5b7ea997-d4a3-420d-be2d-a835f4344444" /></td>
-  </tr>
-   <tr>
-    <td><img width="300" alt="Fintrax screenshot 13" src="https://github.com/user-attachments/assets/cf79a64b-93fb-48cf-9817-752e93aa95d0" /></td>
-    <td><img width="300" alt="Fintrax screenshot 14" src="https://github.com/user-attachments/assets/a508637b-a60d-41dd-b58d-1c658590ba66" /></td>
-    <td><img width="300" alt="Fintrax screenshot 15" src="https://github.com/user-attachments/assets/f4f728e6-9e24-4368-8e7f-993964fe8481" /></td>
-    <td><img width="300" alt="Fintrax screenshot 16" src="https://github.com/user-attachments/assets/220d3aaa-e01d-4a04-b3e3-6fc31437091b" /></td>
-  </tr>
-</table>
-
-
 ## Tech Skills Demonstrated
 
 | Area | Skills / Tools |
