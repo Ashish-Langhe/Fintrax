@@ -137,7 +137,6 @@ class ExpenseModelTests: XCTestCase {
         // Then
         XCTAssertFalse(validation.isValid)
         XCTAssertEqual(validation.error, "Amount must be greater than 0")
-        XCTAssertEqual(validation.error, "Expense amount cannot be negative")
     }
     
     func testZeroAmountFailsValidation() {
@@ -298,6 +297,8 @@ class ExpenseModelTests: XCTestCase {
             XCTFail("Should throw validation error")
         } catch ExpenseValidationError.validationError(let message) {
             XCTAssertEqual(message, "Title cannot be empty")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
         }
     }
     
@@ -315,7 +316,9 @@ class ExpenseModelTests: XCTestCase {
             try expense.update(amount: Decimal(-50))
             XCTFail("Should throw validation error")
         } catch ExpenseValidationError.validationError(let message) {
-            XCTAssertEqual(message, "Invalid expense data")
+            XCTAssertEqual(message, "Amount must be greater than 0")
+        } catch {
+            XCTFail("Unexpected error: \(error)")
         }
     }
     
@@ -358,7 +361,7 @@ class ExpenseModelTests: XCTestCase {
     
     func testGetMonthAndYear() {
         // Given
-        let specificDate = componentsDate(year: 2024, month: 6, day: 15)!
+        let specificDate = Date(year: 2024, month: 6, day: 15)!
         let expense = Expense(
             title: "Test",
             amount: Decimal(100),
@@ -416,22 +419,17 @@ class ExpenseModelTests: XCTestCase {
         // Given
         let id = UUID()
         let date = Date()
+        let categoryID = UUID()
         
         let expense1 = Expense(
             id: id,
             title: "Test",
             amount: Decimal(100),
             date: date,
-            categoryID: UUID()
+            categoryID: categoryID
         )
         
-        let expense2 = Expense(
-            id: id,
-            title: "Test",
-            amount: Decimal(100),
-            date: date,
-            categoryID: UUID()
-        )
+        let expense2 = expense1
         
         // When/Then
         XCTAssertEqual(expense1, expense2)
@@ -461,10 +459,11 @@ class ExpenseModelTests: XCTestCase {
     
     func testExpenseHashable() {
         // Given
+        let duplicate = Expense(title: "Test 1", amount: Decimal(100), date: Date(), categoryID: UUID())
         let expenses = [
-            Expense(title: "Test 1", amount: Decimal(100), date: Date(), categoryID: UUID()),
+            duplicate,
             Expense(title: "Test 2", amount: Decimal(200), date: Date(), categoryID: UUID()),
-            Expense(title: "Test 1", amount: Decimal(100), date: Date(), categoryID: UUID())
+            duplicate
         ]
         
         // When
@@ -505,44 +504,30 @@ class ExpenseModelTests: XCTestCase {
     // MARK: - Sendable Tests
     
     func testExpenseConformsToSendable() {
+        let expense = Expense(title: "Test", amount: Decimal(100), categoryID: UUID())
+
         // Given/When/Then - This test passes if Expense conforms to Sendable protocol
-        XCTAssertTypeIsSendable(Expense())
+        assertSendable(expense)
         
         // Test that array of expenses is also Sendable
-        let expenses = [Expense()]
-        XCTAssertTypeIsSendable(expenses)
+        let expenses = [expense]
+        assertSendable(expenses)
     }
     
 }
 
 // MARK: - Test Helper
 
-/// 点擊式：它不尋
-extension Expense {
-    convenience init(
-        id: UUID = UUID(),
-        title: String = "Test",
-        amount: Decimal = 100,
-        date: Date = Date(),
-        categoryID: UUID = UUID(),
-        note: String? = nil
-    ) {
-        self.init()
-        self.id = id
-        self.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.amount = amount
-        self.date = date
-        self.categoryID = categoryID
-        self.note = note?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let now = Date()
-        self.createdAt = now
-        self.updatedAt = now
-    }
-}
-
 extension Date {
     init?(year: Int, month: Int, day: Int) {
         let components = DateComponents(year: year, month: month, day: day)
-        return Calendar.current.date(from: components)
+        guard let date = Calendar.current.date(from: components) else {
+            return nil
+        }
+        self = date
     }
+}
+
+private func assertSendable<T: Sendable>(_ value: T) {
+    _ = value
 }

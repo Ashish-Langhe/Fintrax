@@ -134,6 +134,10 @@ final class SwiftDataStore: Sendable {
             throw DataServiceError.notFound("Category with ID \(categoryID) not found")
         }
 
+        if storedCategory.isDefault {
+            throw DataServiceError.constraintViolation("Default categories cannot be deleted")
+        }
+
         let attachedExpenses = try storedExpenses(categoryID: categoryID)
         if !attachedExpenses.isEmpty, replacementCategoryID == nil {
             throw DataServiceError.constraintViolation("Cannot delete category with associated expenses")

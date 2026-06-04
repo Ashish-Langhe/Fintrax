@@ -8,15 +8,23 @@
 import XCTest
 @testable import ExpenseTracker
 
+@MainActor
 class JSONDataServiceTests: XCTestCase {
     var dataService: JSONDataService!
     var mockDocumentsDirectory: URL!
+    private var createdExpenseIDs: [UUID] = []
+    private var createdCategoryIDs: [UUID] = []
     
     override func setUp() async throws {
         try await super.setUp()
         
-        // Create a temporary directory for testing
-        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("ExpenseTrackerTests")
+        createdExpenseIDs = []
+        createdCategoryIDs = []
+
+        // Create a unique temporary directory for JSON-backed test data.
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ExpenseTrackerTests-\(UUID().uuidString)", isDirectory: true)
+        try? FileManager.default.removeItem(at: tempDir)
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         
         let configuration = JSONDataService.Configuration(
@@ -29,10 +37,17 @@ class JSONDataServiceTests: XCTestCase {
     }
     
     override func tearDown() async throws {
-        try await super.tearDown()
-        
-        // Clean up test directory
+        for expenseID in createdExpenseIDs {
+            try? await dataService.deleteExpense(id: expenseID)
+        }
+
+        for categoryID in createdCategoryIDs {
+            try? await dataService.deleteCategory(id: categoryID)
+        }
+
         try? FileManager.default.removeItem(at: mockDocumentsDirectory)
+
+        try await super.tearDown()
     }
     
     // MARK: - Expense Tests
@@ -48,12 +63,14 @@ class JSONDataServiceTests: XCTestCase {
         
         // When
         try await dataService.saveExpense(expense)
+        createdExpenseIDs.append(expense.id)
         let loadedExpenses = try await dataService.loadExpenses()
+        let savedExpense = loadedExpenses.first { $0.id == expense.id }
         
         // Then
-        XCTAssertEqual(loadedExpenses.count, 1)
-        XCTAssertEqual(loadedExpenses.first?.title, "Test Expense")
-        XCTAssertEqual(loadedExpenses.first?.amount, Decimal(100.50))
+        XCTAssertNotNil(savedExpense)
+        XCTAssertEqual(savedExpense?.title, "Test Expense")
+        XCTAssertEqual(savedExpense?.amount, Decimal(100.50))
     }
     
     func testUpdateExpense() async throws {
@@ -65,17 +82,19 @@ class JSONDataServiceTests: XCTestCase {
             categoryID: UUID()
         )
         try await dataService.saveExpense(expense)
+        createdExpenseIDs.append(expense.id)
         
         // When
         var updatedExpense = expense
         try updatedExpense.update(title: "Updated Title", amount: Decimal(75))
         try await dataService.updateExpense(updatedExpense)
         let loadedExpenses = try await dataService.loadExpenses()
+        let savedExpense = loadedExpenses.first { $0.id == expense.id }
         
         // Then
-        XCTAssertEqual(loadedExpenses.count, 1)
-        XCTAssertEqual(loadedExpenses.first?.title, "Updated Title")
-        XCTAssertEqual(loadedExpenses.first?.amount, Decimal(75))
+        XCTAssertNotNil(savedExpense)
+        XCTAssertEqual(savedExpense?.title, "Updated Title")
+        XCTAssertEqual(savedExpense?.amount, Decimal(75))
     }
     
     func testDeleteExpense() async throws {
@@ -87,14 +106,17 @@ class JSONDataServiceTests: XCTestCase {
             categoryID: UUID()
         )
         try await dataService.saveExpense(expense)
-        XCTAssertEqual(try await dataService.loadExpenses().count, 1)
+        createdExpenseIDs.append(expense.id)
+        let savedExpenses = try await dataService.loadExpenses()
+        XCTAssertTrue(savedExpenses.contains { $0.id == expense.id })
         
         // When
         try await dataService.deleteExpense(id: expense.id)
+        createdExpenseIDs.removeAll { $0 == expense.id }
         
         // Then
         let loadedExpenses = try await dataService.loadExpenses()
-        XCTAssertEqual(loadedExpenses.count, 0)
+        XCTAssertFalse(loadedExpenses.contains { $0.id == expense.id })
     }
     
     func testDeleteNonExistentExpense() async throws {
@@ -114,37 +136,44 @@ class JSONDataServiceTests: XCTestCase {
     
     func testSaveAndLoadCategories() async throws {
         // Given
-        let category = Category(name: "Test Category", isDefault: false)
+        let category = Category(name: uniqueName("Test Category"), isDefault: false)
         
         // When
         try await dataService.saveCategory(category)
+        createdCategoryIDs.append(category.id)
         let loadedCategories = try await dataService.loadCategories()
+        let savedCategory = loadedCategories.first { $0.id == category.id }
         
         // Then
-        XCTAssertEqual(loadedCategories.count, 1)
-        XCTAssertEqual(loadedCategories.first?.name, "Test Category")
-        XCTAssertFalse(loadedCategories.first?.isDefault ?? true)
+        XCTAssertNotNil(savedCategory)
+        XCTAssertEqual(savedCategory?.name, category.name)
+        XCTAssertFalse(savedCategory?.isDefault ?? true)
     }
     
     func testUpdateCategory() async throws {
         // Given
-        var category = Category(name: "Original Name", isDefault: false)
+        var category = Category(name: uniqueName("Original Name"), isDefault: false)
         try await dataService.saveCategory(category)
+        createdCategoryIDs.append(category.id)
         
         // When
-        try category.updateName("New Name")
+        let newName = uniqueName("New Name")
+        try category.updateName(newName)
         try await dataService.updateCategory(category)
         let loadedCategories = try await dataService.loadCategories()
+        let savedCategory = loadedCategories.first { $0.id == category.id }
         
         // Then
-        XCTAssertEqual(loadedCategories.count, 1)
-        XCTAssertEqual(loadedCategories.first?.name, "New Name")
+        XCTAssertNotNil(savedCategory)
+        XCTAssertEqual(savedCategory?.name, newName)
     }
     
     func testCannotUpdateDefaultCategoryName() async throws {
         // Given
-        let defaultCategory = Category(name: "Food", isDefault: true)
-        try await dataService.saveCategory(defaultCategory)
+        guard var defaultCategory = try await dataService.loadCategories().first(where: { $0.name == "Food" }) else {
+            XCTFail("Expected seeded default Food category")
+            return
+        }
         
         // When/Then
         do {
@@ -157,8 +186,9 @@ class JSONDataServiceTests: XCTestCase {
     
     func testCannotDeleteCategoryWithExpenses() async throws {
         // Given
-        let category = Category(name: "Test Category", isDefault: false)
+        let category = Category(name: uniqueName("Test Category"), isDefault: false)
         try await dataService.saveCategory(category)
+        createdCategoryIDs.append(category.id)
         
         let expense = Expense(
             title: "Test Expense",
@@ -167,6 +197,7 @@ class JSONDataServiceTests: XCTestCase {
             categoryID: category.id
         )
         try await dataService.saveExpense(expense)
+        createdExpenseIDs.append(expense.id)
         
         // When/Then
         do {
@@ -179,8 +210,10 @@ class JSONDataServiceTests: XCTestCase {
     
     func testCannotDeleteDefaultCategory() async throws {
         // Given
-        let defaultCategory = Category(name: "Food", isDefault: true)
-        try await dataService.saveCategory(defaultCategory)
+        guard let defaultCategory = try await dataService.loadCategories().first(where: { $0.name == "Food" }) else {
+            XCTFail("Expected seeded default Food category")
+            return
+        }
         
         // When/Then
         do {
@@ -278,27 +311,27 @@ class JSONDataServiceTests: XCTestCase {
             categoryID: UUID()
         )
         
-        // When - Save expense multiple times rapidly
+        // When - Duplicate saves should not corrupt existing data.
         try await dataService.saveExpense(expense)
-        try await dataService.saveExpense(expense)
-        try await dataService.saveExpense(expense)
+        createdExpenseIDs.append(expense.id)
+
+        for _ in 0..<2 {
+            do {
+                try await dataService.saveExpense(expense)
+                XCTFail("Should throw duplicate expense constraint violation")
+            } catch DataServiceError.constraintViolation {
+                // Expected
+            }
+        }
         
         // Then - Data should remain consistent
         let loadedExpenses = try await dataService.loadExpenses()
-        XCTAssertEqual(loadedExpenses.count, 1, "Data should not be corrupted by rapid saves")
-        XCTAssertEqual(loadedExpenses.first?.title, "Critical Data")
+        let matchingExpenses = loadedExpenses.filter { $0.id == expense.id }
+        XCTAssertEqual(matchingExpenses.count, 1, "Duplicate saves should not corrupt existing data")
+        XCTAssertEqual(matchingExpenses.first?.title, "Critical Data")
     }
-}
 
-// MARK: - Test Helper Extensions
-extension Category {
-    convenience init(id: UUID = UUID(), name: String, isDefault: Bool = false) {
-        self.init()
-    }
-}
-
-extension Budget {
-    convenience init(id: UUID = UUID(), categoryID: UUID, monthlyLimit: Decimal) {
-        self.init()
+    private func uniqueName(_ prefix: String) -> String {
+        "\(prefix) \(UUID().uuidString)"
     }
 }

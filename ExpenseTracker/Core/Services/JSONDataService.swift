@@ -158,14 +158,8 @@ class JSONDataService: ObservableObject, Sendable {
     /// - Throws: DataServiceError if delete fails
     func deleteCategory(id categoryID: UUID) async throws {
         await ensureStorageReady()
-
-        let expenses = try SwiftDataStore.shared.loadExpenses()
-        let hasAttachedExpenses = expenses.contains { $0.categoryID == categoryID }
-        let replacementCategoryID = hasAttachedExpenses ? try replacementCategoryID(forDeleting: categoryID) : nil
-
-        try SwiftDataStore.shared.deleteCategory(id: categoryID, reassignExpensesTo: replacementCategoryID)
+        try SwiftDataStore.shared.deleteCategory(id: categoryID)
         finishSwiftDataMigration(for: FileName.categories)
-        finishSwiftDataMigration(for: FileName.expenses)
     }
     
     // MARK: - Budget Operations
@@ -380,29 +374,6 @@ class JSONDataService: ObservableObject, Sendable {
         return updatedCategory
     }
 
-    private func replacementCategoryID(forDeleting categoryID: UUID) throws -> UUID {
-        let categories = try SwiftDataStore.shared.loadCategories()
-
-        if let other = categories.first(where: {
-            $0.id != categoryID && $0.name.localizedCaseInsensitiveCompare("Other") == .orderedSame
-        }) {
-            return other.id
-        }
-
-        if let fallback = categories.first(where: { $0.id != categoryID }) {
-            return fallback.id
-        }
-
-        let uncategorized = Category(
-            name: "Uncategorized",
-            iconName: "tray.fill",
-            colorName: "gray",
-            isDefault: false
-        )
-        try SwiftDataStore.shared.saveCategory(uncategorized)
-        return uncategorized.id
-    }
-    
     /// Load a JSON array, returning an empty array when the file does not exist yet.
     private func loadCollection<T: Codable>(from fileName: String, type: [T].Type) async throws -> [T] {
         do {
