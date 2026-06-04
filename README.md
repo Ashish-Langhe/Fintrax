@@ -1,713 +1,281 @@
-## Fintrax 
+# Fintrax
 
-
-Fintrax is a personal finance iOS app built with SwiftUI. It helps users track expenses, budgets, categories, income, payment reminders, analytics, and verified PDF reports from one professional finance workspace.
-
-
-## Tech Skills Demonstrated
-
-| Area | Skills / Tools |
-| --- | --- |
-| iOS Development | Swift, SwiftUI, SwiftData, Foundation, UIKit integration |
-| Architecture | MVVM-oriented screens, repository pattern, event bus, feature-based modules |
-| Persistence | SwiftData models, local storage, migration-friendly data services |
-| UI/UX | Custom design system, dark/light themes, animated onboarding, professional finance dashboards |
-| Charts & Analytics | Category breakdowns, monthly trends, local AI-style spending insights |
-| Notifications | UserNotifications, local reminders, app icon badges, repeat-until-complete scheduling |
-| PDF Reporting | PDFKit preview, `UIGraphicsPDFRenderer`, verified stamp, watermark, scoped report export |
-| Product Thinking | Local-first privacy, optional PIN lock, focused tab structure, settings-driven tools |
-| Development Approach | Spec-Driven Development, OpenSpec planning, requirements-first implementation |
-
-## Overview
-
-Fintrax is designed for users who want a clear, visual, and privacy-friendly way to understand personal spending. The app focuses on practical day-to-day finance workflows instead of bank aggregation or cloud dependency.
+Fintrax is a local-first personal finance iOS app built with SwiftUI. It helps users track expenses, manage budgets, organize categories, record income, schedule payment reminders, review analytics, and export verified financial reports from one polished mobile workspace.
 
 https://github.com/user-attachments/assets/a37dd1c9-805b-4023-bd62-c8ab19f784c8
 
-Core goals:
+## At a Glance
 
-- Track expenses quickly and categorize them cleanly.
-- Understand spending through dashboard summaries and analytics.
-- Manage monthly budgets and remaining budget.
-- Track income for better cash-flow visibility.
-- Schedule payment reminders with notification badges.
-- Export verified PDF reports for all data or selected categories.
-- Keep sensitive finance data local to the device.
-
-## Platform & Stack
-
-| Item | Details |
+| Area | Details |
 | --- | --- |
+| Product | Personal finance, expense tracking, budgeting, analytics, reminders, reporting |
 | Platform | iOS |
-| Minimum Target | iOS 17.0 |
+| Minimum OS | iOS 17.0 |
 | Language | Swift |
-| UI Framework | SwiftUI |
-| Persistence | SwiftData-backed local storage |
-| Notifications | UserNotifications |
-| PDF Preview | PDFKit |
-| PDF Rendering | UIKit PDF renderer |
-| Architecture | MVVM-oriented feature structure with shared repository services |
-| Delivery Approach | Spec-Driven Development with OpenSpec |
-| App Name | Fintrax |
+| UI | SwiftUI |
+| Persistence | SwiftData plus JSON service compatibility for legacy/local data flows |
+| Notifications | UserNotifications with reminder scheduling and badge updates |
+| Reporting | CSV export and verified PDF financial reports |
+| Architecture | Feature-oriented SwiftUI, MVVM-style view models, repository facade, event bus |
+| Version | 1.0 |
+| Bundle ID | `com.globant.ExpenseTracker` |
+
+## Product Focus
+
+Fintrax is designed for people who want a clear, private, and visual way to understand day-to-day spending without requiring bank aggregation or cloud sync. The app keeps core finance workflows close at hand while moving lower-frequency tools into Settings so the tab bar stays focused.
+
+```mermaid
+flowchart LR
+    A["Capture expenses"] --> B["Review dashboard"]
+    B --> C["Analyze patterns"]
+    C --> D["Adjust budget"]
+    D --> E["Set reminders"]
+    E --> F["Export report"]
+    F --> B
+```
+
+## Core Capabilities
+
+| Capability | What It Provides | Primary Screens |
+| --- | --- | --- |
+| Expense Tracking | Add, edit, delete, search, filter, and sort transactions | Expenses, Add/Edit Expense |
+| Dashboard | High-level monthly status, spending summary, budget context, income snapshot, reminder indicators | Dashboard |
+| Analytics | Category breakdowns, monthly trends, recent activity, and on-device AI-style insights | Analytics |
+| Budgeting | Monthly budget creation, updates, deletion, remaining budget, and progress visualization | Budget |
+| Categories | Default and custom categories with icon and color customization | Settings, Categories |
+| Income Tracking | Salary, freelance, refund, and other inflow records for cash-flow context | Settings, Income Tracking |
+| Payment Reminders | Due dates, notification timing, repeat-until-paid behavior, badge count, and completion state | Settings, Payment Reminders |
+| PDF Reports | Date/category scoped reports with preview, sharing, verified stamp, watermark, charts, and recent activity | Settings, PDF Report |
+| Security | Optional 6-digit PIN gate on launch or app return | Settings, PIN |
+| Appearance | System, light, and dark theme support | Settings |
 
 ## App Flow
 
-```text
-Splash / Onboarding
-        |
-Optional PIN Lock
-        |
-Main Tab Shell
-        |
-Dashboard | Expenses | Analytics | Budget | Settings
+```mermaid
+flowchart TD
+    A["Launch"] --> B{"Onboarding complete?"}
+    B -- "No" --> C["Onboarding"]
+    B -- "Yes" --> D["Splash"]
+    C --> D
+    D --> E{"PIN enabled?"}
+    E -- "Yes" --> F["PIN entry"]
+    E -- "No" --> G["Main tabs"]
+    F --> G
+    G --> H["Dashboard"]
+    G --> I["Expenses"]
+    G --> J["Analytics"]
+    G --> K["Budget"]
+    G --> L["Settings"]
+    L --> M["Categories"]
+    L --> N["Income"]
+    L --> O["Payment reminders"]
+    L --> P["PDF export"]
 ```
-
-Settings also contains finance tools that do not need permanent tab space:
-
-- Categories
-- Income Tracking
-- Payment Reminders
-- PDF Report Export
-- PIN setup/change
-- Theme settings
-- App and device information
-
-## Feature Matrix
-
-| Feature | Description | Status |
-| --- | --- | --- |
-| Dashboard | High-level financial overview with spending, budget, reminders, and quick navigation | Implemented |
-| Expenses | Add, edit, delete, search, filter, and sort expenses | Implemented |
-| Analytics | Category breakdown, monthly trend, recent events, AI-style analysis | Implemented |
-| Budget | Add, update, delete, and track monthly budget usage | Implemented |
-| Categories | Manage default and custom categories with icon/color support | Implemented |
-| Income Tracking | Track inflows and support net cash-flow calculations | Implemented |
-| Payment Reminders | Schedule bills with time, notification mode, badge count, and repeat-until-paid | Implemented |
-| PDF Reports | Preview and share verified reports with selected date/category scope | Implemented |
-| Optional PIN Lock | User-controlled 6-digit app PIN | Implemented |
-| Theme Support | System, light, and dark theme modes | Implemented |
-| Local AI Analyze | On-device spending behavior analysis with animated UI | Implemented |
 
 ## Screens
 
-| Screen | Purpose | Key UI / Functional Details |
+| Screen | Purpose | Key Details |
 | --- | --- | --- |
-| Splash | Branded startup experience | Animated finance visuals and polished app entry |
-| Onboarding | Introduce core value | Expense tracking, AI Analyze, verified PDF reports |
-| PIN | Optional privacy gate | 6-digit PIN entry, setup/change flow, animated security UI |
-| Dashboard | Quick financial status | Summary cards, budget context, reminder bell, notification sheet |
-| Expenses | Transaction management | Search, filters, sort, refresh, add/edit/delete |
-| Add/Edit Expense | Expense form | Amount, title, category, date, notes, validation |
-| Analytics | Deeper insights | Spending charts, monthly trend, AI analysis, recent events |
-| Budget | Monthly planning | Remaining budget, progress, add/update/delete budget |
-| Settings | App control center | Finance tools, theme, PIN, app info, onboarding replay |
-| Categories | Category management | Default/custom categories, SF Symbols, colors, delete/edit |
-| Income Tracking | Inflow tracking | Income list, monthly summary, add/edit/delete income |
-| Payment Reminders | Bill and payment alerts | Reminder date/time, repeat, alert style, mark paid |
-| PDF Report | Report generation | Date range, category scope, preview, share, verified stamp |
+| Splash | Branded startup and return experience | Animated finance visuals, transition into security or app shell |
+| Onboarding | Introduces the product value | Expense tracking, insights, reports, privacy-friendly workflow |
+| PIN | Optional privacy gate | 6-digit PIN setup, entry, and change flow |
+| Dashboard | Quick financial status | Summary cards, budget context, income and reminder signals |
+| Expenses | Transaction workspace | Search, filter, sort, refresh, add/edit/delete, empty states |
+| Analytics | Deeper financial understanding | Date range, charts, category drill-down, local AI Analyze |
+| Budget | Monthly spending plan | Budget limit, remaining budget, progress, guidance cards |
+| Settings | Control center | Finance tools, theme, PIN, device info, app info, onboarding replay |
+| Categories | Category management | Default/custom categories, SF Symbols, color editing |
+| Income Tracking | Inflow management | Income records, monthly summary, add/edit/delete |
+| Payment Reminders | Bill and payment alerts | Alert style, repeat handling, test alert, paid/unpaid state |
+| PDF Report | Verified export workflow | Configure, generate, preview, then share |
 
-## Core Features
+## Technical Highlights
 
-### Dashboard
-
-The Dashboard is intentionally kept clean and focused. It gives users the most important financial status without overloading the first screen.
-
-Highlights:
-
-- Total spending summary
-- Budget-left context
-- Income and cash-flow snapshot
-- Upcoming payment/reminder indicators
-- Notification bell with active reminder count
-- Dashboard notification center sheet
-- Professional visual cards and textured background
-- Quick navigation into deeper finance tools
-
-Detailed charts and behavior insights are moved into Analytics so the dashboard remains easy to scan.
-
-### Expenses
-
-The Expenses module is the main transaction workspace.
-
-Capabilities:
-
-- Add new expenses
-- Edit existing expenses
-- Delete expenses with branded confirmation UI
-- Search by title, note, or category
-- Filter by category and date range
-- Sort expense history
-- Pull-to-refresh
-- Summary card for filtered spend
-- Average filtered spend
-- Empty states for no data or no matching filters
-- Professional search UI with elevated styling
-
-Expense changes are routed through the shared repository so Dashboard, Analytics, Budget, Categories, and PDF Reports stay synchronized.
-
-### Analytics
-
-Analytics is the dedicated screen for deeper visualization and financial understanding.
-
-Capabilities:
-
-- Date range selector
-- Category breakdown chart
-- Monthly trend chart
-- Top category insights
-- Recent events
-- Category drill-down sheet
-- Animated wallet spending icon
-- Local AI Analyze section
-
-#### AI Analyze
-
-AI Analyze is an on-device, privacy-friendly insight engine. It does not call an external AI provider. It uses local spending and income data to generate practical AI-style recommendations.
-
-It analyzes:
-
-- Most-spent category
-- Average daily spend
-- Projected spending pace
-- Saving day / lowest-spend day
-- Peak spending day
-- Largest transaction
-- Savings rate when income exists
-- Practical savings suggestions
-
-User interactions:
-
-- Run analysis manually
-- Watch animated scan behavior
-- Expand and collapse insight cards
-- Close results to keep the screen compact
-- Re-run after changing date range
-
-### Budget
-
-The Budget module helps users manage monthly spending limits.
-
-Capabilities:
-
-- Add monthly budget
-- Update existing budget
-- Delete budget
-- Remaining budget calculation
-- Budget progress visualization
-- Spending guidance cards
-- Branded success overlay
-- Professional add/update sheet
-- SwiftData/repository synchronization with dependent screens
-
-Budget updates are published through the app event bus, so deleting or changing a budget updates Dashboard and related views.
-
-### Categories
-
-Categories are managed from Settings to keep the tab bar focused.
-
-Capabilities:
-
-- Default starter categories
-- Add custom categories
-- Edit category name
-- Edit category icon
-- Edit category color
-- Delete categories where allowed
-- Expanded color palette
-- SF Symbols-style icon picker
-- App-wide category sync
-
-Category data is shared across Expenses, Dashboard, Analytics, Budget, and PDF Reports.
-
-### Income Tracking
-
-Income Tracking gives cash-flow context to the rest of the app.
-
-Capabilities:
-
-- Add income records
-- Edit income records
-- Delete income records
-- Track salary, freelance, refunds, and other inflows
-- Monthly income summary
-- Support for dashboard, analytics, and PDF reports
-
-### Payment Reminders
-
-Payment Reminders evolved from the original Bill Reminders feature.
-
-Capabilities:
-
-- Add payment reminders
-- Edit reminders
-- Delete reminders
-- Mark reminders as paid/unpaid
-- Choose reminder date and notification time
-- Repeat until complete
-- Select alert style
-- Send test alert
-- Update dashboard notification count
-- Update app icon badge count
-- Cancel pending notifications when completed or deleted
-
-Alert styles:
-
-| Alert Style | Behavior |
+| Area | Implementation |
 | --- | --- |
-| Sound + Vibration | Schedules a local notification with default sound; iOS controls final vibration behavior |
-| Silent Badge | Updates notification/badge behavior without sound |
-
-Important iOS limitation: apps cannot force arbitrary vibration or custom ringtone playback while in the background. Fintrax uses local notification sound and system-supported notification presentation.
-
-### Verified PDF Reports
-
-PDF Report Export is available from Settings.
-
-Capabilities:
-
-- Select report date range
-- Select report scope
-- Generate report before sharing
-- Preview report inside the app
-- Share from preview screen
-- Include summary cards
-- Include category analytics graph
-- Include monthly trend graph
-- Include top categories or selected category data
-- Include recent expenses
-- Include upcoming bills
-- Add `Verified by Fintrax` stamp
-- Add subtle Fintrax watermark
-- Use print-safe colors for light and dark app themes
-
-Report scopes:
-
-| Scope | Example |
-| --- | --- |
-| All Data | Full monthly financial report |
-| Selected Category | Fuel-only report, Food-only report, Shopping-only report |
-
-Report flow:
-
-1. Configure date range and report scope.
-2. Create report.
-3. Preview generated PDF.
-4. Share after review.
-
-This protects users from accidentally sharing a report before reviewing it.
-
-### Settings
-
-Settings acts as the app control center.
-
-| Section | Options |
-| --- | --- |
-| Finance Tools | Categories, Income Tracking, Payment Reminders, Export PDF Report |
-| Appearance | System, Light, Dark |
-| Security | Enable/disable PIN lock, set/change 6-digit PIN |
-| Device | iOS version, device model, app size |
-| App Info | Version, build, replay onboarding |
-
-### Security
-
-Security is PIN-based and optional.
-
-Behavior:
-
-- First-time users are not forced to set a PIN.
-- PIN lock is disabled by default.
-- Users can enable PIN lock in Settings.
-- If no PIN exists, enabling lock opens PIN setup.
-- If PIN lock is disabled, the app opens directly.
-- If PIN lock is enabled, the PIN screen appears on launch/return.
-
-## Spec-Driven Development & OpenSpec
-
-Fintrax was shaped using a Spec-Driven Development approach with OpenSpec. Instead of jumping directly into screens and code, the app idea was first broken down into requirements, feature behavior, user flows, and acceptance expectations. This helped convert a broad finance app concept into structured, buildable modules.
-
-### Why Spec-Driven Development?
-
-| Benefit | Impact on Fintrax |
-| --- | --- |
-| Clear requirements before implementation | Reduced ambiguity while building complex flows like expenses, budgets, analytics, reminders, and PDF reports |
-| Better feature planning | Helped decide what belongs in tabs versus Settings, keeping the app less cluttered |
-| Stronger architecture decisions | Supported repository-based data access, SwiftData persistence, and feature-oriented modules |
-| Easier iteration | UI and feature improvements could be added step-by-step without losing the original product direction |
-| Improved consistency | Dashboard, Expenses, Budget, Analytics, Settings, and report flows follow the same product language |
-| Lower regression risk | Requirements and expected behavior made it easier to check whether changes kept app data in sync |
-
-### OpenSpec Use Cases in This App
-
-| Use Case | How It Helped |
-| --- | --- |
-| Feature discovery | Converted ideas such as AI Analyze, PDF export, reminders, and PIN lock into clear feature scopes |
-| Screen planning | Defined what each screen should own and what should move into Settings or Analytics |
-| Data-flow planning | Clarified how expenses, categories, budgets, income, and reminders should stay synchronized |
-| UI refinement | Helped keep visual improvements aligned with a professional finance theme |
-| Notification behavior | Captured local notification limits, badge behavior, repeat reminders, and completion flows |
-| Report generation | Defined selected-scope exports, PDF preview, verified stamp, watermark, and chart inclusion |
-
-### Practical Outcome
-
-Using Spec-Driven Development with OpenSpec helped Fintrax evolve from a basic expense tracker into a more complete personal finance product. The approach made it easier to reason about product scope, avoid overloading the tab bar, keep finance data local-first, and build features in a way that can continue scaling.
+| Feature Structure | App code is grouped by capability under `ExpenseTracker/Features` |
+| State Management | SwiftUI state tools plus dedicated view models for complex screens |
+| Data Access | `FinanceDataRepository` provides a single facade for feature screens |
+| Synchronization | `AppEventBus` publishes expense, budget, category, income, and reminder changes |
+| Persistence | SwiftData-backed local storage with JSON service compatibility and backup support |
+| Notifications | Local notification scheduling, cancellation, foreground presentation, and badge state |
+| Reports | `UIGraphicsPDFRenderer` for PDF output and PDFKit for in-app preview |
+| Design System | Shared color, spacing, typography, card, background, and animation components |
+| Testing | XCTest coverage for model and service behavior |
 
 ## Architecture
 
-Fintrax follows a feature-oriented SwiftUI structure with MVVM-style state handling, repository-based data access, and event-driven synchronization between screens.
+Fintrax follows a feature-oriented SwiftUI architecture with MVVM-style state ownership, a repository facade for finance data, isolated services for side effects, and event-driven refreshes between screens.
 
 ```mermaid
 flowchart TD
-    A["SwiftUI App Entry"] --> B["Root App Shell"]
-    B --> C["Feature Screens"]
-    C --> D["View Models / Local State"]
+    A["ExpenseTrackerApp"] --> B["ContentView"]
+    B --> C["Tab-based SwiftUI screens"]
+    C --> D["View models and local state"]
     D --> E["FinanceDataRepository"]
-    E --> F["SwiftDataStore"]
-    E --> G["Notification Scheduler"]
-    E --> H["PDF Export Service"]
-    E --> I["AppEventBus"]
-    I --> C
+    E --> F["JSONDataService"]
+    E --> G["SwiftDataStore"]
+    E --> H["BudgetService / CategoryService"]
+    E --> I["BillNotificationScheduler"]
+    E --> J["ExportService"]
+    E --> K["AppEventBus"]
+    K --> C
 ```
-
-### Architectural Patterns
-
-| Pattern | Usage |
-| --- | --- |
-| MVVM | Screen state and business logic are separated for complex screens |
-| Repository Pattern | `FinanceDataRepository` provides one facade for app data operations |
-| Event Bus | `AppEventBus` broadcasts changes so screens stay in sync |
-| Service Layer | Export, notifications, budgets, categories, configuration, and persistence are isolated |
-| Feature Modules | Screens are grouped by app capability |
-| Local-First Data | Finance data is stored on-device using SwiftData |
 
 ### Main Layers
 
 | Layer | Responsibility |
 | --- | --- |
-| `AppEntry` | App startup, root shell, onboarding/PIN routing, scene phase handling |
-| `Features` | Screen-specific SwiftUI views and view models |
-| `Core/Models` | Domain models and SwiftData models |
-| `Core/Services` | Persistence, export, category, budget, and configuration services |
-| `Core/Data` | Repository facade and app event bus |
-| `Core/Notifications` | Local notifications and badge handling |
-| `Core/Navigation` | Tab selection and navigation state |
-| `Features/Shared` | Design system, reusable components, validation, modifiers |
+| `ExpenseTracker/AppEntry` | App entry, onboarding/PIN routing, tab shell, lifecycle hooks |
+| `ExpenseTracker/Features` | User-facing SwiftUI screens and feature view models |
+| `ExpenseTracker/Features/Shared` | Reusable UI components, design system, validation, modifiers |
+| `ExpenseTracker/Core/Models` | Domain models, supporting value types, SwiftData models |
+| `ExpenseTracker/Core/Data` | Repository facade and app-wide event bus |
+| `ExpenseTracker/Core/Services` | Persistence, export, configuration, budget, category, and data services |
+| `ExpenseTracker/Core/Notifications` | Local reminder scheduling and badge calculation |
+| `ExpenseTracker/Core/Navigation` | Tab selection and navigation state |
+| `Tests` | XCTest model and service tests |
 
-## MVVM & State Management
-
-The app uses MVVM where screens have enough behavior to justify a dedicated view model.
-
-Primary view models:
-
-- `DashboardViewModel`
-- `BudgetViewModel`
-- `ExpenseListViewModel`
-- `ExpenseViewModel`
-- `CategoryManagementViewModel`
-
-Simple utility screens use local SwiftUI state with repository calls when a full view model would add unnecessary complexity.
-
-SwiftUI state tools used:
-
-- `@State`
-- `@StateObject`
-- `@Observable`
-- `@EnvironmentObject`
-- `@AppStorage`
-- `@FocusState`
-- `@Binding`
-
-## Data Layer
-
-### FinanceDataRepository
-
-`FinanceDataRepository` is the main data facade used by screens.
-
-Responsibilities:
-
-- Load dashboard snapshots
-- Load report snapshots
-- Save/update/delete expenses
-- Save/update/delete categories
-- Save/update/delete budgets
-- Save/update/delete income records
-- Save/update/delete bill reminders
-- Mark bill reminders paid
-- Refresh notification and badge state
-- Publish app-wide change events
-
-### SwiftDataStore
-
-SwiftData is used for local structured persistence.
-
-Stored models:
+## Data Model Overview
 
 | Model | Purpose |
 | --- | --- |
-| Categories | Expense grouping, icon, and color metadata |
-| Expenses | User spending records |
-| Monthly Budget | Budget limit and period data |
-| Income Records | User inflow records |
-| Bill Reminders | Scheduled payment reminders |
+| `Expense` | Individual spending records with amount, title, date, category, and note data |
+| `Category` | Expense grouping with default/custom metadata, icon, and color information |
+| `Budget` / `MonthlyBudget` | Spending limits and monthly budget state |
+| `IncomeRecord` | User income and cash-flow records |
+| `BillReminder` | Scheduled payment reminders, paid state, and notification metadata |
+| `AppSettings` | Theme, security, and export defaults |
 
-### JSONDataService
+## Reporting
 
-The app still includes JSON data service compatibility and migration logic. It bridges older JSON-backed data into SwiftData-backed storage where needed.
+Fintrax supports both CSV expense export and richer PDF financial reports. PDF export is intentionally review-first: users configure the report, generate it, preview it in the app, and only then share it.
 
-### AppEventBus
-
-`AppEventBus` broadcasts domain changes so screens stay synchronized.
-
-Event domains:
-
-- Budget
-- Expense
-- Category
-- Income
-- Bill reminder
-
-Example: when an expense changes, Dashboard, Analytics, Budget, and Expense List can reload without directly coupling to each other.
-
-## Notifications & Badges
-
-Notification-related components:
-
-| Component | Responsibility |
+| Report Feature | Details |
 | --- | --- |
-| `BillNotificationScheduler` | Schedules, repeats, and cancels local reminder notifications |
-| `AppBadgeService` | Calculates and updates app icon badge count |
-| Dashboard Notification Center | Shows active reminders inside the app |
+| Scope | All data or selected category |
+| Filtering | Date range and category selection |
+| Content | Summary cards, category analytics, monthly trend, recent expenses, upcoming bills |
+| Branding | `Verified by Fintrax` stamp and subtle FINTRAX watermark |
+| Rendering | Print-safe PDF colors independent of app light/dark theme |
+| Sharing | SwiftUI share flow from the preview screen |
 
-Notification features:
+## Notifications
 
-- Local payment reminders
-- Due-date alert
-- Rolling repeat-until-paid follow-ups
-- Badge count updates
-- Pending/delivered notification cancellation on delete or completion
-- Foreground notification presentation with sound and badge support
-- Test notification support
+Payment reminders use system-supported local notifications. Fintrax schedules due-date alerts, supports repeat-until-paid reminders, updates the app icon badge, and cancels stale notifications when reminders are completed or deleted.
 
-## PDF Export System
-
-PDF generation is handled by `ExportService`.
-
-Technical details:
-
-| Area | Implementation |
+| Alert Style | Behavior |
 | --- | --- |
-| Rendering | `UIGraphicsPDFRenderer` |
-| Preview | `PDFKit` |
-| Sharing | SwiftUI `ShareLink` from preview screen |
-| Filtering | Date range and category scope |
-| Visuals | Summary cards, category graph, monthly trend graph |
-| Branding | Verified stamp and FINTRAX watermark |
-| Theme Safety | Fixed print-safe colors independent of app theme |
+| Sound + Vibration | Uses local notification sound; final vibration behavior is controlled by iOS |
+| Silent Badge | Updates reminder/badge state without an audible alert |
 
-## Design System
+> iOS does not allow apps to force arbitrary background vibration or custom ringtone playback. Fintrax stays within system notification behavior.
 
-Fintrax uses a shared design system to keep the UI consistent across screens.
+## Local AI Analyze
 
-Design system responsibilities:
+AI Analyze is an on-device insight experience. It does not call an external AI provider. It summarizes local spending and income data into practical finance observations.
 
-- Color tokens
-- Gradients
-- Typography
-- Spacing
-- Corner radius
-- Shadows
-- Shared modifiers
-- Reusable panels and cards
-- Branded overlays and confirmations
-
-Visual direction:
-
-- Professional personal-finance interface
-- Textured, modern backgrounds
-- Clear hierarchy and readable cards
-- Subtle animation
-- Dark-mode-safe contrast
-- Consistent modal and alert styling
+| Insight Type | Example Signal |
+| --- | --- |
+| Category Focus | Most-spent category and category concentration |
+| Spending Pace | Average daily spend and projected period spend |
+| Timing Pattern | Peak spending day and lowest-spend day |
+| Transaction Risk | Largest transaction and notable outliers |
+| Cash Flow | Savings rate when income data exists |
+| Recommendations | Practical suggestions based on current spending behavior |
 
 ## Project Structure
 
 ```text
-ExpenseTracker/
-  AppEntry/
-    ExpenseTrackerApp.swift
-
-  Core/
-    Data/
-      AppEventBus.swift
-      FinanceDataRepository.swift
-    Models/
-      AppSettings.swift
-      Budget.swift
-      Category.swift
-      DashboardData.swift
-      DataServiceError.swift
-      Expense.swift
-      FinanceModels.swift
-      MonthlyBudget.swift
-      SupportingTypes.swift
-      SwiftDataModels.swift
-    Navigation/
-      NavigationManager.swift
-    Notifications/
-      AppBadgeService.swift
-      BillNotificationScheduler.swift
-      BudgetNotifications.swift
-    Services/
-      BudgetService.swift
-      CategoryService.swift
-      ConfigurationService.swift
-      ExportService.swift
-      JSONDataService.swift
-      SwiftDataStore.swift
-    Utils/
-      BudgetCalculations.swift
-      BudgetValidation.swift
-
-  Features/
-    Analytics/
-      AnalyticsView.swift
-    Budget/
-      BudgetView.swift
-      BudgetViewModel.swift
-      BudgetEditSheet.swift
-    Categories/
-      CategoryManagementView.swift
-    Dashboard/
-      DashboardView.swift
-      DashboardViewModel.swift
-      DashboardChartsView.swift
-      DashboardNotificationCenterView.swift
-    Expenses/
-      ExpenseListView.swift
-      ExpenseListViewModel.swift
-      ExpenseViewModel.swift
-      AddEditExpenseView.swift
-    Finance/
-      FinanceFeatureViews.swift
-    Onboarding/
-      AppOnboardingView.swift
-    Security/
-      PinEntryView.swift
-    Settings/
-      SettingsView.swift
-    Shared/
-      Components/
-      FormValidationState.swift
-
-Tests/
-  ModelTests/
-  ServiceTests/
+Fintrax/
++-- ExpenseTracker/
+|   +-- AppEntry/
+|   +-- Core/
+|   |   +-- Data/
+|   |   +-- Models/
+|   |   +-- Navigation/
+|   |   +-- Notifications/
+|   |   +-- Services/
+|   +-- Features/
+|       +-- Analytics/
+|       +-- Budget/
+|       +-- Categories/
+|       +-- Dashboard/
+|       +-- Expenses/
+|       +-- Finance/
+|       +-- Onboarding/
+|       +-- Security/
+|       +-- Settings/
+|       +-- Shared/
++-- Tests/
++-- Assets.xcassets/
++-- openspec/
++-- ExpenseTracker.xcodeproj/
++-- README.md
 ```
 
-## Current Scope
+## Getting Started
 
-### In Scope
+### Requirements
 
-| Area | Included |
+| Requirement | Version |
 | --- | --- |
-| Expense Tracking | Manual expense creation, editing, deletion, filtering, search |
-| Budgeting | Monthly budget setup, progress, remaining amount |
-| Categories | Default/custom categories with icon and color |
-| Income | Manual income records and summaries |
-| Analytics | Local charts and behavior insights |
-| AI Analyze | On-device spending analysis |
-| Reminders | Local payment reminders and badges |
-| Reports | Verified PDF export with selected data |
-| Security | Optional app PIN |
+| Xcode | 15 or newer recommended |
+| iOS | 17.0 or newer |
+| Swift | Xcode-provided Swift toolchain |
 
-### Out of Scope
-
-| Area | Reason |
-| --- | --- |
-| Reading installed banking apps | iOS sandbox does not allow this |
-| Fetching Apple Wallet cards | Requires official Wallet/user-authorized integrations |
-| Bank balance aggregation | Requires provider APIs and explicit consent |
-| Cloud sync | Not implemented in current local-first scope |
-| Multi-user accounts | Authentication is intentionally not part of the current app |
-| External AI service calls | AI Analyze currently runs locally |
-
-iOS privacy sandboxing prevents apps from reading financial accounts/cards from other installed apps or Apple Wallet. Future integrations would require official provider APIs and explicit user consent.
-
-## Build & Run
+### Run Locally
 
 1. Open `ExpenseTracker.xcodeproj` in Xcode.
 2. Select the `ExpenseTracker` scheme.
-3. Choose an iOS 17+ simulator or device.
+3. Choose an iOS simulator or device running iOS 17.0 or newer.
 4. Build and run.
 
 Command-line build:
 
 ```bash
-xcodebuild \
-  -project ExpenseTracker.xcodeproj \
+xcodebuild -project ExpenseTracker.xcodeproj \
   -scheme ExpenseTracker \
   -destination 'generic/platform=iOS' \
   CODE_SIGNING_ALLOWED=NO \
   build
 ```
 
-## Testing
+Run tests:
 
-The project includes model and service tests under `Tests/`.
+```bash
+xcodebuild test \
+  -project ExpenseTracker.xcodeproj \
+  -scheme ExpenseTracker \
+  -destination 'platform=iOS Simulator,name=iPhone 16'
+```
 
-Current test areas:
+## Quality & Testing
 
-- Expense model behavior
-- JSON data service behavior
-
-Run tests from Xcode using the test navigator or with `xcodebuild test` using an available simulator destination.
-
-## Permissions
-
-Fintrax may request:
-
-| Permission | Purpose |
+| Test Area | Coverage Examples |
 | --- | --- |
-| Notifications | Payment reminder alerts |
-| Badges | App icon reminder count |
+| Expense Services | Save, load, update, delete, and missing-record behavior |
+| Category Rules | Default category restrictions, rename/delete validation, dependency checks |
+| Budget Models | Budget creation and persistence behavior |
+| Data Services | Temporary-directory test configuration and backup-disabled test setup |
 
-No bank, account, card, or wallet data is read from other installed apps.
+## OpenSpec Workflow
 
-## Privacy
+Fintrax was shaped with a spec-driven workflow using OpenSpec. Product behavior, acceptance expectations, and implementation tasks were documented before and during development, which helped keep the app modular as it grew from expense tracking into budgeting, analytics, reminders, security, and reports.
 
-Fintrax is designed as a local-first finance app.
+| OpenSpec Use | Result |
+| --- | --- |
+| Feature discovery | Converted broad finance ideas into defined app modules |
+| Screen ownership | Kept the main tab bar focused while moving tools into Settings |
+| Data-flow planning | Clarified repository, event bus, and persistence responsibilities |
+| UI refinement | Aligned visual improvements with a professional finance product |
+| Notification behavior | Captured system limits, badge updates, repeat reminders, and completion flows |
+| Report generation | Defined preview-first export, selected scopes, verified stamp, watermark, and charts |
 
-Current privacy posture:
+## Privacy Position
 
-- Expense, category, budget, income, and reminder data are stored locally.
-- AI Analyze runs on-device using local app data.
-- PDF reports are generated locally.
-- Sharing only happens when the user explicitly shares a generated PDF.
-- The app does not automatically access bank accounts, cards, wallet data, or installed banking apps.
-
-## Roadmap Ideas
-
-Potential future enhancements:
-
-- Account and card tracking section through official user-authorized APIs
-- CSV/PDF statement import
-- Recurring expense detection
-- Budget templates
-- Savings goals
-- Widgets
-- App Intents / Shortcuts
-- iCloud sync
-- Face ID / Touch ID support
-- Optional official financial API integrations
-
-## Contributor Notes
-
-- Keep UI consistent with `AppDesignSystem`.
-- Prefer `FinanceDataRepository` for cross-feature data access.
-- Post domain changes through `AppEventBus` after mutations.
-- Keep report output theme-independent and print-readable.
-- Keep notification behavior aligned with iOS notification limitations.
-- Avoid adding external network or AI dependencies unless the product explicitly requires it.
+Fintrax is local-first by design. Expense, budget, income, category, reminder, settings, and analysis data are handled on device. The AI Analyze experience is rule-based and local, and the app does not require external AI services for financial insights.
 
 ## License
 
-License information has not been added yet.
+This project is available under the license included in [LICENSE](LICENSE).
