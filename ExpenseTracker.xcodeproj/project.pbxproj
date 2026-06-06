@@ -206,15 +206,6 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
-		AC000040 /* Data */ = {
-			isa = PBXGroup;
-			children = (
-				AB000054 /* AppEventBus.swift */,
-				AB000055 /* FinanceDataRepository.swift */,
-			);
-			path = Data;
-			sourceTree = "<group>";
-		};
 		AC000006 /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
@@ -407,6 +398,15 @@
 				AB000048 /* AnalyticsView.swift */,
 			);
 			path = Analytics;
+			sourceTree = "<group>";
+		};
+		AC000040 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				AB000054 /* AppEventBus.swift */,
+				AB000055 /* FinanceDataRepository.swift */,
+			);
+			path = Data;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -628,8 +628,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Fintrax;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -656,8 +656,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Fintrax;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -679,6 +679,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8PD7G8XX5Y;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
