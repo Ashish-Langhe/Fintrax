@@ -60,6 +60,8 @@
 		AA000055 /* FinanceDataRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000055 /* FinanceDataRepository.swift */; };
 		AA000056 /* AppBadgeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000056 /* AppBadgeService.swift */; };
 		AA000057 /* DashboardNotificationCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000057 /* DashboardNotificationCenterView.swift */; };
+		AA000058 /* DeveloperDataMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000058 /* DeveloperDataMode.swift */; };
+		AA000059 /* MockFinanceDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000059 /* MockFinanceDataStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -126,6 +128,8 @@
 		AB000055 /* FinanceDataRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinanceDataRepository.swift; sourceTree = "<group>"; };
 		AB000056 /* AppBadgeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBadgeService.swift; sourceTree = "<group>"; };
 		AB000057 /* DashboardNotificationCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardNotificationCenterView.swift; sourceTree = "<group>"; };
+		AB000058 /* DeveloperDataMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperDataMode.swift; sourceTree = "<group>"; };
+		AB000059 /* MockFinanceDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockFinanceDataStore.swift; sourceTree = "<group>"; };
 		AB000098 /* ExpenseTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExpenseTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000099 /* ExpenseTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExpenseTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -404,7 +408,9 @@
 			isa = PBXGroup;
 			children = (
 				AB000054 /* AppEventBus.swift */,
+				AB000058 /* DeveloperDataMode.swift */,
 				AB000055 /* FinanceDataRepository.swift */,
+				AB000059 /* MockFinanceDataStore.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -547,7 +553,9 @@
 				AA000047 /* FintraxModalOverlay.swift in Sources */,
 				AA000048 /* AnalyticsView.swift in Sources */,
 				AA000054 /* AppEventBus.swift in Sources */,
+				AA000058 /* DeveloperDataMode.swift in Sources */,
 				AA000055 /* FinanceDataRepository.swift in Sources */,
+				AA000059 /* MockFinanceDataStore.swift in Sources */,
 				AA000056 /* AppBadgeService.swift in Sources */,
 				AA000057 /* DashboardNotificationCenterView.swift in Sources */,
 			);

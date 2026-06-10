@@ -13,12 +13,16 @@ struct SettingsView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
     @AppStorage("pinLockEnabled") private var pinLockEnabled = false
     @AppStorage("appPin") private var appPin = ""
+    @AppStorage(DeveloperDataMode.mockDataEnabledKey) private var mockDataEnabled = false
 
     @State private var activeSheet: SettingsSheet?
     @State private var appSize = "Calculating"
     @State private var appeared = false
+    @State private var developerTapCount = 0
+    @State private var showDeveloperDataDialog = false
 
     private let appInfo = AppInfo.current
+    private let repository = FinanceDataRepository.shared
 
     private var themeBinding: Binding<ThemeOption> {
         Binding(
@@ -62,6 +66,30 @@ struct SettingsView: View {
                     .presentationDragIndicator(.visible)
             }
         }
+        .confirmationDialog(
+            "Developer Data Mode",
+            isPresented: $showDeveloperDataDialog,
+            titleVisibility: .visible
+        ) {
+            Button(mockDataEnabled ? "Mock Data Active" : "Use Mock Data") {
+                setDeveloperMockMode(true)
+            }
+            .disabled(mockDataEnabled)
+
+            Button(mockDataEnabled ? "Switch to Real Data" : "Real Data Active") {
+                setDeveloperMockMode(false)
+            }
+            .disabled(!mockDataEnabled)
+
+            Button("Reset Mock Data") {
+                repository.resetMockData()
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            }
+
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Real data is never deleted. Mock mode is developer-only and replaces app reads with demo data.")
+        }
     }
 
     private var heroCard: some View {
@@ -100,12 +128,42 @@ struct SettingsView: View {
                     tint: pinLockEnabled ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.warning
                 )
                 SettingsPill(icon: themeBinding.wrappedValue.iconName, title: themeBinding.wrappedValue.displayName, tint: AppDesignSystem.Colors.primary)
+
+                if mockDataEnabled {
+                    SettingsPill(icon: "testtube.2", title: "Mock Data", tint: AppDesignSystem.Colors.info)
+                } else if developerTapCount > 0 {
+                    SettingsPill(icon: "hammer.fill", title: "Developer access \(developerTapCount)/5", tint: AppDesignSystem.Colors.primaryDark)
+                }
             }
         }
         .padding(AppDesignSystem.Spacing.xl)
         .settingsPanel(accent: AppDesignSystem.Colors.primary)
+        .contentShape(RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xxl, style: .continuous))
+        .onTapGesture {
+            handleDeveloperAccessTap()
+        }
         .offset(y: appeared ? 0 : 14)
         .opacity(appeared ? 1 : 0)
+    }
+
+    private func handleDeveloperAccessTap() {
+        if developerTapCount < 5 {
+            developerTapCount += 1
+        }
+
+        if developerTapCount >= 5 {
+            developerTapCount = 0
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            showDeveloperDataDialog = true
+        } else {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
+    }
+
+    private func setDeveloperMockMode(_ enabled: Bool) {
+        repository.setMockDataEnabled(enabled)
+        mockDataEnabled = enabled
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
     private var appearanceSection: some View {

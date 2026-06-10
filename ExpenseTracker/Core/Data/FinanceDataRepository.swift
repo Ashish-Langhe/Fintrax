@@ -40,20 +40,36 @@ final class FinanceDataRepository: Sendable {
 
     private let dataService: JSONDataService
     private let store: SwiftDataStore
+    private let mockStore: MockFinanceDataStore
     private let eventBus: AppEventBus
 
     init(
         dataService: JSONDataService? = nil,
         store: SwiftDataStore? = nil,
+        mockStore: MockFinanceDataStore? = nil,
         eventBus: AppEventBus? = nil
     ) {
         self.dataService = dataService ?? .shared
         self.store = store ?? .shared
+        self.mockStore = mockStore ?? .shared
         self.eventBus = eventBus ?? .shared
     }
 
     /// Loads the dashboard-facing data set and refreshes the app badge from bills.
     func loadDashboardSnapshot() async throws -> DashboardDataSnapshot {
+        if DeveloperDataMode.isMockDataEnabled {
+            let snapshot = mockStore.snapshot
+            AppBadgeService.updateBillBadgeCount(from: snapshot.bills)
+            return DashboardDataSnapshot(
+                expenses: snapshot.expenses,
+                categories: snapshot.categories,
+                budgets: snapshot.budgets,
+                monthlyBudget: snapshot.monthlyBudget,
+                incomes: snapshot.incomes,
+                bills: snapshot.bills
+            )
+        }
+
         async let expenses = dataService.loadExpenses()
         async let categories = dataService.loadCategories()
         async let budgets = dataService.loadBudgets()
@@ -74,6 +90,17 @@ final class FinanceDataRepository: Sendable {
 
     /// Loads the report-facing data set and refreshes the app badge from bills.
     func loadReportSnapshot() async throws -> ReportDataSnapshot {
+        if DeveloperDataMode.isMockDataEnabled {
+            let snapshot = mockStore.snapshot
+            AppBadgeService.updateBillBadgeCount(from: snapshot.bills)
+            return ReportDataSnapshot(
+                expenses: snapshot.expenses,
+                categories: snapshot.categories,
+                incomes: snapshot.incomes,
+                bills: snapshot.bills
+            )
+        }
+
         async let expenses = dataService.loadExpenses()
         async let categories = dataService.loadCategories()
 
@@ -89,101 +116,194 @@ final class FinanceDataRepository: Sendable {
     }
 
     func loadExpenses() async throws -> [Expense] {
-        try await dataService.loadExpenses()
+        if DeveloperDataMode.isMockDataEnabled {
+            return mockStore.snapshot.expenses
+        }
+        return try await dataService.loadExpenses()
     }
 
     func saveExpense(_ expense: Expense) async throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.saveExpense(expense)
+            eventBus.post(.expense)
+            return
+        }
         try await dataService.saveExpense(expense)
         eventBus.post(.expense)
     }
 
     func updateExpense(_ expense: Expense) async throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.updateExpense(expense)
+            eventBus.post(.expense)
+            return
+        }
         try await dataService.updateExpense(expense)
         eventBus.post(.expense)
     }
 
     func deleteExpense(id expenseID: UUID) async throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.deleteExpense(id: expenseID)
+            eventBus.post(.expense)
+            return
+        }
         try await dataService.deleteExpense(id: expenseID)
         eventBus.post(.expense)
     }
 
     func loadCategories() async throws -> [Category] {
-        try await dataService.loadCategories()
+        if DeveloperDataMode.isMockDataEnabled {
+            return mockStore.snapshot.categories
+        }
+        return try await dataService.loadCategories()
     }
 
     func saveCategory(_ category: Category) async throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.saveCategory(category)
+            eventBus.post(.category)
+            return
+        }
         try await dataService.saveCategory(category)
         eventBus.post(.category)
     }
 
     func updateCategory(_ category: Category) async throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.updateCategory(category)
+            eventBus.post(.category)
+            return
+        }
         try await dataService.updateCategory(category)
         eventBus.post(.category)
     }
 
     func deleteCategory(id categoryID: UUID) async throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.deleteCategory(id: categoryID)
+            eventBus.post(.category)
+            eventBus.post(.expense)
+            return
+        }
         try await dataService.deleteCategory(id: categoryID)
         eventBus.post(.category)
         eventBus.post(.expense)
     }
 
     func loadMonthlyBudget() async throws -> MonthlyBudget? {
-        try await dataService.loadMonthlyBudget()
+        if DeveloperDataMode.isMockDataEnabled {
+            return mockStore.snapshot.monthlyBudget
+        }
+        return try await dataService.loadMonthlyBudget()
     }
 
     func saveMonthlyBudget(_ monthlyBudget: MonthlyBudget) async throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            mockStore.saveMonthlyBudget(monthlyBudget)
+            eventBus.post(.budget)
+            return
+        }
         try await dataService.saveMonthlyBudget(monthlyBudget)
         eventBus.post(.budget)
     }
 
     func updateMonthlyBudget(_ monthlyBudget: MonthlyBudget) async throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            mockStore.saveMonthlyBudget(monthlyBudget)
+            eventBus.post(.budget)
+            return
+        }
         try await dataService.updateMonthlyBudget(monthlyBudget)
         eventBus.post(.budget)
     }
 
     func deleteMonthlyBudget() async throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            mockStore.deleteMonthlyBudget()
+            eventBus.post(.budget)
+            return
+        }
         try await dataService.deleteMonthlyBudget()
         eventBus.post(.budget)
     }
 
     func loadIncomeRecords() throws -> [IncomeRecord] {
-        try store.loadIncomeRecords()
+        if DeveloperDataMode.isMockDataEnabled {
+            return mockStore.snapshot.incomes
+        }
+        return try store.loadIncomeRecords()
     }
 
     func saveIncomeRecord(_ income: IncomeRecord) throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.saveIncomeRecord(income)
+            eventBus.post(.income)
+            return
+        }
         try store.saveIncomeRecord(income)
         eventBus.post(.income)
     }
 
     func updateIncomeRecord(_ income: IncomeRecord) throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.updateIncomeRecord(income)
+            eventBus.post(.income)
+            return
+        }
         try store.updateIncomeRecord(income)
         eventBus.post(.income)
     }
 
     func deleteIncomeRecord(id incomeID: UUID) throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.deleteIncomeRecord(id: incomeID)
+            eventBus.post(.income)
+            return
+        }
         try store.deleteIncomeRecord(id: incomeID)
         eventBus.post(.income)
     }
 
     func loadBillReminders() throws -> [BillReminder] {
+        if DeveloperDataMode.isMockDataEnabled {
+            let bills = mockStore.snapshot.bills
+            AppBadgeService.updateBillBadgeCount(from: bills)
+            return bills
+        }
         let bills = try store.loadBillReminders()
         AppBadgeService.updateBillBadgeCount(from: bills)
         return bills
     }
 
     func saveBillReminder(_ bill: BillReminder) throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.saveBillReminder(bill)
+            eventBus.post(.billReminder)
+            return
+        }
         try store.saveBillReminder(bill)
         refreshBillNotificationState()
         eventBus.post(.billReminder)
     }
 
     func updateBillReminder(_ bill: BillReminder) throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.updateBillReminder(bill)
+            eventBus.post(.billReminder)
+            return
+        }
         try store.updateBillReminder(bill)
         refreshBillNotificationState()
         eventBus.post(.billReminder)
     }
 
     func deleteBillReminder(id billID: UUID) throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            try mockStore.deleteBillReminder(id: billID)
+            eventBus.post(.billReminder)
+            return
+        }
         BillNotificationScheduler.cancelReminder(for: billID)
         try store.deleteBillReminder(id: billID)
         refreshBillNotificationState()
@@ -193,6 +313,16 @@ final class FinanceDataRepository: Sendable {
     /// Marks a reminder complete using repository update flow so notifications,
     /// badges, and event subscribers stay in sync.
     func markBillReminderPaid(id billID: UUID) throws {
+        if DeveloperDataMode.isMockDataEnabled {
+            guard var bill = mockStore.snapshot.bills.first(where: { $0.id == billID }) else {
+                throw DataServiceError.notFound("Mock bill reminder not found")
+            }
+            bill.isPaid = true
+            bill.updatedAt = Date()
+            try mockStore.updateBillReminder(bill)
+            eventBus.post(.billReminder)
+            return
+        }
         guard var bill = try store.loadBillReminders().first(where: { $0.id == billID }) else {
             throw DataServiceError.notFound("Bill reminder not found")
         }
@@ -220,5 +350,21 @@ final class FinanceDataRepository: Sendable {
         } catch {
             ErrorLogger.log(error, context: "FinanceDataRepository.refreshBillNotificationState")
         }
+    }
+
+    func setMockDataEnabled(_ enabled: Bool) {
+        DeveloperDataMode.isMockDataEnabled = enabled
+        AppBadgeService.updateBillBadgeCount(from: enabled ? mockStore.snapshot.bills : (try? store.loadBillReminders()) ?? [])
+        postAllDataChanged()
+    }
+
+    func resetMockData() {
+        mockStore.reset()
+        guard DeveloperDataMode.isMockDataEnabled else { return }
+        postAllDataChanged()
+    }
+
+    private func postAllDataChanged() {
+        AppDataChange.allCases.forEach { eventBus.post($0) }
     }
 }
