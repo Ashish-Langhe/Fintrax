@@ -52,7 +52,7 @@ struct DashboardView: View {
             loadingRotation = 360
             await viewModel.loadDashboardData()
         }
-        .background(DashboardTexturedBackground())
+        .background(FintraxTabBackground(style: .dashboard))
         .sheet(isPresented: $showingNotifications) {
             DashboardNotificationCenterView(
                 bills: viewModel.actionableBillNotifications,

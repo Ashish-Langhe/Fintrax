@@ -33,7 +33,7 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            SettingsBackground()
+            FintraxTabBackground(style: .settings)
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: AppDesignSystem.Spacing.xl) {
@@ -369,7 +369,7 @@ private struct ChangePinSheet: View {
 
     var body: some View {
         ZStack {
-            SettingsBackground()
+            FintraxTabBackground(style: .settings)
 
             VStack(alignment: .leading, spacing: AppDesignSystem.Spacing.xl) {
                 HStack(spacing: AppDesignSystem.Spacing.md) {

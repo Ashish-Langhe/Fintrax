@@ -37,7 +37,7 @@ struct ExpenseListView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                ExpenseTexturedBackground()
+                FintraxTabBackground(style: .expenses)
 
                 if viewModel.loadingState.isLoading && viewModel.expenses.isEmpty {
                     ProgressView("Loading expenses...")
@@ -785,7 +785,7 @@ struct FilterSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                ExpenseTexturedBackground()
+                FintraxTabBackground(style: .expenses)
 
                 ScrollView {
                     VStack(spacing: 18) {

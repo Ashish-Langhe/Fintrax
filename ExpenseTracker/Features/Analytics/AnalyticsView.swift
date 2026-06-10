@@ -43,7 +43,7 @@ struct AnalyticsView: View {
         }
         .navigationTitle("Analytics")
         .navigationBarTitleDisplayMode(.large)
-        .background(AnalyticsBackground())
+        .background(FintraxTabBackground(style: .analytics))
         .refreshable {
             await viewModel.refreshDashboard()
         }
@@ -440,7 +440,7 @@ private struct AnalyticsCategoryDetailView: View {
                 }
                 .padding()
             }
-            .background(AnalyticsBackground())
+            .background(FintraxTabBackground(style: .analytics))
             .navigationTitle(category.name)
             .navigationBarTitleDisplayMode(.inline)
             .task {

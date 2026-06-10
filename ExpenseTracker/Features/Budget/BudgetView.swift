@@ -20,7 +20,7 @@ struct BudgetView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                BudgetTexturedBackground()
+                FintraxTabBackground(style: .budget)
 
                 ScrollView {
                     LazyVStack(spacing: 20) {
