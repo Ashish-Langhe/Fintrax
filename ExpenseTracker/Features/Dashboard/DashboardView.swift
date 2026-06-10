@@ -137,6 +137,18 @@ struct DashboardView: View {
     private var dashboardContent: some View {
         priorityBriefSection
 
+        if let dashboard = viewModel.dashboardData {
+            spendingOverviewSection(dashboard)
+
+            if !dashboard.categoryBreakdown.isEmpty {
+                categoryBreakdownSection(dashboard)
+            }
+
+            if !dashboard.recentExpenses.isEmpty {
+                recentActivitySection(dashboard)
+            }
+        }
+
         // Budget warnings (if any)
         if viewModel.hasBudgetWarnings {
             budgetWarningsSection
@@ -183,6 +195,76 @@ struct DashboardView: View {
         }
         .padding(16)
         .dashboardPanel(accent: AppDesignSystem.Colors.primary)
+    }
+
+    private func spendingOverviewSection(_ dashboard: DashboardData) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            DashboardSectionHeader(
+                title: "Financial Pulse",
+                subtitle: dashboard.dateRange.rawValue,
+                icon: "waveform.path.ecg.rectangle.fill",
+                tint: AppDesignSystem.Colors.info
+            )
+
+            DashboardPulseCard(
+                spending: viewModel.formatCurrency(dashboard.totalSpending),
+                income: viewModel.formatCurrency(viewModel.selectedRangeIncome),
+                netFlow: viewModel.formatCurrency(viewModel.selectedRangeNetCashFlow),
+                transactionCount: dashboard.totalTransactions,
+                remainingBudget: viewModel.hasMonthlyBudget ? viewModel.formatCurrency(viewModel.remainingBudget) : "Not set",
+                budgetProgress: budgetProgress,
+                isOverBudget: viewModel.isOverBudget,
+                hasBudget: viewModel.hasMonthlyBudget
+            )
+        }
+    }
+
+    private func categoryBreakdownSection(_ dashboard: DashboardData) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            DashboardSectionHeader(
+                title: "Top Categories",
+                subtitle: "Where money moved",
+                icon: "chart.bar.fill",
+                tint: AppDesignSystem.Colors.primary
+            )
+
+            DashboardCategoryBreakdownCard(
+                categories: Array(dashboard.categoryBreakdown.prefix(5)),
+                total: dashboard.totalSpending,
+                formatter: viewModel.formatCurrency
+            ) { category in
+                viewModel.selectCategory(category)
+                navigationManager.navigate(to: .analytics)
+            }
+        }
+    }
+
+    private func recentActivitySection(_ dashboard: DashboardData) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            DashboardSectionHeader(
+                title: "Recent Activity",
+                subtitle: "\(dashboard.recentExpenses.count) latest entries",
+                icon: "clock.fill",
+                tint: AppDesignSystem.Colors.success
+            )
+
+            DashboardRecentActivityCard(
+                expenses: dashboard.recentExpenses,
+                categoryForExpense: { expense in
+                    dashboard.categoryBreakdown.first { $0.0.id == expense.categoryID }?.0
+                },
+                formatter: viewModel.formatCurrency
+            )
+        }
+    }
+
+    private var budgetProgress: Double {
+        guard viewModel.hasMonthlyBudget else { return 0 }
+        let remaining = NSDecimalNumber(decimal: max(viewModel.remainingBudget, .zero))
+        let spent = NSDecimalNumber(decimal: viewModel.dashboardData?.totalSpending ?? .zero)
+        let total = remaining.adding(spent)
+        guard total.doubleValue > 0 else { return 0 }
+        return min(max(spent.dividing(by: total).doubleValue, 0), 1)
     }
     // MARK: - Budget Warnings Section
     
@@ -616,6 +698,301 @@ private struct DashboardMiniInsight: View {
     }
 }
 
+private struct DashboardSectionHeader: View {
+    let title: String
+    let subtitle: String
+    let icon: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.white)
+                .frame(width: 30, height: 30)
+                .background(tint.gradient, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(AppDesignSystem.Typography.headline)
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+
+                Text(subtitle)
+                    .font(AppDesignSystem.Typography.caption)
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+            }
+
+            Spacer()
+        }
+    }
+}
+
+private struct DashboardPulseCard: View {
+    let spending: String
+    let income: String
+    let netFlow: String
+    let transactionCount: Int
+    let remainingBudget: String
+    let budgetProgress: Double
+    let isOverBudget: Bool
+    let hasBudget: Bool
+
+    var body: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 12) {
+                DashboardPulseMetric(
+                    title: "Spent",
+                    value: spending,
+                    icon: "arrow.up.forward.circle.fill",
+                    tint: AppDesignSystem.Colors.error
+                )
+
+                DashboardPulseMetric(
+                    title: "Income",
+                    value: income,
+                    icon: "arrow.down.forward.circle.fill",
+                    tint: AppDesignSystem.Colors.success
+                )
+            }
+
+            HStack(spacing: 12) {
+                DashboardPulseMetric(
+                    title: "Net Flow",
+                    value: netFlow,
+                    icon: "equal.circle.fill",
+                    tint: AppDesignSystem.Colors.info
+                )
+
+                DashboardPulseMetric(
+                    title: "Entries",
+                    value: "\(transactionCount)",
+                    icon: "list.bullet.rectangle.fill",
+                    tint: AppDesignSystem.Colors.primary
+                )
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Label(hasBudget ? "Monthly Budget" : "Budget Setup", systemImage: hasBudget ? "target" : "plus.circle.fill")
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+
+                    Spacer()
+
+                    Text(remainingBudget)
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(isOverBudget ? AppDesignSystem.Colors.error : AppDesignSystem.Colors.textPrimary)
+                }
+
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(AppDesignSystem.Colors.surfaceVariant.opacity(0.76))
+
+                        Capsule()
+                            .fill((isOverBudget ? AppDesignSystem.Colors.error : AppDesignSystem.Colors.success).gradient)
+                            .frame(width: max(8, proxy.size.width * budgetProgress))
+                    }
+                }
+                .frame(height: 9)
+
+                Text(hasBudget ? (isOverBudget ? "Spending has crossed the monthly plan" : "Spending pace is within the monthly plan") : "Set a monthly budget to track pace")
+                    .font(AppDesignSystem.Typography.caption)
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+            }
+            .padding(12)
+            .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.56), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .padding(14)
+        .dashboardPanel(accent: AppDesignSystem.Colors.info)
+    }
+}
+
+private struct DashboardPulseMetric: View {
+    let title: String
+    let value: String
+    let icon: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(tint)
+                .frame(width: 30, height: 30)
+                .background(tint.opacity(0.12), in: Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(AppDesignSystem.Typography.caption2.weight(.semibold))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+
+                Text(value)
+                    .font(AppDesignSystem.Typography.calloutEmphasized)
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.68)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(tint.opacity(0.12), lineWidth: 1)
+        }
+    }
+}
+
+private struct DashboardCategoryBreakdownCard: View {
+    let categories: [(Category, Decimal)]
+    let total: Decimal
+    let formatter: (Decimal) -> String
+    let onCategoryTap: (Category) -> Void
+
+    var body: some View {
+        VStack(spacing: 12) {
+            ForEach(Array(categories.enumerated()), id: \.element.0.id) { index, item in
+                let category = item.0
+                let amount = item.1
+
+                Button {
+                    onCategoryTap(category)
+                } label: {
+                    DashboardCategorySpendRow(
+                        rank: index + 1,
+                        category: category,
+                        amount: formatter(amount),
+                        percentage: percentage(for: amount)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(14)
+        .dashboardPanel(accent: AppDesignSystem.Colors.primary)
+    }
+
+    private func percentage(for amount: Decimal) -> Double {
+        guard total > 0 else { return 0 }
+        return min(max(NSDecimalNumber(decimal: amount / total).doubleValue, 0), 1)
+    }
+}
+
+private struct DashboardCategorySpendRow: View {
+    let rank: Int
+    let category: Category
+    let amount: String
+    let percentage: Double
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text("\(rank)")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(category.displayColor)
+                .frame(width: 24, height: 24)
+                .background(category.displayColor.opacity(0.12), in: Circle())
+
+            Image(systemName: category.iconName)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.white)
+                .frame(width: 34, height: 34)
+                .background(category.displayColor.gradient, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 7) {
+                HStack {
+                    Text(category.name)
+                        .font(AppDesignSystem.Typography.calloutEmphasized)
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                        .lineLimit(1)
+
+                    Spacer()
+
+                    Text(amount)
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                }
+
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(AppDesignSystem.Colors.surfaceVariant.opacity(0.72))
+
+                        Capsule()
+                            .fill(category.displayColor.gradient)
+                            .frame(width: max(8, proxy.size.width * percentage))
+                    }
+                }
+                .frame(height: 7)
+            }
+        }
+        .padding(10)
+        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.54), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+private struct DashboardRecentActivityCard: View {
+    let expenses: [Expense]
+    let categoryForExpense: (Expense) -> Category?
+    let formatter: (Decimal) -> String
+
+    var body: some View {
+        VStack(spacing: 10) {
+            ForEach(expenses) { expense in
+                DashboardRecentExpenseRow(
+                    expense: expense,
+                    category: categoryForExpense(expense),
+                    amount: formatter(expense.amount)
+                )
+            }
+        }
+        .padding(14)
+        .dashboardPanel(accent: AppDesignSystem.Colors.success)
+    }
+}
+
+private struct DashboardRecentExpenseRow: View {
+    let expense: Expense
+    let category: Category?
+    let amount: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: category?.iconName ?? "creditcard.fill")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.white)
+                .frame(width: 36, height: 36)
+                .background((category?.displayColor ?? AppDesignSystem.Colors.primary).gradient, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(expense.title)
+                    .font(AppDesignSystem.Typography.calloutEmphasized)
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                    .lineLimit(1)
+
+                Text("\(category?.name ?? "Expense") • \(expense.date.formatted(date: .abbreviated, time: .omitted))")
+                    .font(AppDesignSystem.Typography.caption)
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 8)
+
+            Text(amount)
+                .font(AppDesignSystem.Typography.caption.weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+        }
+        .padding(10)
+        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.54), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
 private struct DashboardPriorityRow: View {
     let icon: String
     let title: String
@@ -723,81 +1100,58 @@ struct DashboardTexturedBackground: View {
     var body: some View {
         ZStack {
             AppDesignSystem.Gradients.background
-            .ignoresSafeArea()
-
-            LinearGradient(
-                colors: [
-                    AppDesignSystem.Colors.primary.opacity(0.18),
-                    AppDesignSystem.Colors.success.opacity(0.12),
-                    AppDesignSystem.Colors.warning.opacity(0.10)
-                ],
-                startPoint: .topTrailing,
-                endPoint: .bottomLeading
-            )
-            .blendMode(.multiply)
-            .ignoresSafeArea()
-
-            Canvas { context, size in
-                let stripePath = Path { path in
-                    var x: CGFloat = -size.height
-                    while x < size.width {
-                        path.move(to: CGPoint(x: x, y: 0))
-                        path.addLine(to: CGPoint(x: x + size.height, y: size.height))
-                        x += 18
-                    }
-                }
-
-                context.stroke(
-                    stripePath,
-                    with: .color(Color.primary.opacity(0.045)),
-                    lineWidth: 1.2
-                )
-
-                let dotColor = Color.primary.opacity(0.065)
-                for row in stride(from: 24, through: size.height, by: 34) {
-                    for column in stride(from: 18, through: size.width, by: 34) {
-                        let rect = CGRect(x: column, y: row, width: 3.2, height: 3.2)
-                        context.fill(Path(ellipseIn: rect), with: .color(dotColor))
-                    }
-                }
-            }
-            .ignoresSafeArea()
+                .ignoresSafeArea()
 
             GeometryReader { proxy in
                 let size = proxy.size
 
-                dashboardSymbol("chart.pie.fill", size: 100, color: AppDesignSystem.Colors.primary.opacity(0.13))
-                    .rotationEffect(.degrees(drift ? 7 : -5))
-                    .offset(x: size.width - 118, y: 92)
+                Image(systemName: "rectangle.grid.2x2.fill")
+                    .font(.system(size: 78, weight: .medium))
+                    .foregroundStyle(AppDesignSystem.Colors.primary.opacity(0.08))
+                    .rotationEffect(.degrees(drift ? -9 : 7))
+                    .offset(x: size.width * 0.62, y: drift ? 76 : 48)
 
-                dashboardSymbol("wallet.pass.fill", size: 88, color: AppDesignSystem.Colors.success.opacity(0.13))
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .font(.system(size: 72, weight: .medium))
+                    .foregroundStyle(AppDesignSystem.Colors.success.opacity(0.12))
+                    .rotationEffect(.degrees(drift ? 9 : -7))
+                    .offset(x: size.width * 0.06, y: size.height * 0.58)
+
+                Image(systemName: "indianrupeesign.circle.fill")
+                    .font(.system(size: 94, weight: .regular))
+                    .foregroundStyle(AppDesignSystem.Colors.warning.opacity(0.12))
+                    .rotationEffect(.degrees(drift ? 6 : -4))
+                    .offset(x: size.width * 0.66, y: size.height * 0.74)
+
+                Image(systemName: "wallet.pass.fill")
+                    .font(.system(size: 64, weight: .medium))
+                    .foregroundStyle(AppDesignSystem.Colors.info.opacity(0.10))
                     .rotationEffect(.degrees(drift ? -8 : 5))
-                    .offset(x: -18, y: size.height * 0.34)
+                    .offset(x: size.width * 0.08, y: drift ? size.height * 0.23 : size.height * 0.20)
 
-                dashboardSymbol("indianrupeesign.circle.fill", size: 124, color: AppDesignSystem.Colors.warning.opacity(0.15))
-                    .rotationEffect(.degrees(drift ? 5 : -4))
-                    .offset(x: size.width * 0.58, y: size.height * 0.72)
+                Circle()
+                    .stroke(AppDesignSystem.Colors.info.opacity(0.14), lineWidth: 18)
+                    .frame(width: 210, height: 210)
+                    .offset(x: drift ? -62 : -84, y: 86)
 
-                RoundedRectangle(cornerRadius: 38, style: .continuous)
-                    .stroke(AppDesignSystem.Colors.info.opacity(0.16), lineWidth: 14)
-                    .frame(width: 190, height: 190)
-                    .rotationEffect(.degrees(drift ? 18 : 10))
-                    .offset(x: size.width - 76, y: size.height * 0.44)
+                RoundedRectangle(cornerRadius: 36, style: .continuous)
+                    .stroke(AppDesignSystem.Colors.primary.opacity(0.08), lineWidth: 14)
+                    .frame(width: 180, height: 180)
+                    .rotationEffect(.degrees(drift ? 18 : 9))
+                    .offset(x: size.width - 96, y: size.height * 0.18)
+
+                Circle()
+                    .stroke(AppDesignSystem.Colors.success.opacity(0.10), lineWidth: 12)
+                    .frame(width: 154, height: 154)
+                    .offset(x: size.width - 52, y: size.height * 0.52)
             }
             .ignoresSafeArea()
             .onAppear {
-                withAnimation(.easeInOut(duration: 7).repeatForever(autoreverses: true)) {
+                withAnimation(.easeInOut(duration: 5.5).repeatForever(autoreverses: true)) {
                     drift = true
                 }
             }
         }
-    }
-
-    private func dashboardSymbol(_ name: String, size: CGFloat, color: Color) -> some View {
-        Image(systemName: name)
-            .font(.system(size: size, weight: .semibold))
-            .foregroundStyle(color)
-            .accessibilityHidden(true)
     }
 }
 
