@@ -62,6 +62,8 @@
 		AA000057 /* DashboardNotificationCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000057 /* DashboardNotificationCenterView.swift */; };
 		AA000058 /* DeveloperDataMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000058 /* DeveloperDataMode.swift */; };
 		AA000059 /* MockFinanceDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000059 /* MockFinanceDataStore.swift */; };
+		AA000060 /* SmartCategoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000060 /* SmartCategoryService.swift */; };
+		AA000061 /* SmartCategoryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000061 /* SmartCategoryServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -130,6 +132,8 @@
 		AB000057 /* DashboardNotificationCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardNotificationCenterView.swift; sourceTree = "<group>"; };
 		AB000058 /* DeveloperDataMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperDataMode.swift; sourceTree = "<group>"; };
 		AB000059 /* MockFinanceDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockFinanceDataStore.swift; sourceTree = "<group>"; };
+		AB000060 /* SmartCategoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCategoryService.swift; sourceTree = "<group>"; };
+		AB000061 /* SmartCategoryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCategoryServiceTests.swift; sourceTree = "<group>"; };
 		AB000098 /* ExpenseTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExpenseTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000099 /* ExpenseTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExpenseTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -226,6 +230,7 @@
 				AB000011 /* ConfigurationService.swift */,
 				AB000012 /* ExportService.swift */,
 				AB000013 /* JSONDataService.swift */,
+				AB000060 /* SmartCategoryService.swift */,
 				AB000040 /* SwiftDataStore.swift */,
 			);
 			path = Services;
@@ -314,6 +319,7 @@
 			isa = PBXGroup;
 			children = (
 				AB000023 /* JSONDataServiceTests.swift */,
+				AB000061 /* SmartCategoryServiceTests.swift */,
 			);
 			path = ServiceTests;
 			sourceTree = "<group>";
@@ -556,6 +562,7 @@
 				AA000058 /* DeveloperDataMode.swift in Sources */,
 				AA000055 /* FinanceDataRepository.swift in Sources */,
 				AA000059 /* MockFinanceDataStore.swift in Sources */,
+				AA000060 /* SmartCategoryService.swift in Sources */,
 				AA000056 /* AppBadgeService.swift in Sources */,
 				AA000057 /* DashboardNotificationCenterView.swift in Sources */,
 			);
@@ -567,6 +574,7 @@
 			files = (
 				AA000022 /* ExpenseModelTests.swift in Sources */,
 				AA000023 /* JSONDataServiceTests.swift in Sources */,
+				AA000061 /* SmartCategoryServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

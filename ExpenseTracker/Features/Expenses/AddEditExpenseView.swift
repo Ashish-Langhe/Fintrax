@@ -16,9 +16,14 @@ struct AddEditExpenseView: View {
     @State private var categories: [Category] = []
     @State private var isLoadingCategories = false
     @State private var categoryLoadError: String?
+    @State private var smartCategorySuggestion: SmartCategorySuggestion?
+    @State private var smartCategoryTask: Task<Void, Never>?
+    @State private var userSelectedCategoryManually = false
+    @State private var lastSmartSelectedCategoryID: UUID?
     
     private let seedCategories: [Category]
     private let repository = FinanceDataRepository.shared
+    private let smartCategoryService = SmartCategoryService()
     
     /// Initialize for creating a new expense
     init(categories: [Category] = []) {
@@ -80,6 +85,12 @@ struct AddEditExpenseView: View {
         )
         .task {
             await loadCategories()
+        }
+        .onChange(of: viewModel.title) { _, _ in
+            scheduleSmartCategorySuggestion()
+        }
+        .onDisappear {
+            smartCategoryTask?.cancel()
         }
     }
 
@@ -181,6 +192,14 @@ struct AddEditExpenseView: View {
                 )
 
                 validationText(for: "title")
+
+                if let smartCategorySuggestion {
+                    SmartCategorySuggestionChip(suggestion: smartCategorySuggestion)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .scale(scale: 0.96).combined(with: .opacity)
+                        ))
+                }
             }
 
             DatePicker("Date", selection: $viewModel.date, in: ...Date())
@@ -226,7 +245,7 @@ struct AddEditExpenseView: View {
             } else {
                 NavigationLink {
                     CategorySelectorView(
-                        selectedCategoryID: $viewModel.selectedCategoryID,
+                        selectedCategoryID: categorySelectionBinding,
                         categories: categories,
                         allowCustomCategories: false,
                         includeAllCategoriesOption: false
@@ -321,12 +340,14 @@ struct AddEditExpenseView: View {
             categories = seedCategories
             selectDefaultCategoryIfNeeded()
             viewModel.validateForm()
+            scheduleSmartCategorySuggestion()
             return
         }
         
         guard categories.isEmpty else {
             selectDefaultCategoryIfNeeded()
             viewModel.validateForm()
+            scheduleSmartCategorySuggestion()
             return
         }
         
@@ -344,10 +365,11 @@ struct AddEditExpenseView: View {
         
         selectDefaultCategoryIfNeeded()
         viewModel.validateForm()
+        scheduleSmartCategorySuggestion()
     }
     
     private func selectDefaultCategoryIfNeeded() {
-        guard viewModel.selectedCategoryID == nil else { return }
+        guard viewModel.isEditing, viewModel.selectedCategoryID == nil else { return }
         viewModel.selectedCategoryID = categories.first?.id
     }
     
@@ -362,10 +384,147 @@ struct AddEditExpenseView: View {
         guard let categoryID = viewModel.selectedCategoryID else { return nil }
         return categories.first { $0.id == categoryID }
     }
+
+    private var categorySelectionBinding: Binding<UUID?> {
+        Binding(
+            get: { viewModel.selectedCategoryID },
+            set: { newValue in
+                userSelectedCategoryManually = true
+                lastSmartSelectedCategoryID = nil
+                withAnimation(.spring(response: 0.34, dampingFraction: 0.86)) {
+                    smartCategorySuggestion = nil
+                }
+                viewModel.selectedCategoryID = newValue
+            }
+        )
+    }
+
+    private func scheduleSmartCategorySuggestion() {
+        smartCategoryTask?.cancel()
+
+        guard !viewModel.isEditing, !userSelectedCategoryManually else { return }
+
+        let title = viewModel.title
+        smartCategoryTask = Task {
+            try? await Task.sleep(nanoseconds: 280_000_000)
+            guard !Task.isCancelled else { return }
+
+            await MainActor.run {
+                applySmartCategorySuggestion(for: title)
+            }
+        }
+    }
+
+    @MainActor
+    private func applySmartCategorySuggestion(for title: String) {
+        guard !userSelectedCategoryManually else { return }
+
+        guard title.trimmingCharacters(in: .whitespacesAndNewlines).count >= 3 else {
+            clearSmartCategorySuggestion(resetAutoSelection: true)
+            return
+        }
+
+        guard let suggestion = smartCategoryService.suggestCategory(for: title, categories: categories) else {
+            clearSmartCategorySuggestion(resetAutoSelection: true)
+            return
+        }
+
+        withAnimation(.spring(response: 0.36, dampingFraction: 0.84)) {
+            viewModel.selectedCategoryID = suggestion.category.id
+            smartCategorySuggestion = suggestion
+            lastSmartSelectedCategoryID = suggestion.category.id
+        }
+    }
+
+    @MainActor
+    private func clearSmartCategorySuggestion(resetAutoSelection: Bool) {
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.88)) {
+            smartCategorySuggestion = nil
+
+            if resetAutoSelection, viewModel.selectedCategoryID == lastSmartSelectedCategoryID {
+                viewModel.selectedCategoryID = nil
+            }
+
+            lastSmartSelectedCategoryID = nil
+        }
+    }
     
     enum Field: Hashable {
         case title
         case amount
+    }
+}
+
+private struct SmartCategorySuggestionChip: View {
+    let suggestion: SmartCategorySuggestion
+    @State private var glow = false
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "sparkles")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.white)
+                .frame(width: 26, height: 26)
+                .background(
+                    LinearGradient(
+                        colors: [AppDesignSystem.Colors.primary, suggestion.category.displayColor],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    in: Circle()
+                )
+                .scaleEffect(glow ? 1.04 : 0.96)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Smart Category")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 6) {
+                    Text(suggestion.category.name)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.primary)
+
+                    Text(suggestion.confidenceLabel)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(suggestion.category.displayColor)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer(minLength: 8)
+
+            Image(systemName: suggestion.category.iconName)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(suggestion.category.displayColor)
+                .frame(width: 28, height: 28)
+                .background(suggestion.category.displayColor.opacity(0.14), in: Circle())
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            LinearGradient(
+                colors: [
+                    suggestion.category.displayColor.opacity(0.14),
+                    AppDesignSystem.Colors.primary.opacity(0.08)
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            ),
+            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(suggestion.category.displayColor.opacity(glow ? 0.34 : 0.18), lineWidth: 1)
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Smart Category suggested \(suggestion.category.name)")
+        .task(id: suggestion.category.id) {
+            glow = false
+            withAnimation(.easeInOut(duration: 0.9).repeatCount(2, autoreverses: true)) {
+                glow = true
+            }
+        }
     }
 }
 
