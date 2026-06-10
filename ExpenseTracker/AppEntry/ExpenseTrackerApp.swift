@@ -142,7 +142,7 @@ struct ContentView: View {
         }
         .tag(NavigationDestination.dashboard)
         .tabItem {
-            Label("Dashboard", systemImage: "chart.pie.fill")
+            Label("Dashboard", systemImage: tabIcon(for: .dashboard))
                 .badge(navigationManager.selectedTab == NavigationDestination.dashboard ? "" : nil)
         }
     }
@@ -155,7 +155,7 @@ struct ContentView: View {
         }
         .tag(NavigationDestination.expenseList)
         .tabItem {
-            Label("Expenses", systemImage: "list.bullet")
+            Label("Expenses", systemImage: tabIcon(for: .expenseList))
                 .badge(navigationManager.selectedTab == NavigationDestination.expenseList ? "" : nil)
         }
     }
@@ -168,7 +168,7 @@ struct ContentView: View {
         }
         .tag(NavigationDestination.analytics)
         .tabItem {
-            Label("Analytics", systemImage: "chart.xyaxis.line")
+            Label("Analytics", systemImage: tabIcon(for: .analytics))
                 .badge(navigationManager.selectedTab == NavigationDestination.analytics ? "" : nil)
         }
     }
@@ -181,7 +181,7 @@ struct ContentView: View {
         }
         .tag(NavigationDestination.budgetSettings)
         .tabItem {
-            Label("Budget", systemImage: "banknote.fill")
+            Label("Budget", systemImage: tabIcon(for: .budgetSettings))
                 .badge(navigationManager.selectedTab == NavigationDestination.budgetSettings ? "" : nil)
         }
     }
@@ -194,7 +194,26 @@ struct ContentView: View {
         }
         .tag(NavigationDestination.settings)
         .tabItem {
-            Label("Settings", systemImage: "gear")
+            Label("Settings", systemImage: tabIcon(for: .settings))
+        }
+    }
+
+    private func tabIcon(for destination: NavigationDestination) -> String {
+        let isSelected = navigationManager.selectedTab == destination
+
+        switch destination {
+        case .dashboard:
+            return isSelected ? "rectangle.grid.2x2.fill" : "rectangle.grid.2x2"
+        case .expenseList:
+            return isSelected ? "creditcard.fill" : "creditcard"
+        case .analytics:
+            return "chart.line.uptrend.xyaxis"
+        case .budgetSettings:
+            return "target"
+        case .settings:
+            return "slider.horizontal.3"
+        default:
+            return destination.systemImage
         }
     }
 }

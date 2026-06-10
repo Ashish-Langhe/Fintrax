@@ -89,19 +89,19 @@ enum NavigationDestination: Hashable, Codable {
     var systemImage: String {
         switch self {
         case .dashboard:
-            return "chart.pie.fill"
+            return "rectangle.grid.2x2.fill"
         case .expenseList:
-            return "list.bullet"
+            return "creditcard.fill"
         case .analytics:
-            return "chart.xyaxis.line"
+            return "chart.line.uptrend.xyaxis"
         case .addExpense:
             return "plus.circle.fill"
         case .categoryManagement:
             return "tag.fill"
         case .budgetSettings:
-            return "banknote.fill"
+            return "target"
         case .settings:
-            return "gear"
+            return "slider.horizontal.3"
         case .securitySettings:
             return "lock.shield"
         case .exportData:
