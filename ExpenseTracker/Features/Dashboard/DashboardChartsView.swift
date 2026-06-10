@@ -17,7 +17,7 @@ struct DashboardChartsView: View {
     @State private var selectedCategory: Category?
     @State private var selectedMonth: String?
     @State private var selectedCategoryAngle: Double?
-    @State private var selectedBarMonth: String?
+    @State private var chartReveal = false
     
     // Performance optimization constants
     private enum ChartConstants {
@@ -37,16 +37,19 @@ struct DashboardChartsView: View {
                     barChartView
                 }
             }
-            .frame(height: 280)
+            .frame(height: selectedChartType == .pie ? 292 : 330)
             .chartBackground { _ in
                 Color.clear
+            }
+            .onAppear {
+                withAnimation(.spring(response: 0.9, dampingFraction: 0.86)) {
+                    chartReveal = true
+                }
             }
             
             // Chart legend/details section
             if selectedChartType == .pie {
                 pieChartLegend
-            } else if selectedChartType == .bar {
-                barChartDetails
             }
         }
     }
@@ -56,55 +59,111 @@ struct DashboardChartsView: View {
     @ViewBuilder
     private var pieChartView: some View {
         if !optimizedCategoryBreakdown.isEmpty {
-            Chart {
-                ForEach(0..<optimizedCategoryBreakdown.count, id: \.self) { index in
-                    let (category, amount) = optimizedCategoryBreakdown[index]
-                    let isSelected = selectedCategory == nil || selectedCategory?.id == category.id
-                    
-                    SectorMark(
-                        angle: .value("Amount", NSDecimalNumber(decimal: amount).doubleValue),
-                        innerRadius: .ratio(0.58),
-                        outerRadius: .ratio(selectedCategory?.id == category.id ? 1.0 : 0.94),
-                        angularInset: isSelected ? 1.0 : 2.0
+            ZStack {
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                AppDesignSystem.Colors.elevatedSurface.opacity(0.62),
+                                AppDesignSystem.Colors.surfaceVariant.opacity(0.22)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                    .foregroundStyle(category.displayColor)
-                    .opacity(isSelected ? 1.0 : 0.34)
-                }
-            }
-            .chartLegend(.hidden)
-            .chartAngleSelection(value: $selectedCategoryAngle)
-            .chartBackground { chartProxy in
-                GeometryReader { geometry in
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 26, style: .continuous)
+                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                    }
+                    .shadow(color: AppDesignSystem.Colors.primary.opacity(0.10), radius: 18, x: 0, y: 12)
+
+                VStack(spacing: 0) {
                     ZStack {
-                        VStack(spacing: 4) {
-                            Text("Total")
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
-                            Text(selectedCategorySummary)
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .minimumScaleFactor(0.75)
-                            Text(selectedCategory?.name ?? "\(dashboardData.totalTransactions) expenses")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
+                        chartDepthLayer
+                            .frame(height: 250)
+                            .offset(y: 14)
+                            .blur(radius: 0.2)
+                            .opacity(0.72)
+
+                        Chart {
+                            ForEach(0..<optimizedCategoryBreakdown.count, id: \.self) { index in
+                                let (category, amount) = optimizedCategoryBreakdown[index]
+                                let isSelected = selectedCategory == nil || selectedCategory?.id == category.id
+
+                                SectorMark(
+                                    angle: .value("Amount", NSDecimalNumber(decimal: amount).doubleValue * (chartReveal ? 1 : 0.001)),
+                                    innerRadius: .ratio(0.58),
+                                    outerRadius: .ratio(selectedCategory?.id == category.id ? 1.0 : 0.93),
+                                    angularInset: isSelected ? 1.1 : 2.2
+                                )
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [
+                                            category.displayColor.opacity(isSelected ? 1.0 : 0.42),
+                                            category.displayColor.opacity(isSelected ? 0.70 : 0.28)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                            }
                         }
-                        .position(
-                            x: geometry.size.width / 2,
-                            y: geometry.size.height / 2
+                        .chartLegend(.hidden)
+                        .chartAngleSelection(value: $selectedCategoryAngle)
+                        .frame(height: 250)
+                        .shadow(color: Color.black.opacity(0.10), radius: 10, x: 0, y: 8)
+
+                        DimensionalDonutCenter(
+                            title: selectedCategory?.name ?? "Total",
+                            amount: selectedCategorySummary,
+                            subtitle: selectedCategory == nil ? "\(dashboardData.totalTransactions) expenses" : selectedCategoryPercentLabel,
+                            tint: selectedCategory?.displayColor ?? AppDesignSystem.Colors.primary
                         )
                     }
                 }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
             }
+            .scaleEffect(chartReveal ? 1 : 0.96)
+            .opacity(chartReveal ? 1 : 0)
             .onChange(of: selectedCategoryAngle) { _, newValue in
-                selectedCategory = category(forAngle: newValue)
-                if let selectedCategory {
-                    onCategorySelected(selectedCategory)
+                withAnimation(.spring(response: 0.34, dampingFraction: 0.84)) {
+                    selectedCategory = category(forAngle: newValue)
+                    if let selectedCategory {
+                        onCategorySelected(selectedCategory)
+                    }
                 }
             }
         } else {
             emptyChartView("No Categories", "Add expenses with different categories to see the breakdown")
         }
+    }
+
+    private var chartDepthLayer: some View {
+        Chart {
+            ForEach(0..<optimizedCategoryBreakdown.count, id: \.self) { index in
+                let (_, amount) = optimizedCategoryBreakdown[index]
+
+                SectorMark(
+                    angle: .value("Amount", NSDecimalNumber(decimal: amount).doubleValue),
+                    innerRadius: .ratio(0.58),
+                    outerRadius: .ratio(0.94),
+                    angularInset: 2.0
+                )
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.18),
+                            Color.black.opacity(0.05)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+            }
+        }
+        .chartLegend(.hidden)
+        .allowsHitTesting(false)
     }
     
     private func annotationText(for amount: Decimal) -> some View {
@@ -166,6 +225,12 @@ struct DashboardChartsView: View {
         return formatCurrency(amount)
     }
 
+    private var selectedCategoryPercentLabel: String {
+        guard let selectedCategory else { return "" }
+        let percentage = dashboardData.getCategorySpendingPercentage(for: selectedCategory) * 100
+        return String(format: "%.1f%% of spend", percentage)
+    }
+
     private func category(forAngle angle: Double?) -> Category? {
         guard let angle else { return nil }
 
@@ -185,112 +250,18 @@ struct DashboardChartsView: View {
     @ViewBuilder
     private var barChartView: some View {
         if !optimizedMonthlyTrend.isEmpty {
-            Chart {
-                ForEach(0..<optimizedMonthlyTrend.count, id: \.self) { index in
-                    let (month, amount) = optimizedMonthlyTrend[index]
-                    let isMonthSelectedValue = selectedMonth == nil || selectedMonth == month
-
-                    AreaMark(
-                        x: .value("Month", month),
-                        y: .value("Amount", NSDecimalNumber(decimal: amount).doubleValue)
-                    )
-                    .foregroundStyle(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color(red: 0.18, green: 0.55, blue: 0.82).opacity(0.34),
-                                Color(red: 0.18, green: 0.55, blue: 0.82).opacity(0.04)
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-
-                    LineMark(
-                        x: .value("Month", month),
-                        y: .value("Amount", NSDecimalNumber(decimal: amount).doubleValue)
-                    )
-                    .foregroundStyle(Color(red: 0.13, green: 0.45, blue: 0.74))
-                    .lineStyle(StrokeStyle(lineWidth: 3.5, lineCap: .round, lineJoin: .round))
-
-                    PointMark(
-                        x: .value("Month", month),
-                        y: .value("Amount", NSDecimalNumber(decimal: amount).doubleValue)
-                    )
-                    .foregroundStyle(isMonthSelectedValue ? Color(red: 0.13, green: 0.45, blue: 0.74) : Color.white)
-                    .symbolSize(isMonthSelectedValue ? 120 : 74)
-                    .annotation(position: .top) {
-                        if isMonthSelectedValue {
-                            monthAnnotation(month: month, amount: amount)
-                        }
-                    }
-                }
-            }
-            .chartXSelection(value: $selectedBarMonth)
-            .chartYScale(domain: 0...monthlyTrendUpperBound)
-            .chartXAxis {
-                AxisMarks(values: .automatic) { value in
-                    if let month = value.as(String.self) {
-                        AxisValueLabel(monthAxisLabel(month))
-                            .font(.caption2)
-                    }
-                }
-            }
-            .chartYAxis {
-                AxisMarks { value in
-                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [3, 4]))
-                        .foregroundStyle(Color.secondary.opacity(0.18))
-                    if let amount = value.as(Double.self) {
-                        AxisValueLabel(formatCurrency(Decimal(amount)))
-                            .font(.caption2)
-                    }
-                }
-            }
-            .onChange(of: selectedBarMonth) { _, newValue in
-                selectedMonth = newValue
-            }
+            RefinedMonthlyTrendChart(
+                trend: optimizedMonthlyTrend,
+                selectedMonth: $selectedMonth,
+                maxValue: monthlyTrendUpperBound,
+                reveal: chartReveal,
+                formatCurrency: formatCurrency,
+                monthLabel: monthAxisLabel
+            )
         } else {
             emptyChartView("No Monthly Data", "Add expenses over multiple months to see the trend")
         }
     }
-    
-
-    
-    @ViewBuilder
-    private func monthAnnotation(month: String, amount: Decimal) -> some View {
-        if selectedMonth == month {
-            Text(formatCurrency(amount))
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundColor(.blue)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(
-                    ZStack {
-                        Capsule()
-                            .fill(.thinMaterial)
-                            .background(
-                                Capsule()
-                                    .fill(Color.blue.opacity(0.15))
-                            )
-                    }
-                )
-                .overlay(
-                    Capsule()
-                        .stroke(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color.blue.opacity(0.3),
-                                    Color.blue.opacity(0.1)
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
-                )
-        }
-    }
-    
     // MARK: - Optimized Data for Charts
     
     private var optimizedCategoryBreakdown: [(Category, Decimal)] {
@@ -441,95 +412,6 @@ struct DashboardChartsView: View {
         return selectedCategory?.id == category.id ? Color.blue.opacity(0.1) : Color.clear
     }
     
-    // MARK: - Bar Chart Details
-    
-    private var barChartDetails: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(optimizedMonthlyTrend.enumerated()), id: \.element.0) { index, monthData in
-                monthDetailRow(month: monthData.0, amount: monthData.1)
-            }
-        }
-    }
-    
-    private func monthDetailRow(month: String, amount: Decimal) -> some View {
-        Button(action: {
-            toggleMonthSelection(month)
-        }) {
-            HStack(spacing: 12) {
-                monthIndicator(month: month)
-                monthInfo(month: month, amount: amount)
-                Spacer()
-                detailsLabel()
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(.thinMaterial)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(monthSelectionBackgroundColor(month: month))
-                        )
-                }
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.white.opacity(selectedMonth == month ? 0.4 : 0.2),
-                                Color.white.opacity(selectedMonth == month ? 0.2 : 0.1)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-            )
-            .scaleEffect(selectedMonth == month ? 1.02 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedMonth)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-    
-    private func toggleMonthSelection(_ month: String) {
-        if selectedMonth == month {
-            selectedMonth = nil
-        } else {
-            selectedMonth = month
-        }
-    }
-    
-    private func monthIndicator(month: String) -> some View {
-        Image(systemName: selectedMonth == month ? "chart.line.uptrend.xyaxis.circle.fill" : "circle.fill")
-            .font(.subheadline.weight(.bold))
-            .foregroundStyle(selectedMonth == month ? Color.blue : Color.secondary.opacity(0.45))
-            .frame(width: 18, height: 18)
-    }
-    
-    private func monthInfo(month: String, amount: Decimal) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(month)
-                .font(.subheadline)
-                .fontWeight(.medium)
-            Text(formatCurrency(amount))
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-    }
-    
-    private func detailsLabel() -> some View {
-        Text("Monthly")
-            .font(.caption)
-            .foregroundColor(.blue)
-    }
-    
-    private func monthSelectionBackgroundColor(month: String) -> Color {
-        return selectedMonth == month ? Color.blue.opacity(0.1) : Color.clear
-    }
-    
     // MARK: - Empty Chart View
     
     @ViewBuilder
@@ -563,6 +445,359 @@ struct DashboardChartsView: View {
     private func monthAxisLabel(_ month: String) -> String {
         let parts = month.split(separator: " ")
         return parts.first.map(String.init) ?? month
+    }
+}
+
+private struct DimensionalDonutCenter: View {
+    let title: String
+    let amount: String
+    let subtitle: String
+    let tint: Color
+
+    var body: some View {
+        VStack(spacing: 5) {
+            Text(title)
+                .font(AppDesignSystem.Typography.caption.weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                .lineLimit(1)
+
+            Text(amount)
+                .font(.system(.title3, design: .rounded).weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.68)
+
+            Text(subtitle)
+                .font(AppDesignSystem.Typography.caption2.weight(.semibold))
+                .foregroundStyle(tint)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .frame(width: 124, height: 104)
+        .background(
+            ZStack {
+                Circle()
+                    .fill(.ultraThinMaterial)
+
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                tint.opacity(0.16),
+                                AppDesignSystem.Colors.elevatedSurface.opacity(0.22)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+        )
+        .overlay {
+            Circle()
+                .stroke(tint.opacity(0.20), lineWidth: 1)
+        }
+        .shadow(color: tint.opacity(0.16), radius: 14, x: 0, y: 8)
+    }
+}
+
+private struct RefinedMonthlyTrendChart: View {
+    let trend: [(String, Decimal)]
+    @Binding var selectedMonth: String?
+    let maxValue: Double
+    let reveal: Bool
+    let formatCurrency: (Decimal) -> String
+    let monthLabel: (String) -> String
+
+    private var selectedData: (month: String, amount: Decimal)? {
+        guard let selectedMonth else {
+            return trend.last.map { ($0.0, $0.1) }
+        }
+        return trend.first { $0.0 == selectedMonth }.map { ($0.0, $0.1) }
+    }
+
+    private var trendPoints: [MonthlyTrendPoint] {
+        trend.enumerated().map { index, item in
+            let previousAmount = index > 0 ? trend[index - 1].1 : nil
+            return MonthlyTrendPoint(
+                month: item.0,
+                amount: item.1,
+                value: NSDecimalNumber(decimal: item.1).doubleValue * (reveal ? 1 : 0.02),
+                previousAmount: previousAmount,
+                tint: trendColor(current: item.1, previous: previousAmount),
+                isSelected: selectedMonth == nil ? index == trend.indices.last : selectedMonth == item.0
+            )
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 14) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Monthly Spend")
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                        .textCase(.uppercase)
+
+                    Text(selectedData.map { formatCurrency($0.amount) } ?? formatCurrency(.zero))
+                        .font(.system(.title3, design: .rounded).weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                        .lineLimit(1)
+
+                    Text(selectedData?.month ?? "No month selected")
+                        .font(AppDesignSystem.Typography.caption)
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                }
+
+                Spacer()
+
+                HStack(spacing: 6) {
+                    Image(systemName: trendDirectionIcon)
+                        .font(.caption.weight(.bold))
+
+                    Text(latestDeltaLabel)
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                }
+                .foregroundStyle(trendDirectionColor)
+                .padding(.horizontal, 11)
+                .padding(.vertical, 8)
+                .background(trendDirectionColor.opacity(0.12), in: Capsule())
+            }
+
+            trendPlot
+            .frame(height: 224)
+            .animation(.spring(response: 0.55, dampingFraction: 0.86), value: reveal)
+            .animation(.spring(response: 0.34, dampingFraction: 0.84), value: selectedMonth)
+
+            HStack(spacing: 8) {
+                ForEach(Array(trend.enumerated()), id: \.element.0) { index, item in
+                    let previousAmount = index > 0 ? trend[index - 1].1 : nil
+                    let isSelected = selectedMonth == nil ? index == trend.indices.last : selectedMonth == item.0
+                    let tint = trendColor(current: item.1, previous: previousAmount)
+
+                    Button {
+                        withAnimation(.spring(response: 0.34, dampingFraction: 0.84)) {
+                            selectedMonth = selectedMonth == item.0 ? nil : item.0
+                        }
+                    } label: {
+                        TrendMonthSelector(isSelected: isSelected, tint: tint)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(monthLabel(item.0))
+                    .accessibilityValue(formatCurrency(item.1))
+                }
+            }
+            .frame(height: 10)
+            .padding(.horizontal, 4)
+        }
+        .padding(16)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(.thinMaterial)
+
+                LinearGradient(
+                    colors: [
+                        AppDesignSystem.Colors.primary.opacity(0.12),
+                        AppDesignSystem.Colors.info.opacity(0.08),
+                        AppDesignSystem.Colors.elevatedSurface.opacity(0.24)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+            }
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .stroke(Color.white.opacity(0.22), lineWidth: 1)
+        }
+        .shadow(color: AppDesignSystem.Colors.primary.opacity(0.10), radius: 18, x: 0, y: 12)
+    }
+
+    private var trendPlot: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            AppDesignSystem.Colors.elevatedSurface.opacity(0.22),
+                            AppDesignSystem.Colors.primary.opacity(0.05)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            VStack {
+                ForEach(0..<4, id: \.self) { _ in
+                    Rectangle()
+                        .fill(AppDesignSystem.Colors.outline.opacity(0.30))
+                        .frame(height: 1)
+                    Spacer()
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 18)
+
+            GeometryReader { proxy in
+                let plotSize = CGSize(
+                    width: max(proxy.size.width - 24, 1),
+                    height: max(proxy.size.height - 38, 1)
+                )
+                let pathPoints = chartPoints(in: plotSize)
+
+                ZStack(alignment: .topLeading) {
+                    TrendAreaShape(points: pathPoints)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    AppDesignSystem.Colors.primary.opacity(0.26),
+                                    AppDesignSystem.Colors.info.opacity(0.08),
+                                    Color.clear
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+
+                    TrendLineShape(points: pathPoints)
+                        .stroke(
+                            AppDesignSystem.Colors.primary,
+                            style: StrokeStyle(lineWidth: 3.2, lineCap: .round, lineJoin: .round)
+                        )
+
+                    ForEach(trendPoints) { point in
+                        let position = chartPoint(for: point, in: plotSize)
+
+                        Circle()
+                            .fill(point.isSelected ? point.tint : AppDesignSystem.Colors.elevatedSurface)
+                            .frame(width: point.isSelected ? 12 : 8, height: point.isSelected ? 12 : 8)
+                            .overlay {
+                                Circle()
+                                    .stroke(Color.white.opacity(point.isSelected ? 0.70 : 0.32), lineWidth: 1)
+                            }
+                            .shadow(color: point.tint.opacity(point.isSelected ? 0.24 : 0.08), radius: 8, x: 0, y: 4)
+                            .position(position)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 19)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func chartPoints(in size: CGSize) -> [CGPoint] {
+        trendPoints.map { chartPoint(for: $0, in: size) }
+    }
+
+    private func chartPoint(for point: MonthlyTrendPoint, in size: CGSize) -> CGPoint {
+        let index = trendPoints.firstIndex { $0.id == point.id } ?? 0
+        let horizontalStep = trendPoints.count > 1 ? size.width / CGFloat(trendPoints.count - 1) : 0
+        let ratio = maxValue > 0 ? min(max(point.value / maxValue, 0), 1) : 0
+        return CGPoint(
+            x: CGFloat(index) * horizontalStep,
+            y: size.height - (CGFloat(ratio) * size.height)
+        )
+    }
+
+    private var latestDeltaLabel: String {
+        guard trend.count >= 2 else { return "Flat" }
+        return deltaLabel(current: trend[trend.count - 1].1, previous: trend[trend.count - 2].1)
+    }
+
+    private var trendDirectionIcon: String {
+        guard trend.count >= 2 else { return "minus.circle.fill" }
+        let latest = trend[trend.count - 1].1
+        let previous = trend[trend.count - 2].1
+        if latest > previous { return "arrow.up.right.circle.fill" }
+        if latest < previous { return "arrow.down.right.circle.fill" }
+        return "minus.circle.fill"
+    }
+
+    private var trendDirectionColor: Color {
+        guard trend.count >= 2 else { return AppDesignSystem.Colors.info }
+        let latest = trend[trend.count - 1].1
+        let previous = trend[trend.count - 2].1
+        if latest > previous { return AppDesignSystem.Colors.error }
+        if latest < previous { return AppDesignSystem.Colors.success }
+        return AppDesignSystem.Colors.info
+    }
+
+    private func trendColor(current: Decimal, previous: Decimal?) -> Color {
+        guard let previous else { return AppDesignSystem.Colors.primary }
+        if current > previous { return AppDesignSystem.Colors.error }
+        if current < previous { return AppDesignSystem.Colors.success }
+        return AppDesignSystem.Colors.info
+    }
+
+    private func deltaLabel(current: Decimal, previous: Decimal?) -> String {
+        guard let previous, previous > 0 else { return "Base" }
+        let change = ((current - previous) / previous) * 100
+        let value = NSDecimalNumber(decimal: change).doubleValue
+        if abs(value) < 1 { return "Flat" }
+        return String(format: "%@%.0f%%", value > 0 ? "+" : "", value)
+    }
+
+    private struct MonthlyTrendPoint: Identifiable {
+        let month: String
+        let amount: Decimal
+        let value: Double
+        let previousAmount: Decimal?
+        let tint: Color
+        let isSelected: Bool
+
+        var id: String { month }
+    }
+}
+
+private struct TrendLineShape: Shape {
+    let points: [CGPoint]
+
+    func path(in rect: CGRect) -> Path {
+        Path { path in
+            guard let firstPoint = points.first else { return }
+            path.move(to: firstPoint)
+
+            for point in points.dropFirst() {
+                path.addLine(to: point)
+            }
+        }
+    }
+}
+
+private struct TrendAreaShape: Shape {
+    let points: [CGPoint]
+
+    func path(in rect: CGRect) -> Path {
+        Path { path in
+            guard let firstPoint = points.first, let lastPoint = points.last else { return }
+            path.move(to: CGPoint(x: firstPoint.x, y: rect.maxY))
+            path.addLine(to: firstPoint)
+
+            for point in points.dropFirst() {
+                path.addLine(to: point)
+            }
+
+            path.addLine(to: CGPoint(x: lastPoint.x, y: rect.maxY))
+            path.closeSubpath()
+        }
+    }
+}
+
+private struct TrendMonthSelector: View {
+    let isSelected: Bool
+    let tint: Color
+
+    var body: some View {
+        Capsule()
+            .fill(fillColor)
+            .frame(height: isSelected ? 7 : 4)
+    }
+
+    private var fillColor: Color {
+        isSelected ? tint : AppDesignSystem.Colors.outline.opacity(0.40)
     }
 }
 

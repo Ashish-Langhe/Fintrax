@@ -250,7 +250,9 @@ extension View {
     }
 }
 
-#Preview {
-    ContentView()
-        .environmentObject(SettingsManager())
+struct ExpenseTrackerApp_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .environmentObject(SettingsManager())
+    }
 }
