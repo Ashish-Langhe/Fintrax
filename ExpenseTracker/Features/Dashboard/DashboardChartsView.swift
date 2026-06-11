@@ -59,73 +59,14 @@ struct DashboardChartsView: View {
     @ViewBuilder
     private var pieChartView: some View {
         if !optimizedCategoryBreakdown.isEmpty {
-            ZStack {
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                AppDesignSystem.Colors.elevatedSurface.opacity(0.62),
-                                AppDesignSystem.Colors.surfaceVariant.opacity(0.22)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 26, style: .continuous)
-                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
-                    }
-                    .shadow(color: AppDesignSystem.Colors.primary.opacity(0.10), radius: 18, x: 0, y: 12)
-
-                VStack(spacing: 0) {
-                    ZStack {
-                        chartDepthLayer
-                            .frame(height: 250)
-                            .offset(y: 14)
-                            .blur(radius: 0.2)
-                            .opacity(0.72)
-
-                        Chart {
-                            ForEach(0..<optimizedCategoryBreakdown.count, id: \.self) { index in
-                                let (category, amount) = optimizedCategoryBreakdown[index]
-                                let isSelected = selectedCategory == nil || selectedCategory?.id == category.id
-
-                                SectorMark(
-                                    angle: .value("Amount", NSDecimalNumber(decimal: amount).doubleValue * (chartReveal ? 1 : 0.001)),
-                                    innerRadius: .ratio(0.58),
-                                    outerRadius: .ratio(selectedCategory?.id == category.id ? 1.0 : 0.93),
-                                    angularInset: isSelected ? 1.1 : 2.2
-                                )
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [
-                                            category.displayColor.opacity(isSelected ? 1.0 : 0.42),
-                                            category.displayColor.opacity(isSelected ? 0.70 : 0.28)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                            }
-                        }
-                        .chartLegend(.hidden)
-                        .chartAngleSelection(value: $selectedCategoryAngle)
-                        .frame(height: 250)
-                        .shadow(color: Color.black.opacity(0.10), radius: 10, x: 0, y: 8)
-
-                        DimensionalDonutCenter(
-                            title: selectedCategory?.name ?? "Total",
-                            amount: selectedCategorySummary,
-                            subtitle: selectedCategory == nil ? "\(dashboardData.totalTransactions) expenses" : selectedCategoryPercentLabel,
-                            tint: selectedCategory?.displayColor ?? AppDesignSystem.Colors.primary
-                        )
-                    }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-            }
-            .scaleEffect(chartReveal ? 1 : 0.96)
-            .opacity(chartReveal ? 1 : 0)
+            CategoryBreakdownDonut(
+                breakdown: optimizedCategoryBreakdown,
+                selectedCategory: selectedCategory,
+                selectedAmount: selectedCategorySummary,
+                subtitle: selectedCategory == nil ? "\(dashboardData.totalTransactions) expenses" : selectedCategoryPercentLabel,
+                totalAmount: dashboardData.totalSpending,
+                selectedAngle: $selectedCategoryAngle
+            )
             .onChange(of: selectedCategoryAngle) { _, newValue in
                 withAnimation(.spring(response: 0.34, dampingFraction: 0.84)) {
                     selectedCategory = category(forAngle: newValue)
@@ -137,33 +78,6 @@ struct DashboardChartsView: View {
         } else {
             emptyChartView("No Categories", "Add expenses with different categories to see the breakdown")
         }
-    }
-
-    private var chartDepthLayer: some View {
-        Chart {
-            ForEach(0..<optimizedCategoryBreakdown.count, id: \.self) { index in
-                let (_, amount) = optimizedCategoryBreakdown[index]
-
-                SectorMark(
-                    angle: .value("Amount", NSDecimalNumber(decimal: amount).doubleValue),
-                    innerRadius: .ratio(0.58),
-                    outerRadius: .ratio(0.94),
-                    angularInset: 2.0
-                )
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [
-                            Color.black.opacity(0.18),
-                            Color.black.opacity(0.05)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-            }
-        }
-        .chartLegend(.hidden)
-        .allowsHitTesting(false)
     }
     
     private func annotationText(for amount: Decimal) -> some View {
@@ -448,7 +362,67 @@ struct DashboardChartsView: View {
     }
 }
 
-private struct DimensionalDonutCenter: View {
+private struct CategoryBreakdownDonut: View {
+    let breakdown: [(Category, Decimal)]
+    let selectedCategory: Category?
+    let selectedAmount: String
+    let subtitle: String
+    let totalAmount: Decimal
+    @Binding var selectedAngle: Double?
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            AppDesignSystem.Colors.elevatedSurface.opacity(0.66),
+                            AppDesignSystem.Colors.surfaceVariant.opacity(0.24)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                }
+                .shadow(color: AppDesignSystem.Colors.primary.opacity(0.10), radius: 18, x: 0, y: 12)
+
+            Chart {
+                ForEach(Array(breakdown.enumerated()), id: \.element.0.id) { _, item in
+                    let category = item.0
+                    let amount = item.1
+                    let isSelected = selectedCategory == nil || selectedCategory?.id == category.id
+
+                    SectorMark(
+                        angle: .value("Amount", NSDecimalNumber(decimal: amount).doubleValue),
+                        innerRadius: .ratio(0.60),
+                        outerRadius: .ratio(selectedCategory?.id == category.id ? 0.98 : 0.92),
+                        angularInset: 1.8
+                    )
+                    .foregroundStyle(category.displayColor.opacity(isSelected ? 0.96 : 0.34))
+                }
+            }
+            .chartLegend(.hidden)
+            .chartAngleSelection(value: $selectedAngle)
+            .frame(height: 236)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+
+            DonutCenterSummary(
+                title: selectedCategory?.name ?? "Total",
+                amount: selectedAmount,
+                subtitle: subtitle,
+                tint: selectedCategory?.displayColor ?? AppDesignSystem.Colors.primary
+            )
+        }
+        .padding(.horizontal, 2)
+        .padding(.vertical, 6)
+    }
+}
+
+private struct DonutCenterSummary: View {
     let title: String
     let amount: String
     let subtitle: String
@@ -564,31 +538,16 @@ private struct RefinedMonthlyTrendChart: View {
                 .background(trendDirectionColor.opacity(0.12), in: Capsule())
             }
 
-            trendPlot
-            .frame(height: 224)
+            MonthlyTrendPlot(
+                points: trendPoints,
+                maxValue: max(maxValue, 1),
+                selectedMonth: $selectedMonth,
+                formatCurrency: formatCurrency,
+                monthLabel: monthLabel
+            )
+            .frame(height: 288)
             .animation(.spring(response: 0.55, dampingFraction: 0.86), value: reveal)
             .animation(.spring(response: 0.34, dampingFraction: 0.84), value: selectedMonth)
-
-            HStack(spacing: 8) {
-                ForEach(Array(trend.enumerated()), id: \.element.0) { index, item in
-                    let previousAmount = index > 0 ? trend[index - 1].1 : nil
-                    let isSelected = selectedMonth == nil ? index == trend.indices.last : selectedMonth == item.0
-                    let tint = trendColor(current: item.1, previous: previousAmount)
-
-                    Button {
-                        withAnimation(.spring(response: 0.34, dampingFraction: 0.84)) {
-                            selectedMonth = selectedMonth == item.0 ? nil : item.0
-                        }
-                    } label: {
-                        TrendMonthSelector(isSelected: isSelected, tint: tint)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(monthLabel(item.0))
-                    .accessibilityValue(formatCurrency(item.1))
-                }
-            }
-            .frame(height: 10)
-            .padding(.horizontal, 4)
         }
         .padding(16)
         .background(
@@ -613,93 +572,6 @@ private struct RefinedMonthlyTrendChart: View {
                 .stroke(Color.white.opacity(0.22), lineWidth: 1)
         }
         .shadow(color: AppDesignSystem.Colors.primary.opacity(0.10), radius: 18, x: 0, y: 12)
-    }
-
-    private var trendPlot: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            AppDesignSystem.Colors.elevatedSurface.opacity(0.22),
-                            AppDesignSystem.Colors.primary.opacity(0.05)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-
-            VStack {
-                ForEach(0..<4, id: \.self) { _ in
-                    Rectangle()
-                        .fill(AppDesignSystem.Colors.outline.opacity(0.30))
-                        .frame(height: 1)
-                    Spacer()
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 18)
-
-            GeometryReader { proxy in
-                let plotSize = CGSize(
-                    width: max(proxy.size.width - 24, 1),
-                    height: max(proxy.size.height - 38, 1)
-                )
-                let pathPoints = chartPoints(in: plotSize)
-
-                ZStack(alignment: .topLeading) {
-                    TrendAreaShape(points: pathPoints)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    AppDesignSystem.Colors.primary.opacity(0.26),
-                                    AppDesignSystem.Colors.info.opacity(0.08),
-                                    Color.clear
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-
-                    TrendLineShape(points: pathPoints)
-                        .stroke(
-                            AppDesignSystem.Colors.primary,
-                            style: StrokeStyle(lineWidth: 3.2, lineCap: .round, lineJoin: .round)
-                        )
-
-                    ForEach(trendPoints) { point in
-                        let position = chartPoint(for: point, in: plotSize)
-
-                        Circle()
-                            .fill(point.isSelected ? point.tint : AppDesignSystem.Colors.elevatedSurface)
-                            .frame(width: point.isSelected ? 12 : 8, height: point.isSelected ? 12 : 8)
-                            .overlay {
-                                Circle()
-                                    .stroke(Color.white.opacity(point.isSelected ? 0.70 : 0.32), lineWidth: 1)
-                            }
-                            .shadow(color: point.tint.opacity(point.isSelected ? 0.24 : 0.08), radius: 8, x: 0, y: 4)
-                            .position(position)
-                    }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 19)
-            }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-
-    private func chartPoints(in size: CGSize) -> [CGPoint] {
-        trendPoints.map { chartPoint(for: $0, in: size) }
-    }
-
-    private func chartPoint(for point: MonthlyTrendPoint, in size: CGSize) -> CGPoint {
-        let index = trendPoints.firstIndex { $0.id == point.id } ?? 0
-        let horizontalStep = trendPoints.count > 1 ? size.width / CGFloat(trendPoints.count - 1) : 0
-        let ratio = maxValue > 0 ? min(max(point.value / maxValue, 0), 1) : 0
-        return CGPoint(
-            x: CGFloat(index) * horizontalStep,
-            y: size.height - (CGFloat(ratio) * size.height)
-        )
     }
 
     private var latestDeltaLabel: String {
@@ -740,7 +612,7 @@ private struct RefinedMonthlyTrendChart: View {
         return String(format: "%@%.0f%%", value > 0 ? "+" : "", value)
     }
 
-    private struct MonthlyTrendPoint: Identifiable {
+    fileprivate struct MonthlyTrendPoint: Identifiable {
         let month: String
         let amount: Decimal
         let value: Double
@@ -786,18 +658,279 @@ private struct TrendAreaShape: Shape {
     }
 }
 
-private struct TrendMonthSelector: View {
-    let isSelected: Bool
+private struct MonthlyTrendPlot: View {
+    let points: [RefinedMonthlyTrendChart.MonthlyTrendPoint]
+    let maxValue: Double
+    @Binding var selectedMonth: String?
+    let formatCurrency: (Decimal) -> String
+    let monthLabel: (String) -> String
+
+    var body: some View {
+        VStack(spacing: 10) {
+            GeometryReader { proxy in
+                let plotRect = CGRect(
+                    x: 54,
+                    y: 18,
+                    width: max(proxy.size.width - 68, 1),
+                    height: max(proxy.size.height - 34, 1)
+                )
+                let chartPoints = positionedPoints(in: plotRect)
+
+                ZStack {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    AppDesignSystem.Colors.elevatedSurface.opacity(0.26),
+                                    AppDesignSystem.Colors.primary.opacity(0.05)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+
+                    gridLines(in: plotRect)
+                    yAxisLabels(in: plotRect)
+
+                    TrendAreaShape(points: chartPoints)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    AppDesignSystem.Colors.primary.opacity(0.24),
+                                    AppDesignSystem.Colors.info.opacity(0.08),
+                                    Color.clear
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+
+                    TrendLineShape(points: chartPoints)
+                        .stroke(
+                            AppDesignSystem.Colors.primary,
+                            style: StrokeStyle(lineWidth: 3.4, lineCap: .round, lineJoin: .round)
+                        )
+
+                    ForEach(Array(points.enumerated()), id: \.element.id) { index, point in
+                        let position = chartPoints[safe: index] ?? .zero
+
+                        Button {
+                            withAnimation(.spring(response: 0.34, dampingFraction: 0.84)) {
+                                selectedMonth = selectedMonth == point.month ? nil : point.month
+                            }
+                        } label: {
+                            Circle()
+                                .fill(point.isSelected ? point.tint : AppDesignSystem.Colors.elevatedSurface)
+                                .frame(width: point.isSelected ? 13 : 9, height: point.isSelected ? 13 : 9)
+                                .overlay {
+                                    Circle()
+                                        .stroke(Color.white.opacity(point.isSelected ? 0.75 : 0.35), lineWidth: 1)
+                                }
+                                .shadow(color: point.tint.opacity(point.isSelected ? 0.26 : 0.08), radius: 8, x: 0, y: 4)
+                        }
+                        .buttonStyle(.plain)
+                        .position(position)
+                        .accessibilityLabel(monthLabel(point.month))
+                        .accessibilityValue(formatCurrency(point.amount))
+                    }
+
+                    if let selectedIndex = selectedPointIndex,
+                       let selectedPoint = points[safe: selectedIndex],
+                       let position = chartPoints[safe: selectedIndex] {
+                        SelectedTrendMarker(
+                            amount: formatCurrency(selectedPoint.amount),
+                            delta: deltaLabel(for: selectedPoint),
+                            tint: selectedPoint.tint
+                        )
+                        .position(x: min(max(position.x, 92), proxy.size.width - 54), y: max(position.y - 30, 24))
+
+                        Rectangle()
+                            .fill(selectedPoint.tint.opacity(0.22))
+                            .frame(width: 1, height: plotRect.height)
+                            .position(x: position.x, y: plotRect.midY)
+                    }
+                }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            selectClosestMonth(to: value.location.x, in: plotRect)
+                        }
+                )
+            }
+            .frame(maxWidth: .infinity)
+
+            HStack(spacing: 0) {
+                ForEach(points) { point in
+                    Text(monthLabel(point.month))
+                        .font(AppDesignSystem.Typography.caption2.weight(point.isSelected ? .bold : .semibold))
+                        .foregroundStyle(point.isSelected ? point.tint : AppDesignSystem.Colors.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.horizontal, 6)
+
+            MonthlyTrendKeyValues(
+                average: formatCurrency(averageAmount),
+                peak: peakPoint.map { formatCurrency($0.amount) } ?? formatCurrency(.zero),
+                low: lowPoint.map { formatCurrency($0.amount) } ?? formatCurrency(.zero)
+            )
+        }
+    }
+
+    private var selectedPointIndex: Int? {
+        guard let selectedMonth else { return points.indices.last }
+        return points.firstIndex { $0.month == selectedMonth }
+    }
+
+    private var averageAmount: Decimal {
+        guard !points.isEmpty else { return .zero }
+        let total = points.reduce(Decimal.zero) { $0 + $1.amount }
+        return total / Decimal(points.count)
+    }
+
+    private var peakPoint: RefinedMonthlyTrendChart.MonthlyTrendPoint? {
+        points.max { $0.amount < $1.amount }
+    }
+
+    private var lowPoint: RefinedMonthlyTrendChart.MonthlyTrendPoint? {
+        points.min { $0.amount < $1.amount }
+    }
+
+    private func positionedPoints(in rect: CGRect) -> [CGPoint] {
+        guard !points.isEmpty else { return [] }
+
+        return points.enumerated().map { index, point in
+            let x: CGFloat
+            if points.count == 1 {
+                x = rect.midX
+            } else {
+                x = rect.minX + (CGFloat(index) / CGFloat(points.count - 1)) * rect.width
+            }
+
+            let ratio = maxValue > 0 ? min(max(point.value / maxValue, 0), 1) : 0
+            let y = rect.maxY - CGFloat(ratio) * rect.height
+            return CGPoint(x: x, y: y)
+        }
+    }
+
+    private func gridLines(in rect: CGRect) -> some View {
+        Path { path in
+            for index in 0..<4 {
+                let y = rect.minY + rect.height * CGFloat(index) / 3
+                path.move(to: CGPoint(x: rect.minX, y: y))
+                path.addLine(to: CGPoint(x: rect.maxX, y: y))
+            }
+        }
+        .stroke(AppDesignSystem.Colors.outline.opacity(0.28), style: StrokeStyle(lineWidth: 1, dash: [4, 6]))
+    }
+
+    private func yAxisLabels(in rect: CGRect) -> some View {
+        ZStack(alignment: .topLeading) {
+            yAxisLabel(formatCurrency(Decimal(maxValue)), y: rect.minY - 8)
+            yAxisLabel(formatCurrency(Decimal(maxValue / 2)), y: rect.midY - 8)
+            yAxisLabel(formatCurrency(.zero), y: rect.maxY - 8)
+        }
+    }
+
+    private func yAxisLabel(_ value: String, y: CGFloat) -> some View {
+        Text(value)
+            .font(AppDesignSystem.Typography.caption2)
+            .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.62)
+            .frame(width: 46, alignment: .trailing)
+            .position(x: 25, y: y + 8)
+    }
+
+    private func deltaLabel(for point: RefinedMonthlyTrendChart.MonthlyTrendPoint) -> String {
+        guard let previous = point.previousAmount, previous > 0 else { return "Base" }
+        let change = ((point.amount - previous) / previous) * 100
+        let value = NSDecimalNumber(decimal: change).doubleValue
+        if abs(value) < 1 { return "Flat" }
+        return String(format: "%@%.0f%%", value > 0 ? "+" : "", value)
+    }
+
+    private func selectClosestMonth(to xPosition: CGFloat, in rect: CGRect) {
+        guard !points.isEmpty else { return }
+
+        let clampedX = min(max(xPosition, rect.minX), rect.maxX)
+        let ratio = rect.width > 0 ? (clampedX - rect.minX) / rect.width : 0
+        let rawIndex = ratio * CGFloat(max(points.count - 1, 0))
+        let index = min(max(Int(rawIndex.rounded()), 0), points.count - 1)
+        selectedMonth = points[index].month
+    }
+}
+
+private struct SelectedTrendMarker: View {
+    let amount: String
+    let delta: String
     let tint: Color
 
     var body: some View {
-        Capsule()
-            .fill(fillColor)
-            .frame(height: isSelected ? 7 : 4)
-    }
+        HStack(spacing: 6) {
+            Text(amount)
+                .font(AppDesignSystem.Typography.caption.weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-    private var fillColor: Color {
-        isSelected ? tint : AppDesignSystem.Colors.outline.opacity(0.40)
+            Text(delta)
+                .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                .foregroundStyle(tint)
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, in: Capsule())
+        .overlay {
+            Capsule()
+                .stroke(tint.opacity(0.28), lineWidth: 1)
+        }
+        .shadow(color: tint.opacity(0.14), radius: 9, x: 0, y: 5)
+    }
+}
+
+private struct MonthlyTrendKeyValues: View {
+    let average: String
+    let peak: String
+    let low: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            TrendKeyValue(title: "Avg", value: average, tint: AppDesignSystem.Colors.info)
+            TrendKeyValue(title: "Peak", value: peak, tint: AppDesignSystem.Colors.error)
+            TrendKeyValue(title: "Low", value: low, tint: AppDesignSystem.Colors.success)
+        }
+    }
+}
+
+private struct TrendKeyValue: View {
+    let title: String
+    let value: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Circle()
+                .fill(tint)
+                .frame(width: 6, height: 6)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(AppDesignSystem.Typography.caption2.weight(.semibold))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+
+                Text(value)
+                    .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.34), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
 
