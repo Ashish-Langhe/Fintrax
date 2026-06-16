@@ -37,7 +37,7 @@ struct DashboardChartsView: View {
                     barChartView
                 }
             }
-            .frame(height: selectedChartType == .pie ? 292 : 330)
+            .frame(height: selectedChartType == .pie ? 292 : 420)
             .chartBackground { _ in
                 Color.clear
             }
@@ -505,7 +505,7 @@ private struct RefinedMonthlyTrendChart: View {
     }
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 16) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Monthly Spend")
@@ -545,7 +545,7 @@ private struct RefinedMonthlyTrendChart: View {
                 formatCurrency: formatCurrency,
                 monthLabel: monthLabel
             )
-            .frame(height: 288)
+            .frame(height: 314)
             .animation(.spring(response: 0.55, dampingFraction: 0.86), value: reveal)
             .animation(.spring(response: 0.34, dampingFraction: 0.84), value: selectedMonth)
         }
@@ -670,9 +670,9 @@ private struct MonthlyTrendPlot: View {
             GeometryReader { proxy in
                 let plotRect = CGRect(
                     x: 54,
-                    y: 18,
+                    y: 44,
                     width: max(proxy.size.width - 68, 1),
-                    height: max(proxy.size.height - 34, 1)
+                    height: max(proxy.size.height - 66, 1)
                 )
                 let chartPoints = positionedPoints(in: plotRect)
 
@@ -742,7 +742,7 @@ private struct MonthlyTrendPlot: View {
                             delta: deltaLabel(for: selectedPoint),
                             tint: selectedPoint.tint
                         )
-                        .position(x: min(max(position.x, 92), proxy.size.width - 54), y: max(position.y - 30, 24))
+                        .position(x: min(max(position.x, 92), proxy.size.width - 54), y: max(position.y - 34, 24))
 
                         Rectangle()
                             .fill(selectedPoint.tint.opacity(0.22))

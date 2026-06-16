@@ -105,7 +105,7 @@ struct AnalyticsView: View {
     }
 
     private func chartExplorer(_ dashboard: DashboardData) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 18) {
             HStack {
                 Label("Explore", systemImage: "chart.pie.fill")
                     .font(AppDesignSystem.Typography.headline)
@@ -129,6 +129,7 @@ struct AnalyticsView: View {
                     showingCategoryDetail = true
                 }
             )
+            .padding(.top, viewModel.selectedChartType == .bar ? 10 : 0)
         }
         .padding(16)
         .analyticsPanel(accent: AppDesignSystem.Colors.primary)
