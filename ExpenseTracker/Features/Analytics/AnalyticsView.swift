@@ -30,8 +30,8 @@ struct AnalyticsView: View {
                             formatCurrency: viewModel.formatCurrency
                         )
                     }
+                    analyticsStorySection(dashboard)
                     chartExplorer(dashboard)
-                    analyticsSummary(dashboard)
                     topCategoriesSection(dashboard)
                     recentEventsSection(dashboard)
                 } else {
@@ -104,12 +104,143 @@ struct AnalyticsView: View {
         .analyticsPanel(accent: AppDesignSystem.Colors.info)
     }
 
+    private func analyticsStorySection(_ dashboard: DashboardData) -> some View {
+        let averageSpend = dashboard.totalTransactions > 0
+            ? dashboard.totalSpending / Decimal(dashboard.totalTransactions)
+            : Decimal.zero
+        let topCategory = dashboard.categoryBreakdown.first
+        let topShare = topCategory.map { dashboard.getCategorySpendingPercentage(for: $0.0) * 100 } ?? 0
+        let netFlow = viewModel.selectedRangeNetCashFlow
+        let netFlowPositive = netFlow >= 0
+
+        return VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(AppDesignSystem.Gradients.primary)
+                        .frame(width: 58, height: 58)
+
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Spending Story")
+                        .font(AppDesignSystem.Typography.title3)
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+
+                    Text(storySubtitle(for: dashboard, topCategory: topCategory, topShare: topShare))
+                        .font(AppDesignSystem.Typography.footnote)
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 0)
+
+                Text(viewModel.selectedDateRange.rawValue)
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(AppDesignSystem.Colors.primary.opacity(0.12), in: Capsule())
+            }
+
+            HStack(alignment: .lastTextBaseline, spacing: 8) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Total Spend")
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                        .textCase(.uppercase)
+
+                    Text(viewModel.formatCurrency(dashboard.totalSpending))
+                        .font(.system(.title, design: .rounded).weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.68)
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 3) {
+                    Text("Net Balance")
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                        .textCase(.uppercase)
+
+                    Text(viewModel.formatCurrency(netFlow))
+                        .font(AppDesignSystem.Typography.headline)
+                        .foregroundStyle(netFlowPositive ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.error)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                }
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    AnalyticsInsightChip(
+                        title: "Top Category",
+                        value: topCategory?.0.name ?? "None",
+                        detail: topCategory == nil ? "No category data" : String(format: "%.0f%% of spend", topShare),
+                        icon: topCategory?.0.iconName ?? "tag.fill",
+                        tint: topCategory?.0.displayColor ?? AppDesignSystem.Colors.primary
+                    )
+
+                    AnalyticsInsightChip(
+                        title: "Avg Expense",
+                        value: viewModel.formatCurrency(averageSpend),
+                        detail: "Per transaction",
+                        icon: "waveform.path.ecg.rectangle.fill",
+                        tint: AppDesignSystem.Colors.info
+                    )
+
+                    AnalyticsInsightChip(
+                        title: "Transactions",
+                        value: "\(dashboard.totalTransactions)",
+                        detail: dashboard.dateRange.rawValue,
+                        icon: "list.bullet.rectangle.fill",
+                        tint: AppDesignSystem.Colors.primary
+                    )
+
+                    AnalyticsInsightChip(
+                        title: netFlowPositive ? "Healthy Flow" : "Watch Flow",
+                        value: netFlowPositive ? "Positive" : "Negative",
+                        detail: "Income minus spend",
+                        icon: netFlowPositive ? "checkmark.seal.fill" : "exclamationmark.triangle.fill",
+                        tint: netFlowPositive ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.error
+                    )
+                }
+                .padding(.vertical, 2)
+            }
+        }
+        .padding(16)
+        .analyticsPanel(accent: netFlowPositive ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.warning)
+    }
+
+    private func storySubtitle(
+        for dashboard: DashboardData,
+        topCategory: (Category, Decimal)?,
+        topShare: Double
+    ) -> String {
+        guard let topCategory else {
+            return "Add more expenses to uncover category movement and spending concentration."
+        }
+
+        return "\(topCategory.0.name) leads this range at \(String(format: "%.0f%%", topShare)) of spend across \(dashboard.totalTransactions) transactions."
+    }
+
     private func chartExplorer(_ dashboard: DashboardData) -> some View {
         VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                Label("Explore", systemImage: "chart.pie.fill")
-                    .font(AppDesignSystem.Typography.headline)
-                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Label("Visual Explorer", systemImage: "chart.pie.fill")
+                        .font(AppDesignSystem.Typography.headline)
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+
+                    Text("Tap a segment or quick chip to open category detail.")
+                        .font(AppDesignSystem.Typography.caption)
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                }
 
                 Spacer()
             }
@@ -172,42 +303,75 @@ struct AnalyticsView: View {
     }
 
     private func topCategoriesSection(_ dashboard: DashboardData) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Label("Top Categories", systemImage: "tag.fill")
-                .font(AppDesignSystem.Typography.headline)
+        let topCategories = Array(dashboard.categoryBreakdown.prefix(5))
+        let remainingCount = max(dashboard.categoryBreakdown.count - topCategories.count, 0)
 
-            ForEach(dashboard.categoryBreakdown.prefix(5), id: \.0.id) { category, amount in
-                Button {
-                    viewModel.selectCategory(category)
-                    showingCategoryDetail = true
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: category.iconName)
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(category.displayColor)
-                            .frame(width: 38, height: 38)
-                            .background(category.displayColor.opacity(0.13), in: Circle())
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                Label("Category Table", systemImage: "tablecells.fill")
+                    .font(AppDesignSystem.Typography.headline)
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(category.name)
-                                .font(AppDesignSystem.Typography.calloutEmphasized)
-                                .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                Spacer()
 
-                            Text("\(String(format: "%.1f", dashboard.getCategorySpendingPercentage(for: category)))% of spending")
-                                .font(AppDesignSystem.Typography.footnote)
-                                .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                        }
+                Text("Top \(topCategories.count)")
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.warning)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(AppDesignSystem.Colors.warning.opacity(0.12), in: Capsule())
+            }
 
-                        Spacer()
-
-                        Text(viewModel.formatCurrency(amount))
-                            .font(AppDesignSystem.Typography.calloutEmphasized)
-                            .foregroundStyle(AppDesignSystem.Colors.textPrimary)
-                    }
-                    .padding(12)
-                    .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.72), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            VStack(spacing: 0) {
+                HStack {
+                    Text("Category")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text("Spend")
+                        .frame(width: 86, alignment: .trailing)
+                    Text("Share")
+                        .frame(width: 54, alignment: .trailing)
                 }
-                .buttonStyle(.plain)
+                .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                .textCase(.uppercase)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+
+                ForEach(Array(topCategories.enumerated()), id: \.element.0.id) { index, item in
+                    let category = item.0
+                    let amount = item.1
+                    let share = dashboard.getCategorySpendingPercentage(for: category)
+
+                    Button {
+                        viewModel.selectCategory(category)
+                        showingCategoryDetail = true
+                    } label: {
+                        AnalyticsCategoryTableRow(
+                            rank: index + 1,
+                            category: category,
+                            amount: viewModel.formatCurrency(amount),
+                            share: share
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    if index < topCategories.count - 1 {
+                        Divider()
+                            .padding(.leading, 54)
+                    }
+                }
+            }
+            .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(AppDesignSystem.Colors.warning.opacity(0.12), lineWidth: 1)
+            }
+
+            if remainingCount > 0 {
+                Text("+\(remainingCount) more categories included in the chart")
+                    .font(AppDesignSystem.Typography.caption.weight(.medium))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
         }
         .padding(16)
@@ -215,9 +379,11 @@ struct AnalyticsView: View {
     }
 
     private func recentEventsSection(_ dashboard: DashboardData) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let categoryMap = Dictionary(uniqueKeysWithValues: dashboard.categoryBreakdown.map { ($0.0.id, $0.0) })
+
+        return VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("Recent Events", systemImage: "clock.arrow.circlepath")
+                Label("Recent Transactions", systemImage: "receipt.fill")
                     .font(AppDesignSystem.Typography.headline)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
@@ -231,14 +397,165 @@ struct AnalyticsView: View {
                     .background(AppDesignSystem.Colors.info.opacity(0.12), in: Capsule())
             }
 
-            VStack(spacing: 10) {
-                ForEach(dashboard.recentExpenses) { expense in
-                    ExpenseRowView(expense: expense)
+            VStack(spacing: 0) {
+                HStack {
+                    Text("Transaction")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text("Date")
+                        .frame(width: 62, alignment: .trailing)
+                    Text("Amount")
+                        .frame(width: 84, alignment: .trailing)
                 }
+                .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                .textCase(.uppercase)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+
+                ForEach(Array(dashboard.recentExpenses.enumerated()), id: \.element.id) { index, expense in
+                    AnalyticsRecentTransactionRow(
+                        expense: expense,
+                        category: categoryMap[expense.categoryID],
+                        amount: viewModel.formatCurrency(expense.amount)
+                    )
+
+                    if index < dashboard.recentExpenses.count - 1 {
+                        Divider()
+                            .padding(.leading, 48)
+                    }
+                }
+            }
+            .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(AppDesignSystem.Colors.info.opacity(0.12), lineWidth: 1)
             }
         }
         .padding(16)
         .analyticsPanel(accent: AppDesignSystem.Colors.info)
+    }
+
+    private struct AnalyticsCategoryTableRow: View {
+        let rank: Int
+        let category: Category
+        let amount: String
+        let share: Double
+
+        private var shareText: String {
+            String(format: "%.0f%%", share * 100)
+        }
+
+        var body: some View {
+            VStack(spacing: 7) {
+                HStack(spacing: 10) {
+                    Text("\(rank)")
+                        .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                        .foregroundStyle(category.displayColor)
+                        .frame(width: 22, height: 22)
+                        .background(category.displayColor.opacity(0.12), in: Circle())
+
+                    Image(systemName: category.iconName)
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(category.displayColor)
+                        .frame(width: 24, height: 24)
+
+                    Text(category.name)
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.78)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text(amount)
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.68)
+                        .frame(width: 86, alignment: .trailing)
+
+                    Text(shareText)
+                        .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                        .foregroundStyle(category.displayColor)
+                        .frame(width: 54, alignment: .trailing)
+                }
+
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(AppDesignSystem.Colors.surfaceVariant.opacity(0.72))
+
+                        Capsule()
+                            .fill(category.displayColor.gradient)
+                            .frame(width: proxy.size.width * min(max(share, 0), 1))
+                    }
+                }
+                .frame(height: 4)
+                .padding(.leading, 56)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(category.name), \(amount), \(shareText) of spending")
+        }
+    }
+
+    private struct AnalyticsRecentTransactionRow: View {
+        let expense: Expense
+        let category: Category?
+        let amount: String
+
+        private var dateText: String {
+            expense.date.formatted(.dateTime.day().month(.abbreviated))
+        }
+
+        private var iconName: String {
+            category?.iconName ?? "creditcard.fill"
+        }
+
+        private var tint: Color {
+            category?.displayColor ?? AppDesignSystem.Colors.info
+        }
+
+        var body: some View {
+            HStack(spacing: 10) {
+                Image(systemName: iconName)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(tint)
+                    .frame(width: 30, height: 30)
+                    .background(tint.opacity(0.12), in: Circle())
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(expense.title)
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.78)
+
+                    Text(category?.name ?? "Uncategorized")
+                        .font(AppDesignSystem.Typography.caption2.weight(.semibold))
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text(dateText)
+                    .font(AppDesignSystem.Typography.caption2.weight(.semibold))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .frame(width: 62, alignment: .trailing)
+
+                Text(amount)
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.error)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.68)
+                    .frame(width: 84, alignment: .trailing)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(expense.title), \(category?.name ?? "Uncategorized"), \(dateText), \(amount)")
+        }
     }
 
     private var analyticsLoadingView: some View {
@@ -310,6 +627,51 @@ private struct AnalyticsRangeChip: View {
                     .stroke(isSelected ? Color.white.opacity(0.34) : AppDesignSystem.Colors.primary.opacity(0.15), lineWidth: 1)
             }
             .shadow(color: isSelected ? AppDesignSystem.Colors.primary.opacity(0.22) : Color.black.opacity(0.05), radius: 8, x: 0, y: 5)
+    }
+}
+
+private struct AnalyticsInsightChip: View {
+    let title: String
+    let value: String
+    let detail: String
+    let icon: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(tint)
+                .frame(width: 32, height: 32)
+                .background(tint.opacity(0.12), in: Circle())
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .textCase(.uppercase)
+                    .lineLimit(1)
+
+                Text(value)
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.74)
+
+                Text(detail)
+                    .font(AppDesignSystem.Typography.caption2.weight(.medium))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .lineLimit(1)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(width: 172, alignment: .leading)
+        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(tint.opacity(0.12), lineWidth: 1)
+        }
     }
 }
 

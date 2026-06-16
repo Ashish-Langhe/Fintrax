@@ -221,9 +221,39 @@ struct DashboardChartsView: View {
     // MARK: - Pie Chart Legend
     
     private var pieChartLegend: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(optimizedCategoryBreakdown.enumerated()), id: \.element.0.id) { index, categoryData in
-                categoryLegendRow(category: categoryData.0, amount: categoryData.1)
+        let quickCategories = Array(optimizedCategoryBreakdown.prefix(4))
+        let remainingCount = max(optimizedCategoryBreakdown.count - quickCategories.count, 0)
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("Quick Select", systemImage: "hand.tap.fill")
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .textCase(.uppercase)
+
+                Spacer()
+
+                if remainingCount > 0 {
+                    Text("+\(remainingCount)")
+                        .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.primary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 5)
+                        .background(AppDesignSystem.Colors.primary.opacity(0.11), in: Capsule())
+                }
+            }
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                ForEach(quickCategories, id: \.0.id) { categoryData in
+                    categoryLegendRow(category: categoryData.0, amount: categoryData.1)
+                }
+            }
+
+            if remainingCount > 0 {
+                Text("Full category comparison is available in the table below.")
+                    .font(AppDesignSystem.Typography.caption2.weight(.medium))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
         }
     }
@@ -234,25 +264,36 @@ struct DashboardChartsView: View {
         }) {
             HStack(spacing: 12) {
                 categoryColorIndicator(category: category)
-                categoryInfo(category: category, amount: amount)
-                Spacer()
-                categoryPercentage(category: category)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(category.name)
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+
+                    Text(categoryPercentageText(category: category))
+                        .font(AppDesignSystem.Typography.caption2.weight(.semibold))
+                        .foregroundStyle(category.displayColor)
+                }
+
+                Spacer(minLength: 0)
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.vertical, 10)
             .background(
                 ZStack {
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(.thinMaterial)
                         .background(
-                            RoundedRectangle(cornerRadius: 8)
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .fill(selectionBackgroundColor(category: category))
                         )
                 }
             )
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(
                         LinearGradient(
                             gradient: Gradient(colors: [
@@ -269,6 +310,11 @@ struct DashboardChartsView: View {
             .animation(.spring(response: 0.3, dampingFraction: 0.8), value: selectedCategory?.id)
         }
         .buttonStyle(PlainButtonStyle())
+    }
+
+    private func categoryPercentageText(category: Category) -> String {
+        let percentage = dashboardData.getCategorySpendingPercentage(for: category) * 100
+        return String(format: "%.0f%% of spend", percentage)
     }
     
     private func toggleCategorySelection(_ category: Category) {
