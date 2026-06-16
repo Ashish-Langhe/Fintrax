@@ -38,6 +38,9 @@ final class BudgetViewModel {
     /// Number of transactions this month
     private(set) var currentMonthTransactions: Int = 0
 
+    /// Smart guidance generated from current budget pace
+    private(set) var budgetIntelligenceInsights: [BudgetIntelligenceInsight] = []
+
     /// Average current-month transaction amount
     var averageTransactionAmount: Decimal {
         guard currentMonthTransactions > 0 else { return 0 }
@@ -86,11 +89,17 @@ final class BudgetViewModel {
                 budgetStatus = BudgetCalculations.getBudgetStatus(budget.amount, expenses: expensesData)
                 budgetUsagePercentage = BudgetCalculations.calculateBudgetUsagePercentage(budget.amount, expenses: expensesData)
                 recommendedDailySpending = BudgetCalculations.calculateRecommendedDailySpending(budget.amount, expenses: expensesData)
+                budgetIntelligenceInsights = Self.makeBudgetIntelligenceInsights(
+                    budgetAmount: budget.amount,
+                    spentThisMonth: spentThisMonth,
+                    transactionCount: currentMonthTransactions
+                )
             } else {
                 remainingBudget = 0
                 budgetStatus = nil
                 budgetUsagePercentage = 0
                 recommendedDailySpending = nil
+                budgetIntelligenceInsights = []
             }
             
             loadingState = .success(budgetData ?? MonthlyBudget(amount: 0))
@@ -151,6 +160,7 @@ final class BudgetViewModel {
             budgetStatus = nil
             budgetUsagePercentage = 0
             recommendedDailySpending = nil
+            budgetIntelligenceInsights = []
             loadingState = .idle
         } catch {
             loadingState = .failure(error)
@@ -190,6 +200,109 @@ final class BudgetViewModel {
         if case .failure(let error) = loadingState { return error }
         return nil
     }
+
+    private static func makeBudgetIntelligenceInsights(
+        budgetAmount: Decimal,
+        spentThisMonth: Decimal,
+        transactionCount: Int,
+        calendar: Calendar = .current,
+        date: Date = Date()
+    ) -> [BudgetIntelligenceInsight] {
+        guard budgetAmount > 0,
+              let monthRange = calendar.range(of: .day, in: .month, for: date) else {
+            return []
+        }
+
+        let day = calendar.component(.day, from: date)
+        let totalDays = monthRange.count
+        let daysElapsed = max(day, 1)
+        let daysRemaining = max(totalDays - day, 0)
+        let usage = NSDecimalNumber(decimal: spentThisMonth / budgetAmount).doubleValue
+        let expectedUsage = Double(daysElapsed) / Double(max(totalDays, 1))
+        let remaining = budgetAmount - spentThisMonth
+        let currentDailySpend = spentThisMonth / Decimal(daysElapsed)
+        let projectedMonthSpend = currentDailySpend * Decimal(totalDays)
+        let safeDailySpend = daysRemaining > 0 ? max(remaining, .zero) / Decimal(daysRemaining) : .zero
+        let dailyReduction = max(currentDailySpend - safeDailySpend, .zero)
+
+        var insights: [BudgetIntelligenceInsight] = [
+            BudgetIntelligenceInsight(
+                title: "Budget used",
+                message: "\(Int((usage * 100).rounded()))% used with \(daysRemaining) days left this month.",
+                icon: usage >= 1 ? "exclamationmark.triangle.fill" : "gauge.with.dots.needle.67percent",
+                tone: usage >= 1 ? .critical : usage >= 0.8 ? .warning : .positive
+            )
+        ]
+
+        if projectedMonthSpend > budgetAmount {
+            insights.append(
+                BudgetIntelligenceInsight(
+                    title: "Spending pace",
+                    message: "At this pace, month-end spend may reach \(CurrencyFormatter.format(projectedMonthSpend)).",
+                    icon: "speedometer",
+                    tone: .warning
+                )
+            )
+
+            if dailyReduction > 0, daysRemaining > 0 {
+                insights.append(
+                    BudgetIntelligenceInsight(
+                        title: "Daily adjustment",
+                        message: "Reduce daily spend by about \(CurrencyFormatter.format(dailyReduction)) to stay within budget.",
+                        icon: "arrow.down.forward.circle.fill",
+                        tone: .action
+                    )
+                )
+            }
+        } else if usage < expectedUsage {
+            insights.append(
+                BudgetIntelligenceInsight(
+                    title: "Healthy pace",
+                    message: "You are spending slower than the calendar pace for this month.",
+                    icon: "checkmark.seal.fill",
+                    tone: .positive
+                )
+            )
+        } else {
+            insights.append(
+                BudgetIntelligenceInsight(
+                    title: "Watch pace",
+                    message: "Spending is slightly ahead of the calendar pace. Keep daily spend near \(CurrencyFormatter.format(safeDailySpend)).",
+                    icon: "calendar.badge.clock",
+                    tone: .warning
+                )
+            )
+        }
+
+        if transactionCount > 0 {
+            insights.append(
+                BudgetIntelligenceInsight(
+                    title: "Transaction rhythm",
+                    message: "\(transactionCount) entries this month, averaging \(CurrencyFormatter.format(currentDailySpend)) per day.",
+                    icon: "list.bullet.rectangle.fill",
+                    tone: .neutral
+                )
+            )
+        }
+
+        return insights
+    }
+}
+
+struct BudgetIntelligenceInsight: Identifiable, Hashable {
+    enum Tone: Hashable {
+        case positive
+        case warning
+        case critical
+        case action
+        case neutral
+    }
+
+    let id = UUID()
+    let title: String
+    let message: String
+    let icon: String
+    let tone: Tone
 }
 
 // MARK: - BudgetCalculations Extension

@@ -250,6 +250,14 @@ struct BudgetView: View {
     private var spendingInsightsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             BudgetSectionHeader(title: "Spending Insights", icon: "chart.bar.xaxis", tint: .blue)
+
+            if !viewModel.budgetIntelligenceInsights.isEmpty {
+                VStack(spacing: 10) {
+                    ForEach(viewModel.budgetIntelligenceInsights) { insight in
+                        BudgetIntelligenceRow(insight: insight)
+                    }
+                }
+            }
             
             LazyVGrid(columns: [
                 GridItem(.flexible()),
@@ -398,6 +406,54 @@ private struct BudgetStatusCard: View {
             return .orange
         case .exceededLimit:
             return .red
+        }
+    }
+}
+
+private struct BudgetIntelligenceRow: View {
+    let insight: BudgetIntelligenceInsight
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: insight.icon)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(tint)
+                .frame(width: 34, height: 34)
+                .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(insight.title)
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+
+                Text(insight.message)
+                    .font(AppDesignSystem.Typography.caption)
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(tint.opacity(0.07), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(tint.opacity(0.14), lineWidth: 1)
+        }
+    }
+
+    private var tint: Color {
+        switch insight.tone {
+        case .positive:
+            return AppDesignSystem.Colors.success
+        case .warning:
+            return AppDesignSystem.Colors.warning
+        case .critical:
+            return AppDesignSystem.Colors.error
+        case .action:
+            return AppDesignSystem.Colors.primary
+        case .neutral:
+            return AppDesignSystem.Colors.info
         }
     }
 }

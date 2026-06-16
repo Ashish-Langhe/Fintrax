@@ -389,16 +389,17 @@ struct PDFReportView: View {
     @State private var selectedCategoryID: UUID?
     @State private var categories: [Category] = []
     @State private var reportURL: URL?
+    @State private var csvURL: URL?
     @State private var previewItem: PDFPreviewItem?
     @State private var isExporting = false
     @State private var message: String?
 
     var body: some View {
-        FinanceScreen(title: "PDF Report", subtitle: "Create a visual report with analytics graphs, income, spending, and upcoming bills.", icon: "doc.richtext.fill", tint: AppDesignSystem.Colors.info) {
+        FinanceScreen(title: "Export Reports", subtitle: "Create PDF summaries or CSV files for monthly review, sharing, and analysis.", icon: "doc.richtext.fill", tint: AppDesignSystem.Colors.info) {
             FinanceSummaryCard(
-                title: "Visual Report",
-                value: "PDF + Charts",
-                subtitle: "Includes category and monthly trend analytics",
+                title: "Report Center",
+                value: "PDF + CSV",
+                subtitle: "Includes totals, income, categories, trends, and transactions",
                 icon: "chart.bar.doc.horizontal.fill",
                 tint: AppDesignSystem.Colors.info
             )
@@ -426,7 +427,7 @@ struct PDFReportView: View {
                 }
                 .pickerStyle(.menu)
 
-                Text(selectedCategoryID.flatMap(categoryName(for:)).map { "PDF will include only \($0) expenses for the selected period." } ?? "PDF will include all expenses for the selected period.")
+                Text(selectedCategoryID.flatMap(categoryName(for:)).map { "Exports will include only \($0) expenses for the selected period." } ?? "Exports will include all expenses for the selected period.")
                     .font(AppDesignSystem.Typography.footnote)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -451,6 +452,27 @@ struct PDFReportView: View {
             .buttonStyle(.plain)
             .disabled(isExporting)
 
+            Button {
+                Task { await exportCSV() }
+            } label: {
+                HStack {
+                    Image(systemName: isExporting ? "hourglass" : "tablecells.fill")
+                    Text(isExporting ? "Creating Export..." : "Create CSV Export")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+                .font(AppDesignSystem.Typography.calloutEmphasized)
+                .foregroundStyle(AppDesignSystem.Colors.primary)
+                .padding()
+                .background(AppDesignSystem.Colors.elevatedSurface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(AppDesignSystem.Colors.primary.opacity(0.14), lineWidth: 1)
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(isExporting)
+
             if let reportURL {
                 Button {
                     previewItem = PDFPreviewItem(url: reportURL)
@@ -464,6 +486,23 @@ struct PDFReportView: View {
                     }
                     .font(AppDesignSystem.Typography.calloutEmphasized)
                     .foregroundStyle(AppDesignSystem.Colors.primary)
+                    .padding()
+                    .background(AppDesignSystem.Colors.elevatedSurface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+
+            if let csvURL {
+                ShareLink(item: csvURL) {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up.fill")
+                        Text("Share Latest CSV")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.bold))
+                    }
+                    .font(AppDesignSystem.Typography.calloutEmphasized)
+                    .foregroundStyle(AppDesignSystem.Colors.success)
                     .padding()
                     .background(AppDesignSystem.Colors.elevatedSurface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
@@ -484,11 +523,13 @@ struct PDFReportView: View {
         }
         .onChange(of: selectedRange) { _, _ in
             reportURL = nil
+            csvURL = nil
             previewItem = nil
             message = nil
         }
         .onChange(of: selectedCategoryID) { _, _ in
             reportURL = nil
+            csvURL = nil
             previewItem = nil
             message = nil
         }
@@ -525,6 +566,28 @@ struct PDFReportView: View {
             reportURL = url
             previewItem = PDFPreviewItem(url: url)
             message = selectedCategoryID.flatMap(categoryName(for:)).map { "\($0) PDF report ready to preview." } ?? "PDF report ready to preview."
+        } catch {
+            message = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func exportCSV() async {
+        isExporting = true
+        defer { isExporting = false }
+
+        do {
+            let snapshot = try await repository.loadReportSnapshot()
+            let scopedExpenses = selectedCategoryID.map { id in
+                snapshot.expenses.filter { $0.categoryID == id }
+            } ?? snapshot.expenses
+            let url = try await ExportService().exportExpensesToCSV(
+                scopedExpenses,
+                dateRange: selectedRange,
+                categories: snapshot.categories
+            )
+            csvURL = url
+            message = selectedCategoryID.flatMap(categoryName(for:)).map { "\($0) CSV export ready to share." } ?? "CSV export ready to share."
         } catch {
             message = error.localizedDescription
         }

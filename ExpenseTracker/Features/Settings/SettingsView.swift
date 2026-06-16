@@ -232,8 +232,8 @@ struct SettingsView: View {
             } label: {
                 SettingsNavigationRow(
                     icon: "doc.richtext.fill",
-                    title: "Export PDF Report",
-                    subtitle: "Create a share-ready financial summary",
+                    title: "Export Reports",
+                    subtitle: "Create share-ready PDF and CSV summaries",
                     tint: AppDesignSystem.Colors.primary
                 )
             }

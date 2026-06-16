@@ -18,6 +18,7 @@ class ExpenseListViewModel: ObservableObject {
     @Published var selectedCategory: UUID?
     @Published var selectedDateRange: DateRangeOption = .allTime
     @Published var searchText = ""
+    @Published private(set) var smartSearchSummary: String?
     @Published var loadingState: LoadingState<Void> = .idle
     @Published var sortOption: SortOption = .dateDescending
     @Published var showingDeleteAlert = false
@@ -144,6 +145,8 @@ class ExpenseListViewModel: ObservableObject {
     @discardableResult
     func applyFilters() -> [Expense] {
         var filtered = expenses
+        let smartQuery = SmartExpenseSearchQuery.parse(searchText, categories: categories)
+        smartSearchSummary = smartQuery.summary
         
         // Apply category filter
         if let selectedCategoryId = selectedCategory {
@@ -152,13 +155,44 @@ class ExpenseListViewModel: ObservableObject {
         
         // Apply date range filter
         filtered = selectedDateRange.filterExpenses(filtered)
+
+        if let dateRange = smartQuery.dateRange {
+            let bounds = dateRange
+            filtered = filtered.filter { $0.date >= bounds.start && $0.date <= bounds.end }
+        }
+
+        if let categoryID = smartQuery.categoryID {
+            filtered = filtered.filter { $0.categoryID == categoryID }
+        }
+
+        if let minimumAmount = smartQuery.minimumAmount {
+            filtered = filtered.filter { $0.amount >= minimumAmount }
+        }
+
+        if let maximumAmount = smartQuery.maximumAmount {
+            filtered = filtered.filter { $0.amount <= maximumAmount }
+        }
         
         // Apply search filter
-        if !searchText.isEmpty {
+        if !smartQuery.keywords.isEmpty {
             filtered = filtered.filter { expense in
-                expense.title.localizedCaseInsensitiveContains(searchText) ||
-                expense.note?.localizedCaseInsensitiveContains(searchText) == true ||
-                categoryName(for: expense.categoryID)?.localizedCaseInsensitiveContains(searchText) == true
+                let searchableText = [
+                    expense.title,
+                    expense.note ?? "",
+                    categoryName(for: expense.categoryID) ?? ""
+                ]
+                .joined(separator: " ")
+                .lowercased()
+
+                return smartQuery.keywords.allSatisfy { searchableText.contains($0) }
+            }
+        } else if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  !smartQuery.hasStructuredFilters {
+            let query = searchText.lowercased()
+            filtered = filtered.filter { expense in
+                expense.title.lowercased().contains(query) ||
+                expense.note?.lowercased().contains(query) == true ||
+                categoryName(for: expense.categoryID)?.lowercased().contains(query) == true
             }
         }
         
@@ -226,6 +260,155 @@ class ExpenseListViewModel: ObservableObject {
                selectedDateRange != .allTime || 
                !searchText.isEmpty ||
                sortOption != .dateDescending
+    }
+}
+
+private struct SmartExpenseSearchQuery {
+    let keywords: [String]
+    let categoryID: UUID?
+    let minimumAmount: Decimal?
+    let maximumAmount: Decimal?
+    let dateRange: (start: Date, end: Date)?
+    let summary: String?
+
+    var hasStructuredFilters: Bool {
+        categoryID != nil || minimumAmount != nil || maximumAmount != nil || dateRange != nil
+    }
+
+    static func parse(_ rawText: String, categories: [Category]) -> SmartExpenseSearchQuery {
+        let normalized = rawText
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+
+        guard !normalized.isEmpty else {
+            return SmartExpenseSearchQuery(keywords: [], categoryID: nil, minimumAmount: nil, maximumAmount: nil, dateRange: nil, summary: nil)
+        }
+
+        let category = categories.first { category in
+            normalized.contains(category.name.lowercased())
+        }
+
+        let amountFilter = parseAmountFilter(normalized)
+        let dateRange = parseDateRange(normalized)
+        let keywords = parseKeywords(normalized, categories: categories)
+
+        var chips: [String] = []
+        if let category {
+            chips.append(category.name)
+        }
+        if let minimum = amountFilter.minimum {
+            chips.append(">= \(CurrencyFormatter.format(minimum))")
+        }
+        if let maximum = amountFilter.maximum {
+            chips.append("<= \(CurrencyFormatter.format(maximum))")
+        }
+        if let label = dateRange.label {
+            chips.append(label)
+        }
+        if !keywords.isEmpty {
+            chips.append(keywords.joined(separator: " "))
+        }
+
+        return SmartExpenseSearchQuery(
+            keywords: keywords,
+            categoryID: category?.id,
+            minimumAmount: amountFilter.minimum,
+            maximumAmount: amountFilter.maximum,
+            dateRange: dateRange.range,
+            summary: chips.isEmpty ? nil : "Smart search: " + chips.joined(separator: " • ")
+        )
+    }
+
+    private static func parseAmountFilter(_ text: String) -> (minimum: Decimal?, maximum: Decimal?) {
+        if let amount = firstAmount(after: ["above", "over", "more than", "greater than", "minimum", "at least"], in: text) {
+            return (amount, nil)
+        }
+        if let amount = firstAmount(after: ["below", "under", "less than", "maximum", "at most"], in: text) {
+            return (nil, amount)
+        }
+        return (nil, nil)
+    }
+
+    private static func firstAmount(after phrases: [String], in text: String) -> Decimal? {
+        for phrase in phrases where text.contains(phrase) {
+            let pattern = "\(NSRegularExpression.escapedPattern(for: phrase))\\s*(?:₹|rs\\.?|inr)?\\s*([0-9]+(?:,[0-9]{2,3})*(?:\\.[0-9]+)?|[0-9]+)"
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else { continue }
+            let range = NSRange(text.startIndex..<text.endIndex, in: text)
+            guard let match = regex.firstMatch(in: text, range: range),
+                  match.numberOfRanges > 1,
+                  let valueRange = Range(match.range(at: 1), in: text) else { continue }
+
+            let value = text[valueRange].replacingOccurrences(of: ",", with: "")
+            if let doubleValue = Double(value) {
+                return Decimal(doubleValue)
+            }
+        }
+        return nil
+    }
+
+    private static func parseDateRange(_ text: String) -> (range: (start: Date, end: Date)?, label: String?) {
+        let calendar = Calendar.current
+        let now = Date()
+
+        if text.contains("last month"),
+           let thisMonth = calendar.dateInterval(of: .month, for: now),
+           let previousMonthStart = calendar.date(byAdding: .month, value: -1, to: thisMonth.start),
+           let previousMonth = calendar.dateInterval(of: .month, for: previousMonthStart) {
+            return ((previousMonth.start, previousMonth.end), "Last month")
+        }
+
+        if text.contains("this month") {
+            let range = DateRangeOption.thisMonth.getDateRange()
+            return (range, "This month")
+        }
+
+        if text.contains("last 30") {
+            let range = DateRangeOption.last30Days.getDateRange()
+            return (range, "Last 30 days")
+        }
+
+        if text.contains("last 7") || text.contains("this week") {
+            let range = DateRangeOption.last7Days.getDateRange()
+            return (range, "Recent")
+        }
+
+        if text.contains("this year") {
+            let range = DateRangeOption.thisYear.getDateRange()
+            return (range, "This year")
+        }
+
+        return (nil, nil)
+    }
+
+    private static func parseKeywords(_ text: String, categories: [Category]) -> [String] {
+        var cleaned = text
+        let removablePhrases = [
+            "show", "expenses", "expense", "payments", "payment", "entries", "entry",
+            "how much", "did i", "i spend", "spent", "spend", "on", "for", "to",
+            "last month", "this month", "last 30 days", "last 30", "last 7 days",
+            "last 7", "this week", "this year", "above", "over", "more than",
+            "greater than", "below", "under", "less than", "minimum", "maximum",
+            "at least", "at most", "rs", "inr"
+        ]
+
+        for category in categories {
+            cleaned = cleaned.replacingOccurrences(of: category.name.lowercased(), with: " ")
+        }
+
+        for phrase in removablePhrases {
+            cleaned = cleaned.replacingOccurrences(of: phrase, with: " ")
+        }
+
+        cleaned = cleaned.replacingOccurrences(of: "₹", with: " ")
+        cleaned = cleaned.replacingOccurrences(of: ".", with: " ")
+        cleaned = cleaned.replacingOccurrences(of: ",", with: " ")
+
+        return cleaned
+            .split(separator: " ")
+            .map(String.init)
+            .filter { token in
+                token.count > 1 && Double(token) == nil
+            }
     }
 }
 
