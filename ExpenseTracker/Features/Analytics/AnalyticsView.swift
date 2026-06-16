@@ -113,25 +113,25 @@ struct AnalyticsView: View {
         let netFlow = viewModel.selectedRangeNetCashFlow
         let netFlowPositive = netFlow >= 0
 
-        return VStack(alignment: .leading, spacing: 16) {
+        return VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 14) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(AppDesignSystem.Gradients.primary)
-                        .frame(width: 58, height: 58)
+                        .frame(width: 44, height: 44)
 
                     Image(systemName: "sparkles")
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                 }
 
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Spending Story")
-                        .font(AppDesignSystem.Typography.title3)
+                        .font(AppDesignSystem.Typography.headline)
                         .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
                     Text(storySubtitle(for: dashboard, topCategory: topCategory, topShare: topShare))
-                        .font(AppDesignSystem.Typography.footnote)
+                        .font(AppDesignSystem.Typography.caption)
                         .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -146,34 +146,20 @@ struct AnalyticsView: View {
                     .background(AppDesignSystem.Colors.primary.opacity(0.12), in: Capsule())
             }
 
-            HStack(alignment: .lastTextBaseline, spacing: 8) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Total Spend")
-                        .font(AppDesignSystem.Typography.caption.weight(.bold))
-                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                        .textCase(.uppercase)
+            HStack(spacing: 10) {
+                AnalyticsStoryMetric(
+                    title: "Total Spend",
+                    value: viewModel.formatCurrency(dashboard.totalSpending),
+                    icon: "creditcard.fill",
+                    tint: AppDesignSystem.Colors.primary
+                )
 
-                    Text(viewModel.formatCurrency(dashboard.totalSpending))
-                        .font(.system(.title, design: .rounded).weight(.bold))
-                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.68)
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 3) {
-                    Text("Net Balance")
-                        .font(AppDesignSystem.Typography.caption.weight(.bold))
-                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                        .textCase(.uppercase)
-
-                    Text(viewModel.formatCurrency(netFlow))
-                        .font(AppDesignSystem.Typography.headline)
-                        .foregroundStyle(netFlowPositive ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.error)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.72)
-                }
+                AnalyticsStoryMetric(
+                    title: "Net Balance",
+                    value: viewModel.formatCurrency(netFlow),
+                    icon: netFlowPositive ? "checkmark.seal.fill" : "exclamationmark.triangle.fill",
+                    tint: netFlowPositive ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.error
+                )
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -264,42 +250,6 @@ struct AnalyticsView: View {
         }
         .padding(16)
         .analyticsPanel(accent: AppDesignSystem.Colors.primary)
-    }
-
-    private func analyticsSummary(_ dashboard: DashboardData) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            AnalyticsStatTile(
-                title: "Total Spend",
-                value: viewModel.formatCurrency(dashboard.totalSpending),
-                subtitle: "\(dashboard.totalTransactions) expenses",
-                icon: "creditcard.fill",
-                tint: AppDesignSystem.Colors.primary
-            )
-
-            AnalyticsStatTile(
-                title: "Average",
-                value: dashboard.totalTransactions > 0 ? viewModel.formatCurrency(dashboard.totalSpending / Decimal(dashboard.totalTransactions)) : viewModel.formatCurrency(0),
-                subtitle: "Per expense",
-                icon: "waveform.path.ecg.rectangle.fill",
-                tint: AppDesignSystem.Colors.info
-            )
-
-            AnalyticsStatTile(
-                title: "Income",
-                value: viewModel.formatCurrency(viewModel.selectedRangeIncome),
-                subtitle: viewModel.selectedDateRange.rawValue,
-                icon: "arrow.down.circle.fill",
-                tint: AppDesignSystem.Colors.success
-            )
-
-            AnalyticsStatTile(
-                title: "Net Flow",
-                value: viewModel.formatCurrency(viewModel.selectedRangeNetCashFlow),
-                subtitle: "Income minus spend",
-                icon: viewModel.selectedRangeNetCashFlow >= 0 ? "chart.line.uptrend.xyaxis.circle.fill" : "chart.line.downtrend.xyaxis.circle.fill",
-                tint: viewModel.selectedRangeNetCashFlow >= 0 ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.error
-            )
-        }
     }
 
     private func topCategoriesSection(_ dashboard: DashboardData) -> some View {
@@ -627,6 +577,47 @@ private struct AnalyticsRangeChip: View {
                     .stroke(isSelected ? Color.white.opacity(0.34) : AppDesignSystem.Colors.primary.opacity(0.15), lineWidth: 1)
             }
             .shadow(color: isSelected ? AppDesignSystem.Colors.primary.opacity(0.22) : Color.black.opacity(0.05), radius: 8, x: 0, y: 5)
+    }
+}
+
+private struct AnalyticsStoryMetric: View {
+    let title: String
+    let value: String
+    let icon: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 9) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(tint)
+                .frame(width: 30, height: 30)
+                .background(tint.opacity(0.12), in: Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .textCase(.uppercase)
+                    .lineLimit(1)
+
+                Text(value)
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.68)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 11)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(tint.opacity(0.12), lineWidth: 1)
+        }
     }
 }
 
