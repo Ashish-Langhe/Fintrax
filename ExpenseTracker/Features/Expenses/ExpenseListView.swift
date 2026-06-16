@@ -192,12 +192,21 @@ struct ExpenseListView: View {
                     period: expenseListPeriod,
                     hasFilters: viewModel.hasActiveFilters()
                 )
-                .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             }
             
-            // Expense items
+            Section {
+                ExpenseFeedHeader(
+                    count: viewModel.filteredCount(),
+                    period: expenseListPeriod
+                )
+                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 6, trailing: 16))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+            }
+
             ForEach(viewModel.filteredExpenses) { expense in
                 ExpenseRow(
                     expense: expense,
@@ -211,7 +220,7 @@ struct ExpenseListView: View {
                         }
                     }
                 )
-                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             }
@@ -235,6 +244,7 @@ struct ExpenseListView: View {
     private var expenseListPeriod: String {
         viewModel.selectedDateRange == .allTime ? "All time" : viewModel.selectedDateRange.rawValue
     }
+
 }
 
 private enum ExpenseDisplayMode: String, CaseIterable, Identifiable {
@@ -276,12 +286,12 @@ private struct ExpenseListSummaryCard: View {
     let hasFilters: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .top, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
                 Image(systemName: hasFilters ? "line.3.horizontal.decrease.circle.fill" : "creditcard.fill")
-                    .font(.title3.weight(.semibold))
+                    .font(.subheadline.weight(.bold))
                     .foregroundStyle(.white)
-                    .frame(width: 46, height: 46)
+                    .frame(width: 38, height: 38)
                     .background(
                         LinearGradient(
                             colors: hasFilters ? [.orange, .pink] : [.blue, .teal],
@@ -293,26 +303,26 @@ private struct ExpenseListSummaryCard: View {
 
                 VStack(alignment: .leading, spacing: 5) {
                     Text(hasFilters ? "Filtered spend" : "Expense activity")
-                        .font(.caption.weight(.semibold))
+                        .font(AppDesignSystem.Typography.caption2.weight(.bold))
                         .foregroundStyle(.secondary)
                         .textCase(.uppercase)
 
                     Text(total)
-                        .font(.system(.title2, design: .rounded).weight(.bold))
+                        .font(AppDesignSystem.Typography.title3)
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
 
                     Text(period)
-                        .font(.caption)
+                        .font(AppDesignSystem.Typography.caption2)
                         .foregroundStyle(.secondary)
                 }
 
                 Spacer(minLength: 8)
 
                 Text("\(count)")
-                    .font(.system(.title3, design: .rounded).weight(.bold))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(Color(.systemBackground).opacity(0.72), in: Capsule())
             }
 
@@ -321,10 +331,10 @@ private struct ExpenseListSummaryCard: View {
                 SummaryMetricPill(title: "Entries", value: count == 1 ? "1 item" : "\(count) items", icon: "list.bullet.rectangle")
             }
         }
-        .padding(18)
+        .padding(14)
         .background(
             ZStack {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(Color(.secondarySystemBackground).opacity(0.92))
 
                 LinearGradient(
@@ -336,14 +346,14 @@ private struct ExpenseListSummaryCard: View {
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color.white.opacity(0.28), lineWidth: 1)
         )
-        .shadow(color: Color.black.opacity(0.10), radius: 18, x: 0, y: 10)
+        .shadow(color: Color.black.opacity(0.07), radius: 12, x: 0, y: 7)
     }
 }
 
@@ -357,7 +367,7 @@ private struct SummaryMetricPill: View {
             Image(systemName: icon)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.blue)
-                .frame(width: 24, height: 24)
+                .frame(width: 22, height: 22)
                 .background(Color.blue.opacity(0.12), in: Circle())
 
             VStack(alignment: .leading, spacing: 2) {
@@ -365,7 +375,7 @@ private struct SummaryMetricPill: View {
                     .font(.caption2.weight(.medium))
                     .foregroundStyle(.secondary)
                 Text(value)
-                    .font(.caption.weight(.semibold))
+                    .font(AppDesignSystem.Typography.caption2.weight(.bold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
             }
@@ -373,7 +383,7 @@ private struct SummaryMetricPill: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 9)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity)
         .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
@@ -864,7 +874,7 @@ struct FilterAndSearchBar: View {
                         .textCase(.uppercase)
 
                     TextField("Food, rent, note, category", text: $searchText)
-                        .font(AppDesignSystem.Typography.calloutEmphasized)
+                        .font(AppDesignSystem.Typography.callout)
                         .foregroundStyle(AppDesignSystem.Colors.textPrimary)
                         .focused($isSearchFocused)
                         .submitLabel(.search)
@@ -980,8 +990,8 @@ struct FilterAndSearchBar: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.top, 10)
-        .padding(.bottom, 14)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
         .background(
             LinearGradient(
                 colors: [
@@ -1139,6 +1149,36 @@ struct EmptyExpenseState: View {
     }
 }
 
+private struct ExpenseFeedHeader: View {
+    let count: Int
+    let period: String
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Transactions")
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                    .textCase(.uppercase)
+
+                Text(period)
+                    .font(AppDesignSystem.Typography.caption2.weight(.medium))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+            }
+
+            Spacer()
+
+            Text(count == 1 ? "1 item" : "\(count) items")
+                .font(AppDesignSystem.Typography.caption.weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.primary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(AppDesignSystem.Colors.primary.opacity(0.10), in: Capsule())
+        }
+        .padding(.horizontal, 2)
+    }
+}
+
 /// Expense row
 struct ExpenseRow: View {
     let expense: Expense
@@ -1147,70 +1187,70 @@ struct ExpenseRow: View {
     let onDelete: () -> Void
     
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [categoryColor, categoryColor.opacity(0.68)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 48, height: 48)
+        HStack(alignment: .top, spacing: 12) {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(categoryColor.opacity(0.13))
+                .frame(width: 40, height: 40)
                 .overlay {
                     Image(systemName: category?.iconName ?? "tag.fill")
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(.white)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(categoryColor)
                 }
             
-            VStack(alignment: .leading, spacing: 8) {
-                Text(expense.title)
-                    .font(.headline)
-                    .lineLimit(1)
-                
-                HStack(spacing: 7) {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(expense.title)
+                        .font(AppDesignSystem.Typography.calloutEmphasized)
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.78)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text(expense.formattedAmount())
+                        .font(AppDesignSystem.Typography.calloutEmphasized)
+                        .foregroundStyle(AppDesignSystem.Colors.error)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.64)
+                        .frame(minWidth: 86, alignment: .trailing)
+                }
+
+                HStack(spacing: 6) {
                     if let category {
-                        ExpenseInfoChip(title: category.name, icon: category.iconName, color: categoryColor)
+                        Text(category.name)
+                            .foregroundStyle(categoryColor)
+
+                        Text("•")
+                            .foregroundStyle(AppDesignSystem.Colors.textTertiary)
                     }
 
-                    ExpenseInfoChip(title: formattedDate, icon: "calendar", color: .secondary)
+                    Text(formattedDate)
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 }
+                .font(AppDesignSystem.Typography.caption.weight(.medium))
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
 
                 if let note = expense.note, !note.isEmpty {
                     Text(note)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(AppDesignSystem.Typography.caption.weight(.medium))
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.78)
                 }
             }
-
-            Spacer(minLength: 8)
-
-            VStack(alignment: .trailing, spacing: 8) {
-                Text(expense.formattedAmount())
-                    .font(.subheadline.weight(.bold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.72)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .background(Color.red.opacity(0.10), in: Capsule())
-                    .foregroundStyle(.red)
-
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-            }
+            .layoutPriority(1)
         }
-        .padding(14)
+        .padding(.horizontal, 13)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.secondarySystemBackground).opacity(0.90))
+            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.78))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color.white.opacity(0.24), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .stroke(categoryColor.opacity(0.10), lineWidth: 1)
         )
-        .shadow(color: Color.black.opacity(0.07), radius: 12, x: 0, y: 7)
+        .shadow(color: Color.black.opacity(0.045), radius: 8, x: 0, y: 4)
         .contentShape(Rectangle())
         .onTapGesture {
             onTap()
@@ -1238,26 +1278,6 @@ struct ExpenseRow: View {
 
     private var formattedDate: String {
         expense.date.formatted(date: .abbreviated, time: .omitted)
-    }
-}
-
-private struct ExpenseInfoChip: View {
-    let title: String
-    let icon: String
-    let color: Color
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.caption2.weight(.bold))
-            Text(title)
-                .lineLimit(1)
-        }
-        .font(.caption2.weight(.medium))
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .background(color.opacity(0.10), in: Capsule())
     }
 }
 
