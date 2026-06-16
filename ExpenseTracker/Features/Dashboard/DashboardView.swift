@@ -510,65 +510,108 @@ private struct DashboardHeroCard: View {
     let transactionCount: Int
     let isPositiveFlow: Bool
 
+    @State private var hasAppeared = false
+    @State private var glowPulse = false
+    @State private var isPressed = false
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 20) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 7) {
-                    Text(period)
-                        .font(AppDesignSystem.Typography.caption.weight(.bold))
-                        .foregroundStyle(.white.opacity(0.78))
-                        .textCase(.uppercase)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "sparkles")
+                            .font(.caption.weight(.bold))
+
+                        Text(period)
+                            .font(AppDesignSystem.Typography.caption.weight(.bold))
+                            .textCase(.uppercase)
+                    }
+                    .foregroundStyle(.white.opacity(0.78))
 
                     Text("Money Snapshot")
-                        .font(AppDesignSystem.Typography.title2)
+                        .font(.system(.title2, design: .rounded).weight(.bold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
+
+                    Text("Current month spending overview")
+                        .font(AppDesignSystem.Typography.footnote.weight(.medium))
+                        .foregroundStyle(.white.opacity(0.68))
                 }
 
                 Spacer()
 
-                Image(systemName: "indianrupeesign.circle.fill")
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 58, height: 58)
-                    .background(Color.white.opacity(0.16), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                ZStack {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Color.white.opacity(0.16))
+                        .frame(width: 58, height: 58)
+
+                    Image(systemName: "indianrupeesign.circle.fill")
+                        .font(.system(size: 31, weight: .bold))
+                        .foregroundStyle(.white)
+                        .symbolEffect(.pulse, value: glowPulse)
+                }
             }
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Total Spent")
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(.white.opacity(0.72))
+                    .textCase(.uppercase)
+
                 Text(spending)
-                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .font(.system(size: 42, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.58)
-
-                Text("\(transactionCount) \(transactionCount == 1 ? "expense" : "expenses") recorded")
-                    .font(AppDesignSystem.Typography.footnote.weight(.medium))
-                    .foregroundStyle(.white.opacity(0.76))
+                    .minimumScaleFactor(0.54)
+                    .contentTransition(.numericText())
             }
 
             HStack(spacing: 10) {
-                Image(systemName: isPositiveFlow ? "arrow.up.right.circle.fill" : "arrow.down.right.circle.fill")
-                    .font(.headline)
-                Text("Net flow \(netFlow)")
+                DashboardHeroMiniStat(
+                    title: "Entries",
+                    value: "\(transactionCount)",
+                    icon: "list.bullet.rectangle.fill",
+                    revealDelay: 0.08
+                )
+
+                DashboardHeroMiniStat(
+                    title: "Net Balance",
+                    value: netFlow,
+                    icon: isPositiveFlow ? "arrow.down.left.circle.fill" : "arrow.up.right.circle.fill",
+                    tint: isPositiveFlow ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.warning,
+                    revealDelay: 0.16
+                )
+            }
+
+            HStack(spacing: 9) {
+                Image(systemName: isPositiveFlow ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+                    .font(.subheadline.weight(.bold))
+
+                Text(isPositiveFlow ? "Income is higher than spending" : "Spending is higher than income")
                     .font(AppDesignSystem.Typography.calloutEmphasized)
+
                 Spacer(minLength: 0)
             }
             .foregroundStyle(.white)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(Color.white.opacity(0.14), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .padding(.horizontal, 13)
+            .padding(.vertical, 11)
+            .background(Color.white.opacity(0.13), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.white.opacity(0.16), lineWidth: 1)
+            }
         }
-        .padding(20)
+        .padding(22)
         .background(
             ZStack {
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
                     .fill(
                         LinearGradient(
                             colors: [
+                                AppDesignSystem.Colors.primaryDark,
                                 AppDesignSystem.Colors.primary,
-                                AppDesignSystem.Colors.info,
-                                AppDesignSystem.Colors.success.opacity(0.88)
+                                AppDesignSystem.Colors.info.opacity(0.92)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -576,13 +619,100 @@ private struct DashboardHeroCard: View {
                     )
 
                 Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.system(size: 132, weight: .bold))
-                    .foregroundStyle(.white.opacity(0.08))
-                    .offset(x: 78, y: 22)
+                    .font(.system(size: 142, weight: .bold))
+                    .foregroundStyle(.white.opacity(0.055))
+                    .rotationEffect(.degrees(glowPulse ? -4 : 2))
+                    .offset(x: glowPulse ? 80 : 88, y: glowPulse ? 22 : 30)
+
+                Circle()
+                    .fill(Color.white.opacity(0.08))
+                    .frame(width: 160, height: 160)
+                    .scaleEffect(glowPulse ? 1.08 : 0.96)
+                    .offset(x: -112, y: 126)
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .shadow(color: AppDesignSystem.Colors.primary.opacity(0.22), radius: 22, x: 0, y: 12)
+        .overlay {
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+        }
+        .shadow(color: AppDesignSystem.Colors.primary.opacity(glowPulse ? 0.28 : 0.18), radius: glowPulse ? 30 : 22, x: 0, y: 14)
+        .scaleEffect(isPressed ? 0.985 : 1)
+        .offset(y: hasAppeared ? 0 : 10)
+        .opacity(hasAppeared ? 1 : 0)
+        .contentShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
+                        isPressed = true
+                    }
+                }
+                .onEnded { _ in
+                    withAnimation(.spring(response: 0.36, dampingFraction: 0.82)) {
+                        isPressed = false
+                    }
+                }
+        )
+        .onAppear {
+            withAnimation(.spring(response: 0.62, dampingFraction: 0.84)) {
+                hasAppeared = true
+            }
+
+            withAnimation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true)) {
+                glowPulse = true
+            }
+        }
+    }
+}
+
+private struct DashboardHeroMiniStat: View {
+    let title: String
+    let value: String
+    let icon: String
+    var tint: Color = .white
+    var revealDelay: Double = 0
+
+    @State private var hasAppeared = false
+
+    var body: some View {
+        HStack(spacing: 9) {
+            Image(systemName: icon)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(tint == .white ? .white : tint)
+                .frame(width: 28, height: 28)
+                .background(Color.white.opacity(0.13), in: Circle())
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                    .foregroundStyle(.white.opacity(0.62))
+                    .textCase(.uppercase)
+
+                Text(value)
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.68)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 11)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.11), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.white.opacity(0.13), lineWidth: 1)
+        }
+        .offset(y: hasAppeared ? 0 : 8)
+        .opacity(hasAppeared ? 1 : 0)
+        .onAppear {
+            withAnimation(.spring(response: 0.48, dampingFraction: 0.84).delay(revealDelay)) {
+                hasAppeared = true
+            }
+        }
     }
 }
 
