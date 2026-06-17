@@ -64,7 +64,7 @@ private struct FintraxAssistantLauncher: View {
                         ))
                 }
 
-                FintraxAssistantBot(size: 72, isBlinking: isBlinking, isThinking: shimmer)
+                FintraxAssistantBot(size: 90, isBlinking: isBlinking, isThinking: shimmer)
                     .overlay(alignment: .topLeading) {
                         if entrance == .dashboardArrival {
                             arrivalTrail
@@ -106,7 +106,7 @@ private struct FintraxAssistantLauncher: View {
     }
 
     private var assistantGreeting: some View {
-        Text("Hey, hi. Ask me about spending, budgets, or savings anytime.")
+        Text("Hi, I'm here for you.")
             .font(AppDesignSystem.Typography.caption.weight(.semibold))
             .foregroundStyle(AppDesignSystem.Colors.textPrimary)
             .multilineTextAlignment(.leading)
