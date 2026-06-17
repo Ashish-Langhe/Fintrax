@@ -393,8 +393,10 @@ private struct ExpenseCalendarInsightView: View {
     let expenses: [Expense]
     let categories: [Category]
     @Binding var selectedMonth: Date
+    @State private var selectedDay: Date?
 
     private let calendar = Calendar.current
+    private let calendarColumns = Array(repeating: GridItem(.flexible(), spacing: 7), count: 7)
 
     private var monthInterval: DateInterval {
         calendar.dateInterval(of: .month, for: selectedMonth) ?? DateInterval(start: selectedMonth, duration: 0)
@@ -404,6 +406,13 @@ private struct ExpenseCalendarInsightView: View {
         expenses.filter { expense in
             expense.date >= monthInterval.start && expense.date < monthInterval.end
         }
+    }
+
+    private var selectedDayExpenses: [Expense] {
+        guard let selectedDay else { return [] }
+        return monthExpenses
+            .filter { calendar.isDate($0.date, inSameDayAs: selectedDay) }
+            .sorted { $0.date > $1.date }
     }
 
     private var dailyTotals: [Date: Decimal] {
@@ -423,9 +432,13 @@ private struct ExpenseCalendarInsightView: View {
         dailyTotals.values.max() ?? .zero
     }
 
-    private var averageDailySpend: Decimal {
-        guard !dailyTotals.isEmpty else { return .zero }
-        return totalSpend / Decimal(dailyTotals.count)
+    private var activeSpendDays: Int {
+        dailyTotals.values.filter { $0 > 0 }.count
+    }
+
+    private var averageActiveDaySpend: Decimal {
+        guard activeSpendDays > 0 else { return .zero }
+        return totalSpend / Decimal(activeSpendDays)
     }
 
     private var highestSpendDay: (date: Date, amount: Decimal)? {
@@ -433,48 +446,10 @@ private struct ExpenseCalendarInsightView: View {
             .map { ($0.key, $0.value) }
     }
 
-    private var weeklySpending: [(label: String, amount: Decimal, count: Int)] {
-        let grouped = Dictionary(grouping: monthExpenses) { expense in
-            calendar.component(.weekOfMonth, from: expense.date)
-        }
-
-        return (1...6).compactMap { week in
-            let expenses = grouped[week] ?? []
-            guard !expenses.isEmpty else { return nil }
-            let total = expenses.reduce(Decimal.zero) { $0 + $1.amount }
-            return ("Week \(week)", total, expenses.count)
-        }
-    }
-
-    private var weekdaySpending: [(label: String, amount: Decimal)] {
-        let symbols = calendar.shortWeekdaySymbols
-        let grouped = Dictionary(grouping: monthExpenses) { expense in
-            calendar.component(.weekday, from: expense.date)
-        }
-
-        return (1...7).map { weekday in
-            let total = (grouped[weekday] ?? []).reduce(Decimal.zero) { $0 + $1.amount }
-            return (String(symbols[weekday - 1].prefix(3)), total)
-        }
-    }
-
-    private var topSpendDays: [(date: Date, amount: Decimal, count: Int)] {
-        dailyTotals
-            .map { day, amount in
-                let count = monthExpenses.filter { calendar.isDate($0.date, inSameDayAs: day) }.count
-                return (day, amount, count)
-            }
-            .sorted { $0.amount > $1.amount }
-            .prefix(3)
-            .map { $0 }
-    }
-
-    private var maxWeeklySpend: Decimal {
-        weeklySpending.map(\.amount).max() ?? .zero
-    }
-
-    private var maxWeekdaySpend: Decimal {
-        weekdaySpending.map(\.amount).max() ?? .zero
+    private var weekdaySymbols: [String] {
+        let symbols = calendar.veryShortWeekdaySymbols
+        let startIndex = max(calendar.firstWeekday - 1, 0)
+        return Array(symbols[startIndex...] + symbols[..<startIndex])
     }
 
     var body: some View {
@@ -482,15 +457,23 @@ private struct ExpenseCalendarInsightView: View {
             VStack(spacing: 16) {
                 calendarHeader
                 monthStats
-                weeklyOverview
-                weekdayRhythm
-                topDaysSection
+                monthCalendarGrid
+                selectedDaySection
                 monthInsight
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 24)
         }
         .scrollIndicators(.hidden)
+        .onAppear {
+            ensureSelectedDay()
+        }
+        .onChange(of: selectedMonth) { _, _ in
+            ensureSelectedDay(reset: true)
+        }
+        .onChange(of: monthExpenses.map(\.id)) { _, _ in
+            ensureSelectedDay()
+        }
     }
 
     private var calendarHeader: some View {
@@ -533,76 +516,178 @@ private struct ExpenseCalendarInsightView: View {
     private var monthStats: some View {
         HStack(spacing: 10) {
             CalendarStatTile(title: "Total", value: totalSpend.formattedAmount(), icon: "indianrupeesign.circle.fill", tint: AppDesignSystem.Colors.primary)
-            CalendarStatTile(title: "Daily Avg", value: averageDailySpend.formattedAmount(), icon: "chart.line.uptrend.xyaxis", tint: AppDesignSystem.Colors.info)
+            CalendarStatTile(title: "Active Days", value: "\(activeSpendDays)", icon: "calendar.badge.checkmark", tint: AppDesignSystem.Colors.info)
             CalendarStatTile(title: "Peak Day", value: maxDailySpend.formattedAmount(), icon: "flame.fill", tint: AppDesignSystem.Colors.warning)
         }
     }
 
-    private var weeklyOverview: some View {
-        VStack(alignment: .leading, spacing: 13) {
-            ExpenseCalendarSectionHeader(title: "Weekly Spend", icon: "chart.bar.xaxis", tint: AppDesignSystem.Colors.primary)
+    private var monthCalendarGrid: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 12) {
+                ExpenseCalendarSectionHeader(title: "Month Calendar", icon: "calendar", tint: AppDesignSystem.Colors.primary)
 
-            if weeklySpending.isEmpty {
-                emptyMonthNote
-            } else {
-                VStack(spacing: 12) {
-                    ForEach(weeklySpending, id: \.label) { week in
-                        ExpenseWeekSpendRow(
-                            title: week.label,
-                            amount: week.amount.formattedAmount(),
-                            count: week.count,
-                            progress: progress(week.amount, maximum: maxWeeklySpend),
-                            tint: week.amount == maxWeeklySpend ? AppDesignSystem.Colors.warning : AppDesignSystem.Colors.primary
-                        )
-                    }
+                Spacer(minLength: 8)
+
+                CalendarLegendPill()
+            }
+
+            HStack(spacing: 8) {
+                CalendarMicroMetric(
+                    icon: "chart.bar.fill",
+                    title: "Avg active day",
+                    value: averageActiveDaySpend.formattedAmount(),
+                    tint: AppDesignSystem.Colors.success
+                )
+
+                CalendarMicroMetric(
+                    icon: "number",
+                    title: "Entries",
+                    value: "\(monthExpenses.count)",
+                    tint: AppDesignSystem.Colors.info
+                )
+            }
+
+            HStack(spacing: 0) {
+                ForEach(weekdaySymbols, id: \.self) { symbol in
+                    Text(symbol)
+                        .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                        .frame(maxWidth: .infinity)
                 }
             }
-        }
-        .padding(16)
-        .background(calendarPanelBackground)
-    }
+            .padding(.horizontal, 2)
 
-    private var weekdayRhythm: some View {
-        VStack(alignment: .leading, spacing: 13) {
-            ExpenseCalendarSectionHeader(title: "Weekday Rhythm", icon: "waveform.path.ecg", tint: AppDesignSystem.Colors.info)
-
-            HStack(alignment: .bottom, spacing: 8) {
-                ForEach(weekdaySpending, id: \.label) { item in
-                    WeekdayRhythmBar(
-                        label: item.label,
-                        amount: item.amount,
-                        progress: progress(item.amount, maximum: maxWeekdaySpend),
-                        isPeak: item.amount == maxWeekdaySpend && item.amount > 0
+            LazyVGrid(columns: calendarColumns, spacing: 7) {
+                ForEach(calendarDays) { day in
+                    ExpenseMonthDayCell(
+                        day: day,
+                        maxAmount: maxDailySpend,
+                        category: day.categoryID.flatMap { categoryID in
+                            categories.first { $0.id == categoryID }
+                        },
+                        onSelect: {
+                            guard let date = day.date else { return }
+                            withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+                                selectedDay = date
+                            }
+                        }
                     )
                 }
             }
-            .frame(height: 106)
         }
         .padding(16)
         .background(calendarPanelBackground)
     }
 
-    private var topDaysSection: some View {
+    private var selectedDaySection: some View {
         VStack(alignment: .leading, spacing: 13) {
-            ExpenseCalendarSectionHeader(title: "Top Spend Days", icon: "calendar.badge.exclamationmark", tint: AppDesignSystem.Colors.warning)
+            HStack(alignment: .center, spacing: 10) {
+                Image(systemName: selectedDayExpenses.isEmpty ? "calendar" : "calendar.badge.clock")
+                    .font(.callout.weight(.bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 38, height: 38)
+                    .background((selectedDayExpenses.isEmpty ? AppDesignSystem.Colors.textSecondary : AppDesignSystem.Colors.info).gradient, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
 
-            if topSpendDays.isEmpty {
-                emptyMonthNote
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(selectedDayTitle)
+                        .font(AppDesignSystem.Typography.calloutEmphasized)
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+
+                    Text(selectedDaySubtitle)
+                        .font(AppDesignSystem.Typography.caption2.weight(.semibold))
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                }
+
+                Spacer(minLength: 8)
+
+                Text(selectedDayTotal.formattedAmount())
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.error)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.70)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(AppDesignSystem.Colors.error.opacity(0.10), in: Capsule())
+            }
+
+            if selectedDayExpenses.isEmpty {
+                emptySelectedDayNote
             } else {
-                VStack(spacing: 10) {
-                    ForEach(Array(topSpendDays.enumerated()), id: \.element.date) { index, item in
-                        TopSpendDayRow(
-                            rank: index + 1,
-                            date: item.date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)),
-                            amount: item.amount.formattedAmount(),
-                            count: item.count
+                VStack(spacing: 0) {
+                    ForEach(Array(selectedDayExpenses.enumerated()), id: \.element.id) { index, expense in
+                        MonthDayExpenseRow(
+                            expense: expense,
+                            category: categories.first { $0.id == expense.categoryID }
                         )
+
+                        if index < selectedDayExpenses.count - 1 {
+                            Divider()
+                                .padding(.leading, 42)
+                        }
                     }
                 }
+                .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
         }
         .padding(16)
         .background(calendarPanelBackground)
+    }
+
+    private var calendarDays: [ExpenseMonthDay] {
+        guard let monthRange = calendar.range(of: .day, in: .month, for: selectedMonth),
+              let firstOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: selectedMonth)) else {
+            return []
+        }
+
+        let firstWeekday = calendar.component(.weekday, from: firstOfMonth)
+        let leadingBlanks = (firstWeekday - calendar.firstWeekday + 7) % 7
+        var days: [ExpenseMonthDay] = (0..<leadingBlanks).map { _ in .blank() }
+
+        for day in monthRange {
+            guard let date = calendar.date(byAdding: .day, value: day - 1, to: firstOfMonth) else { continue }
+            let start = calendar.startOfDay(for: date)
+            let amount = dailyTotals[start] ?? .zero
+            let expensesForDay = monthExpenses.filter { calendar.isDate($0.date, inSameDayAs: start) }
+            let count = expensesForDay.count
+            days.append(
+                ExpenseMonthDay(
+                    date: start,
+                    dayNumber: day,
+                    amount: amount,
+                    count: count,
+                    categoryID: topCategoryID(for: expensesForDay),
+                    isToday: calendar.isDateInToday(start),
+                    isSelected: selectedDay.map { calendar.isDate($0, inSameDayAs: start) } ?? false
+                )
+            )
+        }
+
+        while !days.count.isMultiple(of: 7) {
+            days.append(.blank())
+        }
+
+        return days
+    }
+
+    private var selectedDayTitle: String {
+        guard let selectedDay else { return "Select a Day" }
+        return selectedDay.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
+    }
+
+    private var selectedDaySubtitle: String {
+        if selectedDayExpenses.isEmpty {
+            return "No spending recorded"
+        }
+
+        let entryText = selectedDayExpenses.count == 1 ? "1 entry" : "\(selectedDayExpenses.count) entries"
+        if let topCategory = topCategoryName(for: selectedDayExpenses) {
+            return "\(entryText) - \(topCategory)"
+        }
+        return entryText
+    }
+
+    private var selectedDayTotal: Decimal {
+        selectedDayExpenses.reduce(Decimal.zero) { $0 + $1.amount }
     }
 
     private var monthInsight: some View {
@@ -642,20 +727,37 @@ private struct ExpenseCalendarInsightView: View {
     }
 
     private var topCategoryName: String? {
-        let grouped = Dictionary(grouping: monthExpenses, by: \.categoryID)
-        let top = grouped.max { lhs, rhs in
-            lhs.value.reduce(Decimal.zero) { $0 + $1.amount } < rhs.value.reduce(Decimal.zero) { $0 + $1.amount }
-        }
-        guard let categoryID = top?.key else { return nil }
+        topCategoryName(for: monthExpenses)
+    }
+
+    private func topCategoryName(for expenses: [Expense]) -> String? {
+        guard let categoryID = topCategoryID(for: expenses) else { return nil }
         return categories.first { $0.id == categoryID }?.name
     }
 
-    private var emptyMonthNote: some View {
-        Text("No spending found for this month with the current filters.")
-            .font(AppDesignSystem.Typography.caption)
-            .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 6)
+    private func topCategoryID(for expenses: [Expense]) -> UUID? {
+        let grouped = Dictionary(grouping: expenses, by: \.categoryID)
+        return grouped.max { lhs, rhs in
+            lhs.value.reduce(Decimal.zero) { $0 + $1.amount } < rhs.value.reduce(Decimal.zero) { $0 + $1.amount }
+        }?.key
+    }
+
+    private var emptySelectedDayNote: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "moon.zzz.fill")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                .frame(width: 30, height: 30)
+                .background(AppDesignSystem.Colors.surfaceVariant.opacity(0.74), in: Circle())
+
+            Text("No expenses on this date. Tap a highlighted date to review its entries.")
+                .font(AppDesignSystem.Typography.caption)
+                .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.50), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private var calendarPanelBackground: some View {
@@ -673,10 +775,17 @@ private struct ExpenseCalendarInsightView: View {
         }
     }
 
-    private func progress(_ amount: Decimal, maximum: Decimal) -> Double {
-        guard maximum > 0 else { return 0 }
-        return min(max(NSDecimalNumber(decimal: amount / maximum).doubleValue, 0), 1)
+    private func ensureSelectedDay(reset: Bool = false) {
+        if !reset,
+           let selectedDay,
+           selectedDay >= monthInterval.start,
+           selectedDay < monthInterval.end {
+            return
+        }
+
+        selectedDay = dailyTotals.keys.sorted().last ?? monthInterval.start
     }
+
 }
 
 private struct CalendarStatTile: View {
@@ -713,6 +822,267 @@ private struct CalendarStatTile: View {
     }
 }
 
+private struct CalendarMicroMetric: View {
+    let icon: String
+    let title: String
+    let value: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 9) {
+            Image(systemName: icon)
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(tint)
+                .frame(width: 24, height: 24)
+                .background(tint.opacity(0.12), in: Circle())
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(AppDesignSystem.Typography.caption2.weight(.semibold))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .lineLimit(1)
+
+                Text(value)
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.68)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
+        .frame(maxWidth: .infinity)
+        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.54), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(tint.opacity(0.12), lineWidth: 1)
+        }
+    }
+}
+
+private struct CalendarLegendPill: View {
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<3, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(AppDesignSystem.Colors.primary.opacity(0.18 + Double(index) * 0.17))
+                    .frame(width: 12, height: 8)
+            }
+
+            Text("Spend")
+                .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 7)
+        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.64), in: Capsule())
+        .overlay {
+            Capsule()
+                .stroke(AppDesignSystem.Colors.primary.opacity(0.14), lineWidth: 1)
+        }
+        .accessibilityLabel("Darker days mean higher spending")
+    }
+}
+
+private struct ExpenseMonthDay: Identifiable {
+    let id = UUID()
+    let date: Date?
+    let dayNumber: Int?
+    let amount: Decimal
+    let count: Int
+    let categoryID: UUID?
+    let isToday: Bool
+    let isSelected: Bool
+
+    static func blank() -> ExpenseMonthDay {
+        ExpenseMonthDay(date: nil, dayNumber: nil, amount: .zero, count: 0, categoryID: nil, isToday: false, isSelected: false)
+    }
+}
+
+private struct ExpenseMonthDayCell: View {
+    let day: ExpenseMonthDay
+    let maxAmount: Decimal
+    let category: Category?
+    let onSelect: () -> Void
+
+    private var hasSpend: Bool {
+        day.amount > 0
+    }
+
+    private var intensity: Double {
+        guard maxAmount > 0, hasSpend else { return 0 }
+        return min(max(NSDecimalNumber(decimal: day.amount / maxAmount).doubleValue, 0.18), 1)
+    }
+
+    var body: some View {
+        Button(action: onSelect) {
+            ZStack(alignment: .topTrailing) {
+                VStack(spacing: 4) {
+                    HStack(spacing: 3) {
+                        Text(day.dayNumber.map(String.init) ?? "")
+                            .font(AppDesignSystem.Typography.caption.weight(day.isSelected ? .bold : .semibold))
+                            .foregroundStyle(dayTextColor)
+                            .frame(height: 15)
+
+                        if day.isToday && day.date != nil {
+                            Circle()
+                                .fill(day.isSelected ? Color.white.opacity(0.90) : AppDesignSystem.Colors.primary)
+                                .frame(width: 4, height: 4)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+
+                    if hasSpend {
+                        Text(shortAmount(day.amount))
+                            .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                            .foregroundStyle(day.isSelected ? .white : AppDesignSystem.Colors.textPrimary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.58)
+                    } else if day.date != nil {
+                        RoundedRectangle(cornerRadius: 3, style: .continuous)
+                            .fill(day.isToday ? AppDesignSystem.Colors.primary.opacity(0.30) : Color.clear)
+                            .frame(width: 14, height: 5)
+                    } else {
+                        Color.clear.frame(height: 10)
+                    }
+                }
+
+                if hasSpend, let category {
+                    Image(systemName: category.iconName)
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(day.isSelected ? .white.opacity(0.96) : category.displayColor)
+                        .frame(width: 16, height: 16)
+                        .background((day.isSelected ? Color.white.opacity(0.16) : category.displayColor.opacity(0.12)), in: Circle())
+                        .offset(x: 3, y: -3)
+                }
+            }
+            .frame(height: 56)
+            .frame(maxWidth: .infinity)
+            .background(dayBackground)
+            .overlay {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(dayBorderColor, lineWidth: day.isSelected ? 1.2 : 0.8)
+            }
+            .shadow(color: shadowColor, radius: day.isSelected ? 9 : 0, x: 0, y: day.isSelected ? 6 : 0)
+        }
+        .buttonStyle(.plain)
+        .disabled(day.date == nil)
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var dayTextColor: Color {
+        if day.isSelected { return .white }
+        if day.date == nil { return .clear }
+        if day.isToday { return AppDesignSystem.Colors.primary }
+        return AppDesignSystem.Colors.textPrimary
+    }
+
+    private var dayBackground: some ShapeStyle {
+        if day.isSelected {
+            return AnyShapeStyle(
+                LinearGradient(
+                    colors: [
+                        category?.displayColor ?? AppDesignSystem.Colors.primary,
+                        AppDesignSystem.Colors.primaryDark
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+        }
+
+        if hasSpend {
+            return AnyShapeStyle(
+                LinearGradient(
+                    colors: [
+                        (category?.displayColor ?? AppDesignSystem.Colors.primary).opacity(0.12 + (0.20 * intensity)),
+                        AppDesignSystem.Colors.elevatedSurface.opacity(0.70)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+        }
+
+        return AnyShapeStyle(AppDesignSystem.Colors.elevatedSurface.opacity(day.date == nil ? 0 : 0.54))
+    }
+
+    private var dayBorderColor: Color {
+        if day.isSelected { return Color.white.opacity(0.38) }
+        if hasSpend { return (category?.displayColor ?? AppDesignSystem.Colors.primary).opacity(0.22) }
+        if day.isToday { return AppDesignSystem.Colors.primary.opacity(0.26) }
+        return Color.white.opacity(0.12)
+    }
+
+    private var shadowColor: Color {
+        (category?.displayColor ?? AppDesignSystem.Colors.primary).opacity(0.22)
+    }
+
+    private var accessibilityLabel: String {
+        guard let date = day.date else { return "Blank calendar day" }
+        let dateText = date.formatted(.dateTime.day().month(.wide))
+        if hasSpend {
+            let categoryText = category.map { ", top category \($0.name)" } ?? ""
+            return "\(dateText), \(day.amount.formattedAmount()), \(day.count) entries\(categoryText)"
+        }
+        return "\(dateText), no expenses"
+    }
+
+    private func shortAmount(_ amount: Decimal) -> String {
+        let value = NSDecimalNumber(decimal: amount).doubleValue
+        if value >= 100_000 {
+            return String(format: "₹%.0fL", value / 100_000)
+        }
+        if value >= 1_000 {
+            return String(format: "₹%.0fk", value / 1_000)
+        }
+        return "₹\(Int(value))"
+    }
+}
+
+private struct MonthDayExpenseRow: View {
+    let expense: Expense
+    let category: Category?
+
+    private var categoryColor: Color {
+        category?.displayColor ?? AppDesignSystem.Colors.primary
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: category?.iconName ?? "tag.fill")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(categoryColor)
+                .frame(width: 30, height: 30)
+                .background(categoryColor.opacity(0.12), in: Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(expense.title)
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                    .lineLimit(1)
+
+                Text(category?.name ?? "Uncategorized")
+                    .font(AppDesignSystem.Typography.caption2.weight(.medium))
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Text(expense.formattedAmount())
+                .font(AppDesignSystem.Typography.caption.weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.error)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+        }
+        .padding(.horizontal, 11)
+        .padding(.vertical, 9)
+    }
+}
+
 private struct ExpenseCalendarSectionHeader: View {
     let title: String
     let icon: String
@@ -732,110 +1102,6 @@ private struct ExpenseCalendarSectionHeader: View {
 
             Spacer()
         }
-    }
-}
-
-private struct ExpenseWeekSpendRow: View {
-    let title: String
-    let amount: String
-    let count: Int
-    let progress: Double
-    let tint: Color
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(AppDesignSystem.Typography.caption.weight(.bold))
-                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
-                    Text(count == 1 ? "1 entry" : "\(count) entries")
-                        .font(AppDesignSystem.Typography.caption2)
-                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                }
-
-                Spacer()
-
-                Text(amount)
-                    .font(AppDesignSystem.Typography.caption.weight(.bold))
-                    .foregroundStyle(tint)
-            }
-
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(AppDesignSystem.Colors.surfaceVariant.opacity(0.58))
-                    Capsule()
-                        .fill(tint.gradient)
-                        .frame(width: max(8, proxy.size.width * progress))
-                }
-            }
-            .frame(height: 8)
-        }
-        .padding(12)
-        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.55), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
-    }
-}
-
-private struct WeekdayRhythmBar: View {
-    let label: String
-    let amount: Decimal
-    let progress: Double
-    let isPeak: Bool
-
-    var body: some View {
-        VStack(spacing: 6) {
-            Spacer(minLength: 0)
-
-            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .fill((isPeak ? AppDesignSystem.Colors.warning : AppDesignSystem.Colors.info).gradient)
-                .frame(height: max(8, 70 * progress))
-                .opacity(amount > 0 ? 1 : 0.22)
-
-            Text(label)
-                .font(AppDesignSystem.Typography.caption2.weight(isPeak ? .bold : .semibold))
-                .foregroundStyle(isPeak ? AppDesignSystem.Colors.warning : AppDesignSystem.Colors.textSecondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityLabel("\(label), \(amount.formattedAmount()) spent")
-    }
-}
-
-private struct TopSpendDayRow: View {
-    let rank: Int
-    let date: String
-    let amount: String
-    let count: Int
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Text("\(rank)")
-                .font(.system(.caption, design: .rounded).weight(.bold))
-                .foregroundStyle(.white)
-                .frame(width: 28, height: 28)
-                .background(AppDesignSystem.Colors.warning.gradient, in: Circle())
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(date)
-                    .font(AppDesignSystem.Typography.caption.weight(.bold))
-                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
-                Text(count == 1 ? "1 entry" : "\(count) entries")
-                    .font(AppDesignSystem.Typography.caption2)
-                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-            }
-
-            Spacer()
-
-            Text(amount)
-                .font(AppDesignSystem.Typography.caption.weight(.bold))
-                .foregroundStyle(AppDesignSystem.Colors.error)
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-        }
-        .padding(12)
-        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.55), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
     }
 }
 
