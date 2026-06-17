@@ -516,9 +516,9 @@ private struct DashboardHeroCard: View {
     @State private var isPressed = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 8) {
                         Image(systemName: "sparkles")
                             .font(.caption.weight(.bold))
@@ -530,13 +530,13 @@ private struct DashboardHeroCard: View {
                     .foregroundStyle(.white.opacity(0.78))
 
                     Text("Money Snapshot")
-                        .font(.system(.title2, design: .rounded).weight(.bold))
+                        .font(.system(.title3, design: .rounded).weight(.bold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
 
                     Text("Current month spending overview")
-                        .font(AppDesignSystem.Typography.footnote.weight(.medium))
+                        .font(AppDesignSystem.Typography.caption.weight(.medium))
                         .foregroundStyle(.white.opacity(0.68))
                 }
 
@@ -545,27 +545,31 @@ private struct DashboardHeroCard: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .fill(Color.white.opacity(0.16))
-                        .frame(width: 58, height: 58)
+                        .frame(width: 48, height: 48)
 
                     Image(systemName: "indianrupeesign.circle.fill")
-                        .font(.system(size: 31, weight: .bold))
+                        .font(.system(size: 27, weight: .bold))
                         .foregroundStyle(.white)
                         .symbolEffect(.pulse, value: glowPulse)
                 }
             }
 
-            VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .lastTextBaseline, spacing: 12) {
+                VStack(alignment: .leading, spacing: 5) {
                 Text("Total Spent")
                     .font(AppDesignSystem.Typography.caption.weight(.bold))
                     .foregroundStyle(.white.opacity(0.72))
                     .textCase(.uppercase)
 
                 Text(spending)
-                    .font(.system(size: 42, weight: .bold, design: .rounded))
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.54)
                     .contentTransition(.numericText())
+                }
+
+                Spacer(minLength: 0)
             }
 
             HStack(spacing: 10) {
@@ -587,23 +591,25 @@ private struct DashboardHeroCard: View {
 
             HStack(spacing: 9) {
                 Image(systemName: isPositiveFlow ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
-                    .font(.subheadline.weight(.bold))
+                    .font(.caption.weight(.bold))
 
                 Text(isPositiveFlow ? "Income is higher than spending" : "Spending is higher than income")
-                    .font(AppDesignSystem.Typography.calloutEmphasized)
+                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
 
                 Spacer(minLength: 0)
             }
             .foregroundStyle(.white)
-            .padding(.horizontal, 13)
-            .padding(.vertical, 11)
-            .background(Color.white.opacity(0.13), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.white.opacity(0.13), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(Color.white.opacity(0.16), lineWidth: 1)
             }
         }
-        .padding(22)
+        .padding(18)
         .background(
             ZStack {
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
@@ -677,11 +683,11 @@ private struct DashboardHeroMiniStat: View {
     @State private var hasAppeared = false
 
     var body: some View {
-        HStack(spacing: 9) {
+        HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(tint == .white ? .white : tint)
-                .frame(width: 28, height: 28)
+                .frame(width: 24, height: 24)
                 .background(Color.white.opacity(0.13), in: Circle())
 
             VStack(alignment: .leading, spacing: 1) {
@@ -691,7 +697,7 @@ private struct DashboardHeroMiniStat: View {
                     .textCase(.uppercase)
 
                 Text(value)
-                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                    .font(AppDesignSystem.Typography.caption2.weight(.bold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.68)
@@ -699,12 +705,12 @@ private struct DashboardHeroMiniStat: View {
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 11)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white.opacity(0.11), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color.white.opacity(0.11), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(Color.white.opacity(0.13), lineWidth: 1)
         }
         .offset(y: hasAppeared ? 0 : 8)
