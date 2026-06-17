@@ -44,6 +44,7 @@ struct AnalyticsView: View {
         .navigationTitle("Analytics")
         .navigationBarTitleDisplayMode(.large)
         .background(FintraxTabBackground(style: .analytics))
+        .fintraxAssistantPresence()
         .refreshable {
             await viewModel.refreshDashboard()
         }

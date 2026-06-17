@@ -65,6 +65,7 @@
 		AA000060 /* SmartCategoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000060 /* SmartCategoryService.swift */; };
 		AA000061 /* SmartCategoryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000061 /* SmartCategoryServiceTests.swift */; };
 		AA000062 /* FintraxTabBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000062 /* FintraxTabBackground.swift */; };
+		AA000063 /* FintraxAssistantPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063 /* FintraxAssistantPresence.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -136,6 +137,7 @@
 		AB000060 /* SmartCategoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCategoryService.swift; sourceTree = "<group>"; };
 		AB000061 /* SmartCategoryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCategoryServiceTests.swift; sourceTree = "<group>"; };
 		AB000062 /* FintraxTabBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxTabBackground.swift; sourceTree = "<group>"; };
+		AB000063 /* FintraxAssistantPresence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAssistantPresence.swift; sourceTree = "<group>"; };
 		AB000098 /* ExpenseTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExpenseTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000099 /* ExpenseTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExpenseTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -286,6 +288,7 @@
 				AB000047 /* FintraxModalOverlay.swift */,
 				AB000038 /* AppAnimations.swift */,
 				AB000062 /* FintraxTabBackground.swift */,
+				AB000063 /* FintraxAssistantPresence.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -567,6 +570,7 @@
 				AA000059 /* MockFinanceDataStore.swift in Sources */,
 				AA000060 /* SmartCategoryService.swift in Sources */,
 				AA000062 /* FintraxTabBackground.swift in Sources */,
+				AA000063 /* FintraxAssistantPresence.swift in Sources */,
 				AA000056 /* AppBadgeService.swift in Sources */,
 				AA000057 /* DashboardNotificationCenterView.swift in Sources */,
 			);

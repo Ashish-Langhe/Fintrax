@@ -53,6 +53,7 @@ struct DashboardView: View {
             await viewModel.loadDashboardData()
         }
         .background(FintraxTabBackground(style: .dashboard))
+        .fintraxAssistantPresence(entrance: .dashboardArrival)
         .sheet(isPresented: $showingNotifications) {
             DashboardNotificationCenterView(
                 bills: viewModel.actionableBillNotifications,
