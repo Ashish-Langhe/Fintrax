@@ -47,6 +47,7 @@ private struct FintraxAssistantLauncher: View {
     @State private var shimmer = false
     @State private var hasEntered = false
     @State private var arrivalSpark = false
+    @State private var showGreeting = false
 
     var body: some View {
         Button {
@@ -54,12 +55,22 @@ private struct FintraxAssistantLauncher: View {
                 action()
             }
         } label: {
-            FintraxAssistantBot(size: 72, isBlinking: isBlinking, isThinking: shimmer)
-                .overlay(alignment: .topLeading) {
-                    if entrance == .dashboardArrival {
-                        arrivalTrail
-                    }
+            HStack(alignment: .bottom, spacing: 8) {
+                if showGreeting {
+                    assistantGreeting
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .move(edge: .trailing)).combined(with: .scale(scale: 0.96)),
+                            removal: .opacity.combined(with: .scale(scale: 0.98))
+                        ))
                 }
+
+                FintraxAssistantBot(size: 72, isBlinking: isBlinking, isThinking: shimmer)
+                    .overlay(alignment: .topLeading) {
+                        if entrance == .dashboardArrival {
+                            arrivalTrail
+                        }
+                    }
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Ask Fintrax assistant")
@@ -94,6 +105,33 @@ private struct FintraxAssistantLauncher: View {
         }
     }
 
+    private var assistantGreeting: some View {
+        Text("Hey, hi. Ask me about spending, budgets, or savings anytime.")
+            .font(AppDesignSystem.Typography.caption.weight(.semibold))
+            .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+            .multilineTextAlignment(.leading)
+            .lineLimit(3)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .frame(width: 188, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.94))
+            )
+            .overlay(alignment: .trailing) {
+                TrianglePointer()
+                    .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.94))
+                    .frame(width: 10, height: 14)
+                    .offset(x: 8)
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(AppDesignSystem.Colors.primary.opacity(0.16), lineWidth: 1)
+            }
+            .shadow(color: AppDesignSystem.Colors.primary.opacity(0.12), radius: 16, x: 0, y: 8)
+    }
+
     private func startEntrance() {
         guard !hasEntered else { return }
 
@@ -105,8 +143,27 @@ private struct FintraxAssistantLauncher: View {
             withAnimation(.easeOut(duration: 0.46).delay(1.08)) {
                 arrivalSpark = false
             }
+            scheduleGreeting()
         } else {
             hasEntered = true
+        }
+    }
+
+    private func scheduleGreeting() {
+        Task {
+            try? await Task.sleep(nanoseconds: 1_050_000_000)
+            await MainActor.run {
+                withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) {
+                    showGreeting = true
+                }
+            }
+
+            try? await Task.sleep(nanoseconds: 4_800_000_000)
+            await MainActor.run {
+                withAnimation(.easeOut(duration: 0.32)) {
+                    showGreeting = false
+                }
+            }
         }
     }
 
@@ -122,6 +179,17 @@ private struct FintraxAssistantLauncher: View {
     }
 }
 
+private struct TrianglePointer: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
 private struct FintraxAssistantSheet: View {
     @State private var selectedPrompt: AssistantPrompt?
     @State private var insights: [AssistantInsight] = []
@@ -134,13 +202,13 @@ private struct FintraxAssistantSheet: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 16) {
                 header
                 promptGrid
                 previewResponse
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 18)
+            .padding(.horizontal, 18)
+            .padding(.top, 14)
             .padding(.bottom, 28)
         }
         .scrollIndicators(.hidden)
@@ -155,47 +223,107 @@ private struct FintraxAssistantSheet: View {
 
     private var header: some View {
         HStack(alignment: .center, spacing: 14) {
-            FintraxAssistantBot(size: 76, isBlinking: isBlinking, isThinking: isThinking)
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 7) {
+                    Circle()
+                        .fill(AppDesignSystem.Colors.success)
+                        .frame(width: 7, height: 7)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Fintrax Assistant")
-                    .font(AppDesignSystem.Typography.title3)
-                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                    Text("Live money assistant")
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(.white.opacity(0.76))
+                        .textCase(.uppercase)
+                }
 
-                Text("Ask quick questions about spending, savings, budgets, and category patterns.")
-                    .font(AppDesignSystem.Typography.caption)
-                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Ask Fintrax")
+                        .font(.system(.title2, design: .rounded).weight(.bold))
+                        .foregroundStyle(.white)
+
+                    Text("Quick answers for spending, budget risk, savings, and repeat habits.")
+                        .font(AppDesignSystem.Typography.caption.weight(.medium))
+                        .foregroundStyle(.white.opacity(0.72))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
 
             Spacer(minLength: 0)
+
+            FintraxAssistantBot(size: 82, isBlinking: isBlinking, isThinking: isThinking)
         }
-        .padding(18)
-        .background(assistantPanel(accent: AppDesignSystem.Colors.primary))
+        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                AppDesignSystem.Colors.primaryDark,
+                                AppDesignSystem.Colors.primary,
+                                AppDesignSystem.Colors.info.opacity(0.88)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                Circle()
+                    .fill(Color.white.opacity(0.08))
+                    .frame(width: 132, height: 132)
+                    .offset(x: 128, y: 44)
+
+                Image(systemName: "sparkles")
+                    .font(.system(size: 82, weight: .bold))
+                    .foregroundStyle(.white.opacity(0.05))
+                    .offset(x: -118, y: -12)
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .stroke(Color.white.opacity(0.16), lineWidth: 1)
+        }
+        .shadow(color: AppDesignSystem.Colors.primary.opacity(0.18), radius: 24, x: 0, y: 14)
     }
 
     private var promptGrid: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Quick asks")
-                .font(AppDesignSystem.Typography.calloutEmphasized)
-                .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+            HStack {
+                Text("Choose a question")
+                    .font(AppDesignSystem.Typography.calloutEmphasized)
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(prompts) { prompt in
-                    Button {
-                        withAnimation(.spring(response: 0.34, dampingFraction: 0.84)) {
-                            selectedPrompt = prompt
-                            isThinking = false
-                        }
-                    } label: {
-                        AssistantPromptChip(prompt: prompt, isSelected: selectedPrompt == prompt)
-                    }
-                    .buttonStyle(.plain)
+                Spacer()
+
+                if case .loaded = loadingState {
+                    Text("\(insights.count) ready")
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(AppDesignSystem.Colors.primary.opacity(0.10), in: Capsule())
                 }
             }
+
+            ScrollView(.horizontal) {
+                HStack(spacing: 10) {
+                    ForEach(prompts) { prompt in
+                        Button {
+                            withAnimation(.spring(response: 0.34, dampingFraction: 0.84)) {
+                                selectedPrompt = prompt
+                                isThinking = false
+                            }
+                        } label: {
+                            AssistantPromptChip(prompt: prompt, isSelected: selectedPrompt == prompt)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+            .scrollIndicators(.hidden)
         }
-        .padding(16)
-        .background(assistantPanel(accent: AppDesignSystem.Colors.info))
     }
 
     private var previewResponse: some View {
@@ -331,11 +459,46 @@ private struct FintraxAssistantBot: View {
 
     var body: some View {
         ZStack {
-            Circle()
-                .fill(AppDesignSystem.Colors.primary.opacity(isThinking ? 0.22 : 0.12))
-                .frame(width: size * 1.05, height: size * 1.05)
-                .scaleEffect(breath ? 1.12 : 0.92)
-                .blur(radius: size * 0.04)
+            assistantAura
+
+            RoundedRectangle(cornerRadius: size * 0.34, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            AppDesignSystem.Colors.elevatedSurface.opacity(0.82),
+                            AppDesignSystem.Colors.primary.opacity(0.18),
+                            AppDesignSystem.Colors.info.opacity(0.12)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: size * 1.02, height: size * 1.02)
+                .overlay {
+                    RoundedRectangle(cornerRadius: size * 0.34, style: .continuous)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.48),
+                                    AppDesignSystem.Colors.info.opacity(0.26),
+                                    AppDesignSystem.Colors.primary.opacity(0.18)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                }
+                .shadow(color: AppDesignSystem.Colors.primary.opacity(0.18), radius: size * 0.22, x: 0, y: size * 0.12)
+                .scaleEffect(breath ? 1.015 : 0.985)
+                .offset(y: size * 0.05)
+
+            Ellipse()
+                .fill(Color.black.opacity(0.24))
+                .frame(width: size * 0.86, height: size * 0.19)
+                .blur(radius: size * 0.045)
+                .offset(y: size * 0.53)
+                .scaleEffect(x: hover ? 0.92 : 1.08, y: hover ? 0.82 : 1.0)
 
             Image("FintraxAssistantMascot")
                 .resizable()
@@ -344,7 +507,8 @@ private struct FintraxAssistantBot: View {
                 .scaleEffect(breath ? 1.018 : 0.992)
                 .rotationEffect(.degrees(hover ? -2.6 : 2.2))
                 .offset(y: hover ? -size * 0.055 : size * 0.025)
-                .shadow(color: AppDesignSystem.Colors.primary.opacity(0.28), radius: size * 0.22, x: 0, y: size * 0.12)
+                .shadow(color: AppDesignSystem.Colors.info.opacity(0.34), radius: size * 0.18, x: 0, y: size * 0.07)
+                .shadow(color: AppDesignSystem.Colors.primary.opacity(0.28), radius: size * 0.24, x: 0, y: size * 0.13)
 
             animatedEyes
                 .rotationEffect(.degrees(hover ? -2.6 : 2.2))
@@ -354,7 +518,7 @@ private struct FintraxAssistantBot: View {
                 sparkleField
             }
         }
-        .frame(width: size * 1.15, height: size * 1.22)
+        .frame(width: size * 1.22, height: size * 1.28)
         .onAppear {
             withAnimation(.easeInOut(duration: 2.15).repeatForever(autoreverses: true)) {
                 breath = true
@@ -367,6 +531,34 @@ private struct FintraxAssistantBot: View {
                 eyeGlint = true
             }
         }
+    }
+
+    private var assistantAura: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: size * 0.40, style: .continuous)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            AppDesignSystem.Colors.info.opacity(isThinking ? 0.34 : 0.26),
+                            AppDesignSystem.Colors.primary.opacity(isThinking ? 0.24 : 0.18),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: size * 0.12,
+                        endRadius: size * 0.78
+                    )
+                )
+                .frame(width: size * 1.48, height: size * 1.32)
+                .scaleEffect(breath ? 1.06 : 0.94)
+                .blur(radius: size * 0.035)
+
+            RoundedRectangle(cornerRadius: size * 0.38, style: .continuous)
+                .fill(AppDesignSystem.Colors.info.opacity(0.10))
+                .frame(width: size * 1.24, height: size * 1.14)
+                .scaleEffect(breath ? 1.04 : 0.98)
+                .blur(radius: size * 0.08)
+        }
+        .offset(y: size * 0.02)
     }
 
     private var animatedEyes: some View {
@@ -431,9 +623,9 @@ private struct AssistantLoadingCard: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "wand.and.stars")
                 .font(.headline.weight(.bold))
-                .foregroundStyle(AppDesignSystem.Colors.primary)
+                .foregroundStyle(.white)
                 .frame(width: 38, height: 38)
-                .background(AppDesignSystem.Colors.primary.opacity(0.12), in: Circle())
+                .background(AppDesignSystem.Colors.primary.gradient, in: Circle())
                 .scaleEffect(pulse ? 1.08 : 0.94)
 
             VStack(alignment: .leading, spacing: 7) {
@@ -450,7 +642,7 @@ private struct AssistantLoadingCard: View {
             Spacer(minLength: 0)
         }
         .padding(16)
-        .background(assistantPanel(accent: AppDesignSystem.Colors.primary))
+        .background(assistantPanel(accent: AppDesignSystem.Colors.primary, isProminent: true))
         .onAppear {
             withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
                 pulse = true
@@ -458,9 +650,18 @@ private struct AssistantLoadingCard: View {
         }
     }
 
-    private func assistantPanel(accent: Color) -> some View {
+    private func assistantPanel(accent: Color, isProminent: Bool = false) -> some View {
         RoundedRectangle(cornerRadius: 22, style: .continuous)
-            .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.78))
+            .fill(
+                LinearGradient(
+                    colors: [
+                        AppDesignSystem.Colors.elevatedSurface.opacity(isProminent ? 0.94 : 0.82),
+                        AppDesignSystem.Colors.surfaceVariant.opacity(isProminent ? 0.56 : 0.34)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
             .overlay {
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .stroke(accent.opacity(0.16), lineWidth: 1)
@@ -472,60 +673,62 @@ private struct AssistantInsightCard: View {
     let insight: AssistantInsight
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: insight.icon)
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(insight.tint)
-                    .frame(width: 40, height: 40)
-                    .background(insight.tint.opacity(0.12), in: Circle())
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(insight.title)
-                        .font(AppDesignSystem.Typography.calloutEmphasized)
-                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+        VStack(alignment: .leading, spacing: 15) {
+            HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Label(insight.title, systemImage: insight.icon)
+                        .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        .foregroundStyle(insight.tint)
+                        .lineLimit(1)
 
                     Text(insight.value)
-                        .font(AppDesignSystem.Typography.title3.weight(.bold))
-                        .foregroundStyle(insight.tint)
+                        .font(.system(.title3, design: .rounded).weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
                         .lineLimit(2)
-                        .minimumScaleFactor(0.82)
+                        .minimumScaleFactor(0.78)
                 }
 
-                Spacer(minLength: 0)
+                Spacer(minLength: 10)
+
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 42, height: 42)
+                    .background(insight.tint.gradient, in: Circle())
+                    .shadow(color: insight.tint.opacity(0.22), radius: 12, x: 0, y: 6)
             }
 
             Text(insight.message)
-                .font(AppDesignSystem.Typography.caption)
+                .font(AppDesignSystem.Typography.callout)
                 .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if !insight.detailRows.isEmpty {
-                VStack(spacing: 8) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                     ForEach(insight.detailRows) { row in
-                        HStack(spacing: 10) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Image(systemName: row.icon)
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(insight.tint)
-                                .frame(width: 24, height: 24)
-                                .background(insight.tint.opacity(0.10), in: Circle())
+                                .frame(width: 26, height: 26)
+                                .background(insight.tint.opacity(0.11), in: Circle())
 
                             Text(row.title)
-                                .font(AppDesignSystem.Typography.caption)
+                                .font(AppDesignSystem.Typography.caption2.weight(.bold))
                                 .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-
-                            Spacer(minLength: 8)
+                                .textCase(.uppercase)
 
                             Text(row.value)
-                                .font(AppDesignSystem.Typography.caption.weight(.semibold))
+                                .font(AppDesignSystem.Typography.caption.weight(.bold))
                                 .foregroundStyle(AppDesignSystem.Colors.textPrimary)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.82)
                         }
+                        .padding(11)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AppDesignSystem.Colors.surfaceVariant.opacity(0.28), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
                 }
-                .padding(12)
-                .background(AppDesignSystem.Colors.surfaceVariant.opacity(0.34), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
 
             HStack(alignment: .top, spacing: 8) {
@@ -540,17 +743,27 @@ private struct AssistantInsightCard: View {
             }
             .padding(.top, 2)
         }
-        .padding(16)
+        .padding(17)
         .background(assistantPanel(accent: insight.tint))
     }
 
     private func assistantPanel(accent: Color) -> some View {
-        RoundedRectangle(cornerRadius: 22, style: .continuous)
-            .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.78))
+        RoundedRectangle(cornerRadius: 24, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        AppDesignSystem.Colors.elevatedSurface.opacity(0.92),
+                        AppDesignSystem.Colors.surfaceVariant.opacity(0.42)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
             .overlay {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .stroke(accent.opacity(0.16), lineWidth: 1)
             }
+            .shadow(color: accent.opacity(0.08), radius: 18, x: 0, y: 10)
     }
 }
 
@@ -559,29 +772,30 @@ private struct AssistantPromptChip: View {
     let isSelected: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        HStack(spacing: 8) {
             Image(systemName: prompt.icon)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(isSelected ? .white : prompt.tint)
-                .frame(width: 30, height: 30)
+                .frame(width: 28, height: 28)
                 .background((isSelected ? Color.white.opacity(0.18) : prompt.tint.opacity(0.12)), in: Circle())
 
             Text(prompt.title)
                 .font(AppDesignSystem.Typography.caption.weight(.bold))
                 .foregroundStyle(isSelected ? .white : AppDesignSystem.Colors.textPrimary)
-                .lineLimit(2)
-                .minimumScaleFactor(0.78)
+                .lineLimit(1)
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, minHeight: 92, alignment: .leading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(height: 48)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            Capsule(style: .continuous)
                 .fill(promptBackground)
         )
         .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            Capsule(style: .continuous)
                 .stroke(isSelected ? Color.white.opacity(0.30) : prompt.tint.opacity(0.14), lineWidth: 1)
         }
+        .shadow(color: isSelected ? prompt.tint.opacity(0.18) : .clear, radius: 12, x: 0, y: 7)
     }
 
     private var promptBackground: some ShapeStyle {
