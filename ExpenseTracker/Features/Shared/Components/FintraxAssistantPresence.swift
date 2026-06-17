@@ -55,15 +55,6 @@ private struct FintraxAssistantLauncher: View {
             }
         } label: {
             FintraxAssistantBot(size: 72, isBlinking: isBlinking, isThinking: shimmer)
-                .overlay(alignment: .topTrailing) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(width: 22, height: 22)
-                        .background(AppDesignSystem.Colors.warning.gradient, in: Circle())
-                        .offset(x: 2, y: 4)
-                        .scaleEffect(arrivalSpark ? 1.18 : (shimmer ? 1.08 : 0.92))
-                }
                 .overlay(alignment: .topLeading) {
                     if entrance == .dashboardArrival {
                         arrivalTrail
@@ -122,17 +113,9 @@ private struct FintraxAssistantLauncher: View {
     private func startBlinking() {
         Task {
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 2_300_000_000)
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.12)) {
-                        isBlinking = true
-                    }
-                }
-                try? await Task.sleep(nanoseconds: 150_000_000)
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.14)) {
-                        isBlinking = false
-                    }
+                try? await Task.sleep(nanoseconds: AssistantBlinkRhythm.nextPause())
+                await AssistantBlinkRhythm.performBlink { blink in
+                    isBlinking = blink
                 }
             }
         }
@@ -141,10 +124,13 @@ private struct FintraxAssistantLauncher: View {
 
 private struct FintraxAssistantSheet: View {
     @State private var selectedPrompt: AssistantPrompt?
+    @State private var insights: [AssistantInsight] = []
+    @State private var loadingState: AssistantLoadingState = .loading
     @State private var isThinking = false
     @State private var isBlinking = false
 
     private let prompts = AssistantPrompt.samples
+    private let repository = FinanceDataRepository.shared
 
     var body: some View {
         ScrollView {
@@ -161,6 +147,9 @@ private struct FintraxAssistantSheet: View {
         .background(FintraxTabBackground(style: .analytics))
         .onAppear {
             startBlinking()
+        }
+        .task {
+            await loadInsights()
         }
     }
 
@@ -196,7 +185,7 @@ private struct FintraxAssistantSheet: View {
                     Button {
                         withAnimation(.spring(response: 0.34, dampingFraction: 0.84)) {
                             selectedPrompt = prompt
-                            isThinking = true
+                            isThinking = false
                         }
                     } label: {
                         AssistantPromptChip(prompt: prompt, isSelected: selectedPrompt == prompt)
@@ -210,28 +199,45 @@ private struct FintraxAssistantSheet: View {
     }
 
     private var previewResponse: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: selectedPrompt?.icon ?? "sparkles")
-                .font(.headline.weight(.bold))
-                .foregroundStyle(selectedPrompt?.tint ?? AppDesignSystem.Colors.primary)
-                .frame(width: 38, height: 38)
-                .background((selectedPrompt?.tint ?? AppDesignSystem.Colors.primary).opacity(0.12), in: Circle())
-
-            VStack(alignment: .leading, spacing: 5) {
-                Text(selectedPrompt?.title ?? "Assistant presence is live")
-                    .font(AppDesignSystem.Typography.calloutEmphasized)
-                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
-
-                Text(selectedPrompt?.preview ?? "The assistant is now available in the app shell. Next, we can connect it to your finance data so these asks return real insights.")
-                    .font(AppDesignSystem.Typography.caption)
-                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 12) {
+            switch loadingState {
+            case .loading:
+                AssistantLoadingCard()
+                    .onAppear {
+                        isThinking = true
+                    }
+            case .failed(let message):
+                AssistantInsightCard(
+                    insight: AssistantInsight(
+                        promptID: "error",
+                        title: "Could not read finance data",
+                        value: "Try again",
+                        message: message,
+                        action: "I will keep the assistant available once the data store responds.",
+                        icon: "exclamationmark.triangle.fill",
+                        tint: AppDesignSystem.Colors.error,
+                        detailRows: []
+                    )
+                )
+                .onAppear {
+                    isThinking = false
+                }
+            case .loaded:
+                ForEach(visibleInsights) { insight in
+                    AssistantInsightCard(insight: insight)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                }
             }
-
-            Spacer(minLength: 0)
         }
-        .padding(16)
-        .background(assistantPanel(accent: selectedPrompt?.tint ?? AppDesignSystem.Colors.primary))
+        .animation(.spring(response: 0.36, dampingFraction: 0.86), value: selectedPrompt)
+    }
+
+    private var visibleInsights: [AssistantInsight] {
+        if let selectedPrompt {
+            return insights.filter { $0.promptID == selectedPrompt.id }
+        }
+
+        return Array(insights.prefix(3))
     }
 
     private func assistantPanel(accent: Color) -> some View {
@@ -246,19 +252,70 @@ private struct FintraxAssistantSheet: View {
     private func startBlinking() {
         Task {
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 2_100_000_000)
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.12)) {
-                        isBlinking = true
-                    }
-                }
-                try? await Task.sleep(nanoseconds: 140_000_000)
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 0.14)) {
-                        isBlinking = false
-                    }
+                try? await Task.sleep(nanoseconds: AssistantBlinkRhythm.nextPause())
+                await AssistantBlinkRhythm.performBlink { blink in
+                    isBlinking = blink
                 }
             }
+        }
+    }
+
+    @MainActor
+    private func loadInsights() async {
+        loadingState = .loading
+        isThinking = true
+
+        do {
+            let snapshot = try await repository.loadDashboardSnapshot()
+            let generatedInsights = AssistantInsightEngine.makeInsights(from: snapshot)
+
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.86)) {
+                insights = generatedInsights
+                selectedPrompt = generatedInsights.first.flatMap { insight in
+                    prompts.first(where: { $0.id == insight.promptID })
+                }
+                loadingState = .loaded
+                isThinking = false
+            }
+        } catch {
+            loadingState = .failed(error.localizedDescription)
+            isThinking = false
+        }
+    }
+}
+
+private enum AssistantLoadingState: Equatable {
+    case loading
+    case loaded
+    case failed(String)
+}
+
+private enum AssistantBlinkRhythm {
+    static func nextPause() -> UInt64 {
+        let seconds = Double.random(in: 3.6...7.4)
+        return UInt64(seconds * 1_000_000_000)
+    }
+
+    @MainActor
+    static func performBlink(_ setBlinking: @escaping (Bool) -> Void) async {
+        await closeAndOpen(setBlinking, closedFor: 0.105)
+
+        if Int.random(in: 1...7) == 1 {
+            try? await Task.sleep(nanoseconds: 120_000_000)
+            await closeAndOpen(setBlinking, closedFor: 0.085)
+        }
+    }
+
+    @MainActor
+    private static func closeAndOpen(_ setBlinking: @escaping (Bool) -> Void, closedFor seconds: Double) async {
+        withAnimation(.easeInOut(duration: 0.075)) {
+            setBlinking(true)
+        }
+
+        try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+
+        withAnimation(.easeInOut(duration: 0.11)) {
+            setBlinking(false)
         }
     }
 }
@@ -367,6 +424,136 @@ private struct FintraxAssistantBot: View {
     }
 }
 
+private struct AssistantLoadingCard: View {
+    @State private var pulse = false
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "wand.and.stars")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(AppDesignSystem.Colors.primary)
+                .frame(width: 38, height: 38)
+                .background(AppDesignSystem.Colors.primary.opacity(0.12), in: Circle())
+                .scaleEffect(pulse ? 1.08 : 0.94)
+
+            VStack(alignment: .leading, spacing: 7) {
+                Text("Reading your money pattern")
+                    .font(AppDesignSystem.Typography.calloutEmphasized)
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+
+                Text("Checking expenses, income, budgets, bills, and daily spending behavior.")
+                    .font(AppDesignSystem.Typography.caption)
+                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .background(assistantPanel(accent: AppDesignSystem.Colors.primary))
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                pulse = true
+            }
+        }
+    }
+
+    private func assistantPanel(accent: Color) -> some View {
+        RoundedRectangle(cornerRadius: 22, style: .continuous)
+            .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.78))
+            .overlay {
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(accent.opacity(0.16), lineWidth: 1)
+            }
+    }
+}
+
+private struct AssistantInsightCard: View {
+    let insight: AssistantInsight
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: insight.icon)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(insight.tint)
+                    .frame(width: 40, height: 40)
+                    .background(insight.tint.opacity(0.12), in: Circle())
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(insight.title)
+                        .font(AppDesignSystem.Typography.calloutEmphasized)
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+
+                    Text(insight.value)
+                        .font(AppDesignSystem.Typography.title3.weight(.bold))
+                        .foregroundStyle(insight.tint)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.82)
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            Text(insight.message)
+                .font(AppDesignSystem.Typography.caption)
+                .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if !insight.detailRows.isEmpty {
+                VStack(spacing: 8) {
+                    ForEach(insight.detailRows) { row in
+                        HStack(spacing: 10) {
+                            Image(systemName: row.icon)
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(insight.tint)
+                                .frame(width: 24, height: 24)
+                                .background(insight.tint.opacity(0.10), in: Circle())
+
+                            Text(row.title)
+                                .font(AppDesignSystem.Typography.caption)
+                                .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+
+                            Spacer(minLength: 8)
+
+                            Text(row.value)
+                                .font(AppDesignSystem.Typography.caption.weight(.semibold))
+                                .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.82)
+                        }
+                    }
+                }
+                .padding(12)
+                .background(AppDesignSystem.Colors.surfaceVariant.opacity(0.34), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "lightbulb.fill")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(AppDesignSystem.Colors.warning)
+
+                Text(insight.action)
+                    .font(AppDesignSystem.Typography.caption.weight(.medium))
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.top, 2)
+        }
+        .padding(16)
+        .background(assistantPanel(accent: insight.tint))
+    }
+
+    private func assistantPanel(accent: Color) -> some View {
+        RoundedRectangle(cornerRadius: 22, style: .continuous)
+            .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.78))
+            .overlay {
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(accent.opacity(0.16), lineWidth: 1)
+            }
+    }
+}
+
 private struct AssistantPromptChip: View {
     let prompt: AssistantPrompt
     let isSelected: Bool
@@ -428,28 +615,300 @@ private struct AssistantPrompt: Identifiable, Equatable {
             title: "Highest spend day",
             icon: "calendar.badge.exclamationmark",
             tint: AppDesignSystem.Colors.warning,
-            preview: "I will scan daily totals and point out the date where spending peaked."
+            preview: "Find the date where your spending peaked this month."
         ),
         AssistantPrompt(
             id: "saving-day",
             title: "Best saving day",
             icon: "leaf.fill",
             tint: AppDesignSystem.Colors.success,
-            preview: "I will compare your low-spend days and highlight the strongest saving pattern."
+            preview: "Highlight the calmest spending day this month."
         ),
         AssistantPrompt(
             id: "food-month",
             title: "Food this month",
             icon: "fork.knife",
             tint: AppDesignSystem.Colors.primary,
-            preview: "I will total category spending and explain how food is moving this month."
+            preview: "Explain food spending and its share of this month."
         ),
         AssistantPrompt(
             id: "budget-risk",
             title: "Budget risk",
             icon: "target",
             tint: AppDesignSystem.Colors.info,
-            preview: "I will compare spend pace against budget and call out categories needing attention."
+            preview: "Compare spending pace against your monthly budget."
+        ),
+        AssistantPrompt(
+            id: "cash-flow",
+            title: "Income vs spend",
+            icon: "arrow.left.arrow.right.circle.fill",
+            tint: AppDesignSystem.Colors.success,
+            preview: "Show this month's income, spend, and net balance."
+        ),
+        AssistantPrompt(
+            id: "frequent-spend",
+            title: "Frequent spends",
+            icon: "repeat.circle.fill",
+            tint: AppDesignSystem.Colors.warning,
+            preview: "Spot repeated expense titles and habits."
         )
     ]
+}
+
+private struct AssistantInsight: Identifiable {
+    let id = UUID()
+    let promptID: String
+    let title: String
+    let value: String
+    let message: String
+    let action: String
+    let icon: String
+    let tint: Color
+    let detailRows: [AssistantInsightRow]
+}
+
+private struct AssistantInsightRow: Identifiable {
+    let id = UUID()
+    let icon: String
+    let title: String
+    let value: String
+}
+
+private enum AssistantInsightEngine {
+    static func makeInsights(from snapshot: DashboardDataSnapshot, now: Date = Date(), calendar: Calendar = .current) -> [AssistantInsight] {
+        guard let currentMonth = calendar.dateInterval(of: .month, for: now) else {
+            return [emptyInsight(message: "I could not identify the current month range.")]
+        }
+
+        let expenses = snapshot.expenses.filter { currentMonth.contains($0.date) }
+        let incomes = snapshot.incomes.filter { currentMonth.contains($0.date) }
+        let categoryMap = Dictionary(uniqueKeysWithValues: snapshot.categories.map { ($0.id, $0) })
+        let totalSpend = expenses.reduce(Decimal.zero) { $0 + $1.amount }
+        let totalIncome = incomes.reduce(Decimal.zero) { $0 + $1.amount }
+
+        guard !expenses.isEmpty || !incomes.isEmpty else {
+            return [emptyInsight(message: "Add a few expenses or switch to demo data, and I can start answering money questions.")]
+        }
+
+        return [
+            highestSpendDayInsight(expenses: expenses, totalSpend: totalSpend, calendar: calendar),
+            bestSavingDayInsight(expenses: expenses, calendar: calendar),
+            foodInsight(expenses: expenses, totalSpend: totalSpend, categoryMap: categoryMap),
+            budgetRiskInsight(expenses: expenses, monthlyBudget: snapshot.monthlyBudget, now: now, calendar: calendar),
+            cashFlowInsight(totalIncome: totalIncome, totalSpend: totalSpend, incomes: incomes, expenses: expenses),
+            frequentSpendInsight(expenses: expenses, categoryMap: categoryMap)
+        ]
+    }
+
+    private static func highestSpendDayInsight(expenses: [Expense], totalSpend: Decimal, calendar: Calendar) -> AssistantInsight {
+        let grouped = Dictionary(grouping: expenses) { calendar.startOfDay(for: $0.date) }
+        let best = grouped
+            .map { (date: $0.key, amount: $0.value.reduce(Decimal.zero) { $0 + $1.amount }, count: $0.value.count) }
+            .max { $0.amount < $1.amount }
+
+        guard let best else {
+            return emptyInsight(promptID: "highest-day", message: "No expenses found for this month yet.")
+        }
+
+        let share = totalSpend > 0 ? NSDecimalNumber(decimal: best.amount / totalSpend).doubleValue : 0
+        return AssistantInsight(
+            promptID: "highest-day",
+            title: "Highest spend day",
+            value: best.date.formatted(date: .abbreviated, time: .omitted),
+            message: "You spent \(CurrencyFormatter.format(best.amount)) across \(best.count) entries on this date, about \(Int((share * 100).rounded()))% of this month's spending.",
+            action: "Open expenses for this date before month-end review; one unusually heavy day often explains the whole trend.",
+            icon: "calendar.badge.exclamationmark",
+            tint: AppDesignSystem.Colors.warning,
+            detailRows: [
+                AssistantInsightRow(icon: "indianrupeesign.circle.fill", title: "Day total", value: CurrencyFormatter.format(best.amount)),
+                AssistantInsightRow(icon: "list.bullet", title: "Entries", value: "\(best.count)")
+            ]
+        )
+    }
+
+    private static func bestSavingDayInsight(expenses: [Expense], calendar: Calendar) -> AssistantInsight {
+        let today = calendar.startOfDay(for: Date())
+        let grouped = Dictionary(grouping: expenses) { calendar.startOfDay(for: $0.date) }
+        let daysWithSpend = grouped
+            .map { (date: $0.key, amount: $0.value.reduce(Decimal.zero) { $0 + $1.amount }, count: $0.value.count) }
+            .filter { $0.date <= today }
+
+        guard let lowest = daysWithSpend.min(by: { $0.amount < $1.amount }) else {
+            return emptyInsight(promptID: "saving-day", message: "No expense days found for this month yet.")
+        }
+
+        return AssistantInsight(
+            promptID: "saving-day",
+            title: "Best saving day",
+            value: lowest.date.formatted(date: .abbreviated, time: .omitted),
+            message: "This was your calmest recorded spend day with \(CurrencyFormatter.format(lowest.amount)) across \(lowest.count) entries.",
+            action: "Notice what was different on that day. Repeating that routine is usually easier than only cutting big purchases.",
+            icon: "leaf.fill",
+            tint: AppDesignSystem.Colors.success,
+            detailRows: [
+                AssistantInsightRow(icon: "indianrupeesign.circle.fill", title: "Lowest day total", value: CurrencyFormatter.format(lowest.amount)),
+                AssistantInsightRow(icon: "calendar", title: "Tracked spend days", value: "\(daysWithSpend.count)")
+            ]
+        )
+    }
+
+    private static func foodInsight(expenses: [Expense], totalSpend: Decimal, categoryMap: [UUID: Category]) -> AssistantInsight {
+        let foodExpenses = expenses.filter { expense in
+            guard let category = categoryMap[expense.categoryID] else { return false }
+            return category.name.localizedCaseInsensitiveContains("food")
+        }
+        let amount = foodExpenses.reduce(Decimal.zero) { $0 + $1.amount }
+        let share = totalSpend > 0 ? NSDecimalNumber(decimal: amount / totalSpend).doubleValue : 0
+        let average = foodExpenses.isEmpty ? Decimal.zero : amount / Decimal(foodExpenses.count)
+
+        return AssistantInsight(
+            promptID: "food-month",
+            title: "Food this month",
+            value: CurrencyFormatter.format(amount),
+            message: foodExpenses.isEmpty
+                ? "I did not find Food category expenses this month."
+                : "Food is \(Int((share * 100).rounded()))% of monthly spend with \(foodExpenses.count) entries.",
+            action: foodExpenses.isEmpty
+                ? "If food items are going into Other, update those categories and I will read the pattern correctly."
+                : "A useful control is setting a weekly food ceiling near \(CurrencyFormatter.format((amount / Decimal(max(1, Calendar.current.component(.day, from: Date())))) * 7)).",
+            icon: "fork.knife",
+            tint: AppDesignSystem.Colors.primary,
+            detailRows: [
+                AssistantInsightRow(icon: "percent", title: "Share of spend", value: "\(Int((share * 100).rounded()))%"),
+                AssistantInsightRow(icon: "chart.bar.fill", title: "Avg entry", value: CurrencyFormatter.format(average))
+            ]
+        )
+    }
+
+    private static func budgetRiskInsight(expenses: [Expense], monthlyBudget: MonthlyBudget?, now: Date, calendar: Calendar) -> AssistantInsight {
+        guard let monthlyBudget else {
+            return AssistantInsight(
+                promptID: "budget-risk",
+                title: "Budget risk",
+                value: "Budget not set",
+                message: "I can analyze budget pace once a monthly budget is configured.",
+                action: "Set a monthly budget to unlock risk, safe daily spend, and month-end projection.",
+                icon: "target",
+                tint: AppDesignSystem.Colors.warning,
+                detailRows: []
+            )
+        }
+
+        let spent = expenses.reduce(Decimal.zero) { $0 + $1.amount }
+        let usage = monthlyBudget.amount > 0 ? NSDecimalNumber(decimal: spent / monthlyBudget.amount).doubleValue : 0
+        let range = calendar.range(of: .day, in: .month, for: now)
+        let day = max(calendar.component(.day, from: now), 1)
+        let totalDays = max(range?.count ?? day, day)
+        let daysLeft = max(totalDays - day, 0)
+        let currentDaily = spent / Decimal(day)
+        let projected = currentDaily * Decimal(totalDays)
+        let remaining = monthlyBudget.amount - spent
+        let safeDaily = daysLeft > 0 ? max(remaining, .zero) / Decimal(daysLeft) : .zero
+        let tint: Color = usage >= 1 ? AppDesignSystem.Colors.error : usage >= 0.8 ? AppDesignSystem.Colors.warning : AppDesignSystem.Colors.info
+
+        return AssistantInsight(
+            promptID: "budget-risk",
+            title: "Budget risk",
+            value: "\(Int((usage * 100).rounded()))% used",
+            message: "You have \(daysLeft) days left. At the current pace, month-end spend may reach \(CurrencyFormatter.format(projected)).",
+            action: usage >= 1
+                ? "Pause non-essential spends first; you are already beyond the planned monthly limit."
+                : "Keep daily spend near \(CurrencyFormatter.format(safeDaily)) to stay inside the budget.",
+            icon: usage >= 1 ? "exclamationmark.triangle.fill" : "target",
+            tint: tint,
+            detailRows: [
+                AssistantInsightRow(icon: "wallet.pass.fill", title: "Budget", value: CurrencyFormatter.format(monthlyBudget.amount)),
+                AssistantInsightRow(icon: "arrow.down.forward.circle.fill", title: "Safe daily", value: CurrencyFormatter.format(safeDaily))
+            ]
+        )
+    }
+
+    private static func cashFlowInsight(totalIncome: Decimal, totalSpend: Decimal, incomes: [IncomeRecord], expenses: [Expense]) -> AssistantInsight {
+        let net = totalIncome - totalSpend
+        let positive = net >= 0
+
+        return AssistantInsight(
+            promptID: "cash-flow",
+            title: "Income vs spend",
+            value: CurrencyFormatter.format(net),
+            message: positive
+                ? "You are currently cash-flow positive this month."
+                : "Spending is ahead of recorded income this month.",
+            action: positive
+                ? "Protect this surplus by moving a fixed amount into savings before discretionary spending."
+                : "Check whether income is missing first; if not, reduce the top two flexible categories.",
+            icon: positive ? "arrow.up.right.circle.fill" : "arrow.down.right.circle.fill",
+            tint: positive ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.error,
+            detailRows: [
+                AssistantInsightRow(icon: "plus.circle.fill", title: "Income", value: CurrencyFormatter.format(totalIncome)),
+                AssistantInsightRow(icon: "minus.circle.fill", title: "Spend", value: CurrencyFormatter.format(totalSpend)),
+                AssistantInsightRow(icon: "number", title: "Records", value: "\(incomes.count) income / \(expenses.count) expense")
+            ]
+        )
+    }
+
+    private static func frequentSpendInsight(expenses: [Expense], categoryMap: [UUID: Category]) -> AssistantInsight {
+        let normalized = Dictionary(grouping: expenses) { normalizeTitle($0.title) }
+            .mapValues { grouped in
+                (
+                    title: grouped.first?.title ?? "Expense",
+                    amount: grouped.reduce(Decimal.zero) { $0 + $1.amount },
+                    count: grouped.count,
+                    category: grouped.first.flatMap { categoryMap[$0.categoryID]?.name } ?? "Uncategorized"
+                )
+            }
+            .filter { $0.value.count > 1 }
+
+        guard let top = normalized.values.sorted(by: {
+            if $0.count != $1.count { return $0.count > $1.count }
+            return $0.amount > $1.amount
+        }).first else {
+            return AssistantInsight(
+                promptID: "frequent-spend",
+                title: "Frequent spends",
+                value: "No repeats yet",
+                message: "I did not find repeated expense titles this month.",
+                action: "As more entries come in, I will flag repeat habits like coffee, fuel, groceries, or subscriptions.",
+                icon: "repeat.circle.fill",
+                tint: AppDesignSystem.Colors.warning,
+                detailRows: []
+            )
+        }
+
+        return AssistantInsight(
+            promptID: "frequent-spend",
+            title: "Frequent spends",
+            value: top.title,
+            message: "This appeared \(top.count) times and totals \(CurrencyFormatter.format(top.amount)) this month.",
+            action: "Repeated small spends are worth reviewing because they are easier to tune than rare large spends.",
+            icon: "repeat.circle.fill",
+            tint: AppDesignSystem.Colors.warning,
+            detailRows: [
+                AssistantInsightRow(icon: "number.circle.fill", title: "Frequency", value: "\(top.count)x"),
+                AssistantInsightRow(icon: "tag.fill", title: "Category", value: top.category)
+            ]
+        )
+    }
+
+    private static func emptyInsight(promptID: String = "highest-day", message: String) -> AssistantInsight {
+        AssistantInsight(
+            promptID: promptID,
+            title: "No insight yet",
+            value: "Needs data",
+            message: message,
+            action: "Add expenses, income, and budget details so I can produce meaningful answers.",
+            icon: "sparkles",
+            tint: AppDesignSystem.Colors.primary,
+            detailRows: []
+        )
+    }
+
+    private static func normalizeTitle(_ title: String) -> String {
+        title
+            .lowercased()
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+            .prefix(3)
+            .joined(separator: " ")
+    }
 }
