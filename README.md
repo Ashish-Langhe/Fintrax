@@ -17,7 +17,7 @@ Fintrax is a local-first personal finance iOS app built with SwiftUI. It helps u
 | Reporting | CSV export and verified PDF financial reports |
 | Architecture | Feature-oriented SwiftUI, MVVM-style view models, repository facade, event bus |
 | Version | 1.0 |
-| Bundle ID | `com.globant.ExpenseTracker` |
+| Bundle ID | `com.ashishlanghe.ExpenseTracker` |
 
 ## Product Focus
 
