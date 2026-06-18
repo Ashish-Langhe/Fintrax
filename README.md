@@ -1,7 +1,12 @@
 # Fintrax
 
 
-[Fintrax_Professional_Product_Case_Study.pdf](https://github.com/user-attachments/files/29077991/Fintrax_Professional_Product_Case_Study.pdf)
+<img width="1182" height="710" alt="Screenshot 2026-06-18 at 10 54 31 AM" src="https://github.com/user-attachments/assets/b854a5f8-9c4a-4b56-828f-d1c893615a65" />
+
+
+
+
+#### Document: [Fintrax_Professional_Product_Case_Study.pdf](https://github.com/user-attachments/files/29077991/Fintrax_Professional_Product_Case_Study.pdf)
 
 
 
