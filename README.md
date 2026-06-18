@@ -18,7 +18,7 @@ The app is designed for private, practical money management without requiring ba
 | Reports | PDF and CSV export |
 | Intelligence | Smart category detection, rule-based insights, Fintrax Assistant |
 | Architecture | Feature-oriented SwiftUI, MVVM-style view models, repository facade, event bus |
-| Bundle ID | `com.globant.ExpenseTracker` |
+| Bundle ID | `com.ashishlanghe.ExpenseTracker` |
 
 ## Product Goals
 
