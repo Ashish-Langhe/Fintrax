@@ -1,8 +1,6 @@
 # Fintrax
 
-
-<img width="1536" height="1024" alt="Fintrax_BG" src="https://github.com/user-attachments/assets/957781be-c0fd-4c06-b45c-e3ee598adb84" />
-
+<img width="1774" height="887" alt="finny_bg" src="https://github.com/user-attachments/assets/7057d9ee-7414-411f-83d8-c5ddc15e5424" />
 
 
 #### Document: [Fintrax_Professional_Product_Case_Study.pdf](https://github.com/user-attachments/files/29077991/Fintrax_Professional_Product_Case_Study.pdf)
