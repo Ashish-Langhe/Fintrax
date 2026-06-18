@@ -10,20 +10,21 @@ import XCTest
 
 final class SmartCategoryServiceTests: XCTestCase {
     private var service: SmartCategoryService!
-    private var categories: [Category]!
+    private var categories: [ExpenseTracker.Category]!
 
     override func setUp() {
         super.setUp()
         service = SmartCategoryService()
         categories = [
-            Category(name: "Food", iconName: "fork.knife", colorName: "orange", isDefault: true),
-            Category(name: "Transportation", iconName: "car.fill", colorName: "blue", isDefault: true),
-            Category(name: "Shopping", iconName: "bag.fill", colorName: "pink", isDefault: true),
-            Category(name: "Utilities", iconName: "bolt.fill", colorName: "yellow", isDefault: true),
-            Category(name: "Health", iconName: "heart.fill", colorName: "red", isDefault: true),
-            Category(name: "Entertainment", iconName: "tv.fill", colorName: "purple", isDefault: true),
-            Category(name: "Travel", iconName: "airplane", colorName: "cyan"),
-            Category(name: "Other", iconName: "ellipsis.circle.fill", colorName: "gray", isDefault: true)
+            ExpenseTracker.Category(name: "Food", iconName: "fork.knife", colorName: "orange", isDefault: true),
+            ExpenseTracker.Category(name: "Transportation", iconName: "car.fill", colorName: "blue", isDefault: true),
+            ExpenseTracker.Category(name: "Shopping", iconName: "bag.fill", colorName: "pink", isDefault: true),
+            ExpenseTracker.Category(name: "Utilities", iconName: "bolt.fill", colorName: "yellow", isDefault: true),
+            ExpenseTracker.Category(name: "Health", iconName: "heart.fill", colorName: "red", isDefault: true),
+            ExpenseTracker.Category(name: "Entertainment", iconName: "tv.fill", colorName: "purple", isDefault: true),
+            ExpenseTracker.Category(name: "Travel", iconName: "airplane", colorName: "cyan"),
+            ExpenseTracker.Category(name: "Education", iconName: "book.fill", colorName: "purple"),
+            ExpenseTracker.Category(name: "Other", iconName: "ellipsis.circle.fill", colorName: "gray", isDefault: true)
         ]
     }
 
@@ -147,7 +148,7 @@ final class SmartCategoryServiceTests: XCTestCase {
     }
 
     func testUsesCustomCategoryNameAsSignal() {
-        categories.append(Category(name: "Pets", iconName: "pawprint.fill", colorName: "brown"))
+        categories.append(ExpenseTracker.Category(name: "Pets", iconName: "pawprint.fill", colorName: "brown"))
 
         assertSuggestion(for: "Pets grooming appointment", equals: "Pets")
     }
