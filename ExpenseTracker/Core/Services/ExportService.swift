@@ -29,6 +29,18 @@ struct ExportService: Sendable {
     private var reportWatermark: UIColor {
         UIColor(red: 0.11, green: 0.31, blue: 0.72, alpha: 0.055)
     }
+
+    private var reportLanguage: AppLanguage {
+        AppLanguage(rawValue: UserDefaults.standard.string(forKey: "appLanguage") ?? AppLanguage.system.rawValue) ?? .system
+    }
+
+    private var reportLocale: Locale {
+        reportLanguage.locale
+    }
+
+    private func reportText(_ key: String) -> String {
+        L10n.string(key, language: reportLanguage)
+    }
     
     /// Export expenses to CSV format
     /// - Parameters:
@@ -75,7 +87,14 @@ struct ExportService: Sendable {
         
         // Add header row
         if includeHeader {
-            csvRows.append("Date,Title,Amount,Category,Note")
+            let headers = [
+                reportText("report.csv.date"),
+                reportText("report.csv.title"),
+                reportText("report.csv.amount"),
+                reportText("report.csv.category"),
+                reportText("report.csv.note")
+            ].map(escapeCSVValue)
+            csvRows.append(headers.joined(separator: ","))
         }
         
         // Add expense rows
@@ -83,6 +102,7 @@ struct ExportService: Sendable {
             // Format date
             let formatter = DateFormatter()
             formatter.dateStyle = .medium
+            formatter.locale = reportLocale
             let dateString = formatter.string(from: expense.date)
             
             // Format amount with INR symbol
@@ -90,7 +110,7 @@ struct ExportService: Sendable {
             
             // Get category name
             let category = categories.first { $0.id == expense.categoryID }
-            let categoryName = category?.name ?? "Unknown"
+            let categoryName = category?.name ?? reportText("report.common.unknown")
             
             // Escape CSV fields (handle commas, quotes, newlines)
             let escapedTitle = escapeCSVValue(expense.title)
@@ -157,11 +177,11 @@ struct ExportService: Sendable {
         let previewExpenses = Array(filteredExpenses.prefix(5))
         
         guard !previewExpenses.isEmpty else {
-            return "No expenses to export"
+            return L10n.string("No expenses to export")
         }
         
         let previewData = try createCSVData(from: previewExpenses, categories: categories)
-        return String(data: previewData, encoding: .utf8) ?? "Failed to generate preview"
+        return String(data: previewData, encoding: .utf8) ?? L10n.string("Failed to generate preview")
     }
     
     /// Get export file sharing URL
@@ -200,9 +220,11 @@ struct ExportService: Sendable {
         let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
+        formatter.locale = reportLocale
 
         let timestampFormatter = DateFormatter()
         timestampFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
+        timestampFormatter.locale = Locale(identifier: "en_US_POSIX")
         let scopeFileName = categoryFilter?.name
             .replacingOccurrences(of: " ", with: "_")
             .replacingOccurrences(of: "/", with: "-") ?? "All_Data"
@@ -215,9 +237,9 @@ struct ExportService: Sendable {
             drawWatermark()
             var y: CGFloat = 42
 
-            drawTitle(categoryFilter.map { "Fintrax \($0.name) Report" } ?? "Fintrax Financial Report", y: &y)
+            drawTitle(categoryFilter.map { String(format: reportText("report.pdf.categoryTitle"), $0.name) } ?? reportText("report.pdf.financialTitle"), y: &y)
             drawVerifiedStamp()
-            drawSubtitle("\(dateRange.rawValue) • \(categoryFilter?.name ?? "All Data") • Generated \(formatter.string(from: Date()))", y: &y)
+            drawSubtitle("\(dateRange.localizedString) • \(categoryFilter?.name ?? reportText("report.pdf.allData")) • \(reportText("report.pdf.generated")) \(formatter.string(from: Date()))", y: &y)
             y += 18
 
             let totalIncome = filteredIncome.totalIncome
@@ -227,16 +249,16 @@ struct ExportService: Sendable {
 
             drawReportSummaryCards(
                 metrics: [
-                    ("Income", CurrencyFormatter.format(totalIncome), UIColor.systemGreen),
-                    ("Spending", CurrencyFormatter.format(totalSpending), UIColor.systemBlue),
-                    ("Net Flow", CurrencyFormatter.format(netCashFlow), netCashFlow >= 0 ? UIColor.systemGreen : UIColor.systemRed),
-                    ("Unpaid Bills", CurrencyFormatter.format(unpaidBills.unpaidTotal), UIColor.systemOrange)
+                    (reportText("report.pdf.income"), CurrencyFormatter.format(totalIncome), UIColor.systemGreen),
+                    (reportText("report.pdf.spending"), CurrencyFormatter.format(totalSpending), UIColor.systemBlue),
+                    (reportText("report.pdf.netFlow"), CurrencyFormatter.format(netCashFlow), netCashFlow >= 0 ? UIColor.systemGreen : UIColor.systemRed),
+                    (reportText("report.pdf.unpaidBills"), CurrencyFormatter.format(unpaidBills.unpaidTotal), UIColor.systemOrange)
                 ],
                 y: &y
             )
             y += 20
 
-            drawSection("Analytics Graphs", y: &y)
+            drawSection(reportText("report.pdf.analyticsGraphs"), y: &y)
             drawCategoryAnalyticsGraph(dashboard: dashboard, y: &y)
             y += 16
 
@@ -250,9 +272,9 @@ struct ExportService: Sendable {
             drawMonthlyTrendGraph(dashboard.monthlyTrend, y: &y)
             y += 18
 
-            drawSection(categoryFilter == nil ? "Top Categories" : "\(categoryFilter?.name ?? "Selected") Data", y: &y)
+            drawSection(categoryFilter == nil ? reportText("report.pdf.topCategories") : String(format: reportText("report.pdf.selectedCategoryData"), categoryFilter?.name ?? reportText("report.pdf.selected")), y: &y)
             if dashboard.categoryBreakdown.isEmpty {
-                drawBody("No expenses found for this period.", y: &y)
+                drawBody(reportText("report.pdf.noExpensesPeriod"), y: &y)
             } else {
                 for (category, amount) in dashboard.categoryBreakdown.prefix(6) {
                     drawMetric(category.name, CurrencyFormatter.format(amount), y: &y)
@@ -260,9 +282,9 @@ struct ExportService: Sendable {
             }
 
             y += 14
-            drawSection("Recent Expenses", y: &y)
+            drawSection(reportText("report.pdf.recentExpenses"), y: &y)
             if filteredExpenses.isEmpty {
-                drawBody("No expenses found for this period.", y: &y)
+                drawBody(reportText("report.pdf.noExpensesPeriod"), y: &y)
             } else {
                 for expense in filteredExpenses.sorted(by: { $0.date > $1.date }).prefix(8) {
                     drawMetric("\(formatter.string(from: expense.date))  \(expense.title)", CurrencyFormatter.format(expense.amount), y: &y)
@@ -278,10 +300,10 @@ struct ExportService: Sendable {
                 y += 14
             }
 
-            drawSection("Upcoming Bills", y: &y)
+            drawSection(reportText("report.pdf.upcomingBills"), y: &y)
             let upcomingBills = bills.filter { !$0.isPaid }.sorted { $0.dueDate < $1.dueDate }.prefix(8)
             if upcomingBills.isEmpty {
-                drawBody("No unpaid bill reminders.", y: &y)
+                drawBody(reportText("report.pdf.noUnpaidBills"), y: &y)
             } else {
                 for bill in upcomingBills {
                     drawMetric("\(formatter.string(from: bill.dueDate))  \(bill.title)", CurrencyFormatter.format(bill.amount), y: &y)
@@ -320,8 +342,8 @@ struct ExportService: Sendable {
         sealPath.fill()
 
         draw("✓", font: .systemFont(ofSize: 15, weight: .bold), color: .white, frame: CGRect(x: sealRect.minX, y: sealRect.minY + 1, width: sealRect.width, height: sealRect.height), alignment: .center)
-        draw("Verified", font: .systemFont(ofSize: 11, weight: .bold), color: reportPrimaryText, frame: CGRect(x: rect.minX + 42, y: rect.minY + 8, width: 96, height: 15))
-        draw("By Fintrax", font: .systemFont(ofSize: 9, weight: .semibold), color: reportSecondaryText, frame: CGRect(x: rect.minX + 42, y: rect.minY + 23, width: 96, height: 13))
+        draw(reportText("report.pdf.verified"), font: .systemFont(ofSize: 11, weight: .bold), color: reportPrimaryText, frame: CGRect(x: rect.minX + 42, y: rect.minY + 8, width: 96, height: 15))
+        draw(reportText("report.pdf.byFintrax"), font: .systemFont(ofSize: 9, weight: .semibold), color: reportSecondaryText, frame: CGRect(x: rect.minX + 42, y: rect.minY + 23, width: 96, height: 13))
     }
 
     private func drawPageBackground() {
@@ -356,10 +378,10 @@ struct ExportService: Sendable {
     private func drawCategoryAnalyticsGraph(dashboard: DashboardData, y: inout CGFloat) {
         let rect = CGRect(x: 42, y: y, width: 528, height: 190)
         drawRoundedRect(rect, fill: reportPanelFill, stroke: UIColor.systemBlue.withAlphaComponent(0.18), radius: 18)
-        draw("Category Breakdown", font: .systemFont(ofSize: 14, weight: .bold), color: reportPrimaryText, frame: CGRect(x: rect.minX + 16, y: rect.minY + 14, width: 240, height: 20))
+        draw(reportText("report.pdf.categoryBreakdown"), font: .systemFont(ofSize: 14, weight: .bold), color: reportPrimaryText, frame: CGRect(x: rect.minX + 16, y: rect.minY + 14, width: 240, height: 20))
 
         guard !dashboard.categoryBreakdown.isEmpty, dashboard.totalSpending > 0 else {
-            draw("No category spending available for this period.", font: .systemFont(ofSize: 12), color: reportSecondaryText, frame: CGRect(x: rect.minX + 16, y: rect.minY + 50, width: rect.width - 32, height: 20))
+            draw(reportText("report.pdf.noCategorySpending"), font: .systemFont(ofSize: 12), color: reportSecondaryText, frame: CGRect(x: rect.minX + 16, y: rect.minY + 50, width: rect.width - 32, height: 20))
             y += rect.height
             return
         }
@@ -393,10 +415,10 @@ struct ExportService: Sendable {
     private func drawMonthlyTrendGraph(_ trend: [(String, Decimal)], y: inout CGFloat) {
         let rect = CGRect(x: 42, y: y, width: 528, height: 188)
         drawRoundedRect(rect, fill: reportPanelFill, stroke: UIColor.systemPurple.withAlphaComponent(0.16), radius: 18)
-        draw("Monthly Trend", font: .systemFont(ofSize: 14, weight: .bold), color: reportPrimaryText, frame: CGRect(x: rect.minX + 16, y: rect.minY + 14, width: 240, height: 20))
+        draw(reportText("report.pdf.monthlyTrend"), font: .systemFont(ofSize: 14, weight: .bold), color: reportPrimaryText, frame: CGRect(x: rect.minX + 16, y: rect.minY + 14, width: 240, height: 20))
 
         guard !trend.isEmpty else {
-            draw("No monthly trend available yet.", font: .systemFont(ofSize: 12), color: reportSecondaryText, frame: CGRect(x: rect.minX + 16, y: rect.minY + 50, width: rect.width - 32, height: 20))
+            draw(reportText("report.pdf.noMonthlyTrend"), font: .systemFont(ofSize: 12), color: reportSecondaryText, frame: CGRect(x: rect.minX + 16, y: rect.minY + 50, width: rect.width - 32, height: 20))
             y += rect.height
             return
         }
