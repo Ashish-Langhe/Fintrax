@@ -37,7 +37,7 @@ struct CategoryManagementView: View {
                 .padding(.vertical, 18)
             }
         }
-        .navigationTitle("Categories")
+        .navigationTitle(LocalizedStringKey("Categories"))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -65,28 +65,28 @@ struct CategoryManagementView: View {
         }
         .fintraxModal(
             isPresented: viewModel.showAlert,
-            title: "Category",
+            title: L10n.string("Category"),
             message: viewModel.alertMessage,
             icon: "tag.fill",
             tint: AppDesignSystem.Colors.warning,
-            primaryAction: FintraxModalAction(title: "Got It", icon: "checkmark", tint: AppDesignSystem.Colors.primary) {
+            primaryAction: FintraxModalAction(title: L10n.string("Got It"), icon: "checkmark", tint: AppDesignSystem.Colors.primary) {
                 viewModel.showAlert = false
             }
         )
         .fintraxModal(
             isPresented: categoryToDelete != nil,
-            title: "Delete Category?",
+            title: L10n.string("Delete Category?"),
             message: deleteConfirmationMessage,
             icon: "trash.fill",
             tint: AppDesignSystem.Colors.error,
-            primaryAction: FintraxModalAction(title: "Delete Category", icon: "trash.fill", tint: AppDesignSystem.Colors.error, isDestructive: true) {
+            primaryAction: FintraxModalAction(title: L10n.string("Delete Category"), icon: "trash.fill", tint: AppDesignSystem.Colors.error, isDestructive: true) {
                 guard let categoryToDelete else { return }
                 Task {
                     await viewModel.deleteCategory(categoryToDelete)
                     self.categoryToDelete = nil
                 }
             },
-            secondaryAction: FintraxModalAction(title: "Keep Category", icon: "xmark", tint: AppDesignSystem.Colors.textSecondary) {
+            secondaryAction: FintraxModalAction(title: L10n.string("Keep Category"), icon: "xmark", tint: AppDesignSystem.Colors.textSecondary) {
                 categoryToDelete = nil
             }
         )
@@ -99,9 +99,9 @@ struct CategoryManagementView: View {
         guard let category = categoryToDelete else { return "" }
         let count = viewModel.expenseCount(for: category.id)
         if count == 0 {
-            return "This removes \(category.name) from your category library."
+            return L10n.format("categories.delete.empty", category.name)
         }
-        return "This removes \(category.name). Its \(count == 1 ? "expense" : "expenses") will move to another available category so dashboard and expense history stay valid."
+        return L10n.format("categories.delete.withExpenses", category.name, count)
     }
 
     private var summaryCard: some View {
@@ -118,7 +118,7 @@ struct CategoryManagementView: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text("Category Library")
                     .font(.headline)
-                Text("\(viewModel.categories.count) categories • \(viewModel.customCategoryCount) custom")
+                Text(L10n.format("categories.summary.counts", viewModel.categories.count, viewModel.customCategoryCount))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -239,7 +239,7 @@ private struct CategoryManagementRow: View {
                         .lineLimit(1)
 
                     if category.isDefault {
-                        Text("Default")
+                        Text(LocalizedStringKey("Default"))
                             .font(.caption2.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 8)
@@ -248,7 +248,7 @@ private struct CategoryManagementRow: View {
                     }
                 }
 
-                Text(expenseCount == 1 ? "1 expense" : "\(expenseCount) expenses")
+                Text(L10n.format("categories.expenseCount", expenseCount))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -276,7 +276,7 @@ private struct CategoryManagementRow: View {
         .categoryCard(cornerRadius: 20)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive, action: onDelete) {
-                Label("Delete", systemImage: "trash")
+                Label(LocalizedStringKey("Delete"), systemImage: "trash")
             }
         }
     }
@@ -319,7 +319,7 @@ private struct CategoryEditorSheet: View {
                     .padding(.vertical, 18)
                 }
             }
-            .navigationTitle(mode.category == nil ? "Add Category" : "Edit Category")
+            .navigationTitle(LocalizedStringKey(mode.category == nil ? "Add Category" : "Edit Category"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -352,9 +352,9 @@ private struct CategoryEditorSheet: View {
                 .background(Color.categoryColor(named: colorName), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
             VStack(spacing: 5) {
-                Text(name.isEmpty ? "Category Name" : name)
+                Text(name.isEmpty ? L10n.string("Category Name") : name)
                     .font(.title3.weight(.bold))
-                Text("Icon and color will appear across Expenses and Dashboard")
+                Text(LocalizedStringKey("Icon and color will appear across Expenses and Dashboard"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -363,7 +363,7 @@ private struct CategoryEditorSheet: View {
             Button {
                 showIconPicker = true
             } label: {
-                Label("Choose Apple Icon", systemImage: "sparkles")
+                Label(LocalizedStringKey("Choose Apple Icon"), systemImage: "sparkles")
                     .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 11)
@@ -378,7 +378,7 @@ private struct CategoryEditorSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             CategorySectionHeader(title: "Category Name", icon: "text.cursor", tint: .blue)
 
-            TextField("Enter category name", text: $name)
+            TextField(LocalizedStringKey("Enter category name"), text: $name)
                 .focused($isNameFocused)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
@@ -495,9 +495,9 @@ private struct SymbolPicker: View {
                     .padding(16)
                 }
             }
-            .navigationTitle("Choose Icon")
+            .navigationTitle(LocalizedStringKey("Choose Icon"))
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, prompt: "Search SF Symbols")
+            .searchable(text: $searchText, prompt: Text("Search SF Symbols"))
         }
     }
 }
@@ -515,7 +515,7 @@ private struct CategorySectionHeader: View {
                 .frame(width: 34, height: 34)
                 .background(tint, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.headline)
 
             Spacer()

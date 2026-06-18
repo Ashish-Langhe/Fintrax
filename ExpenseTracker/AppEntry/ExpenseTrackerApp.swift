@@ -57,6 +57,14 @@ struct ContentView: View {
     private var isPinGateRequired: Bool {
         pinLockEnabled && !appPin.isEmpty
     }
+
+    private var localizationRefreshID: String {
+        settingsManager.settings.language.rawValue
+    }
+
+    private var settingsTitle: String {
+        L10n.string("tab.settings", language: settingsManager.settings.language)
+    }
     
     var body: some View {
         ZStack {
@@ -83,6 +91,7 @@ struct ContentView: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.98)))
             }
         }
+        .id(localizationRefreshID)
         .animation(.easeInOut(duration: 0.25), value: isAuthenticated)
         .animation(.easeInOut(duration: 0.25), value: hasCompletedOnboarding)
         .animation(.easeInOut(duration: 0.25), value: showReturningSplash)
@@ -133,6 +142,7 @@ struct ContentView: View {
             budgetTab
             settingsTab
         }
+        .id(localizationRefreshID)
     }
 
     private var dashboardTab: some View {
@@ -190,12 +200,13 @@ struct ContentView: View {
     private var settingsTab: some View {
         NavigationStack {
             SettingsView()
-                .navigationTitle(L10n.Tab.settings)
+                .navigationTitle(settingsTitle)
                 .navigationBarTitleDisplayMode(.large)
         }
+        .id(localizationRefreshID)
         .tag(NavigationDestination.settings)
         .tabItem {
-            Label(L10n.Tab.settings, systemImage: tabIcon(for: .settings))
+            Label(settingsTitle, systemImage: tabIcon(for: .settings))
         }
     }
 

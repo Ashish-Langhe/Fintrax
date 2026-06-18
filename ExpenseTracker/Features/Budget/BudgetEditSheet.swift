@@ -36,7 +36,7 @@ struct BudgetEditSheet: View {
                 .padding(.vertical, 18)
             }
             .background(BudgetSheetBackground())
-            .navigationTitle(currentBudget == nil ? "Set Budget" : "Edit Budget")
+            .navigationTitle(LocalizedStringKey(currentBudget == nil ? "Set Budget" : "Edit Budget"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -83,7 +83,7 @@ struct BudgetEditSheet: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Monthly Budget")
                         .font(.headline)
-                    Text(currentBudget == nil ? "Create your spending limit" : "Update your monthly limit")
+                    Text(LocalizedStringKey(currentBudget == nil ? "Create your spending limit" : "Update your monthly limit"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -253,7 +253,7 @@ struct BudgetEditSheet: View {
                 if await onSave(amount) {
                     dismiss()
                 } else {
-                    errorMessage = "Failed to save budget. Please try again."
+                    errorMessage = L10n.string("Failed to save budget. Please try again.")
                     isLoading = false
                 }
             }
@@ -286,11 +286,11 @@ private struct GuidelineRow: View {
                 .background(Color.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.caption)
                     .fontWeight(.medium)
                 
-                Text(description)
+                Text(LocalizedStringKey(description))
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
@@ -315,7 +315,7 @@ private struct BudgetSheetSectionHeader: View {
                 .frame(width: 34, height: 34)
                 .background(tint, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.headline)
 
             Spacer()
@@ -336,7 +336,7 @@ private struct BudgetSheetInfoRow: View {
                 .frame(width: 32, height: 32)
                 .background(Color.green.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.subheadline.weight(.medium))
 
             Spacer()

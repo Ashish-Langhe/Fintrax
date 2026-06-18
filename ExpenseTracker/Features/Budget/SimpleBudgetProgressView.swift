@@ -49,7 +49,7 @@ struct SimpleBudgetProgressView: View {
             }
             
             if budget > 0 {
-                Text("of \(currencyFormat(budget))")
+                Text(L10n.format("common.ofValue", currencyFormat(budget)))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

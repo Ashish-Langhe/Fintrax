@@ -10,7 +10,6 @@ import SwiftUI
 struct AnalyticsView: View {
     @State private var viewModel = DashboardViewModel()
     @State private var showingCategoryDetail = false
-    @State private var hasRunAIAnalysis = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -23,13 +22,6 @@ struct AnalyticsView: View {
                 } else if let error = viewModel.currentError {
                     analyticsErrorView(error)
                 } else if let dashboard = viewModel.dashboardData, viewModel.hasExpensesInDateRange {
-                    if let analysis = viewModel.spendingAIAnalysis {
-                        AIAnalyzeSection(
-                            analysis: analysis,
-                            hasRunAnalysis: $hasRunAIAnalysis,
-                            formatCurrency: viewModel.formatCurrency
-                        )
-                    }
                     analyticsStorySection(dashboard)
                     chartExplorer(dashboard)
                     topCategoriesSection(dashboard)
@@ -91,9 +83,8 @@ struct AnalyticsView: View {
                     ForEach(DateRangeOption.allCases) { option in
                         Button {
                             viewModel.selectedDateRange = option
-                            hasRunAIAnalysis = false
                         } label: {
-                            AnalyticsRangeChip(title: option.rawValue, isSelected: viewModel.selectedDateRange == option)
+                            AnalyticsRangeChip(title: option.localizedString, isSelected: viewModel.selectedDateRange == option)
                         }
                         .buttonStyle(.plain)
                     }
@@ -139,7 +130,7 @@ struct AnalyticsView: View {
 
                 Spacer(minLength: 0)
 
-                Text(viewModel.selectedDateRange.rawValue)
+                Text(viewModel.selectedDateRange.localizedKey)
                     .font(AppDesignSystem.Typography.caption.weight(.bold))
                     .foregroundStyle(AppDesignSystem.Colors.primary)
                     .padding(.horizontal, 10)
@@ -168,7 +159,7 @@ struct AnalyticsView: View {
                     AnalyticsInsightChip(
                         title: "Top Category",
                         value: topCategory?.0.name ?? "None",
-                        detail: topCategory == nil ? "No category data" : String(format: "%.0f%% of spend", topShare),
+                        detail: topCategory == nil ? L10n.string("No category data") : L10n.format("analytics.detail.percentOfSpend", String(format: "%.0f", topShare)),
                         icon: topCategory?.0.iconName ?? "tag.fill",
                         tint: topCategory?.0.displayColor ?? AppDesignSystem.Colors.primary
                     )
@@ -184,14 +175,14 @@ struct AnalyticsView: View {
                     AnalyticsInsightChip(
                         title: "Transactions",
                         value: "\(dashboard.totalTransactions)",
-                        detail: dashboard.dateRange.rawValue,
+                        detail: dashboard.dateRange.localizedString,
                         icon: "list.bullet.rectangle.fill",
                         tint: AppDesignSystem.Colors.primary
                     )
 
                     AnalyticsInsightChip(
                         title: netFlowPositive ? "Healthy Flow" : "Watch Flow",
-                        value: netFlowPositive ? "Positive" : "Negative",
+                        value: netFlowPositive ? L10n.string("Positive") : L10n.string("Negative"),
                         detail: "Income minus spend",
                         icon: netFlowPositive ? "checkmark.seal.fill" : "exclamationmark.triangle.fill",
                         tint: netFlowPositive ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.error
@@ -210,10 +201,15 @@ struct AnalyticsView: View {
         topShare: Double
     ) -> String {
         guard let topCategory else {
-            return "Add more expenses to uncover category movement and spending concentration."
+            return L10n.string("Add more expenses to uncover category movement and spending concentration.")
         }
 
-        return "\(topCategory.0.name) leads this range at \(String(format: "%.0f%%", topShare)) of spend across \(dashboard.totalTransactions) transactions."
+        return L10n.format(
+            "analytics.story.topCategory",
+            topCategory.0.name,
+            String(format: "%.0f%%", topShare),
+            dashboard.totalTransactions
+        )
     }
 
     private func chartExplorer(_ dashboard: DashboardData) -> some View {
@@ -234,7 +230,7 @@ struct AnalyticsView: View {
 
             Picker("Chart Type", selection: $viewModel.selectedChartType) {
                 ForEach(DashboardViewModel.ChartType.allCases) { type in
-                    Text(type.displayName).tag(type)
+                    Text(LocalizedStringKey(type.displayName)).tag(type)
                 }
             }
             .pickerStyle(.segmented)
@@ -265,7 +261,7 @@ struct AnalyticsView: View {
 
                 Spacer()
 
-                Text("Top \(topCategories.count)")
+                Text(L10n.format("analytics.categories.topCount", topCategories.count))
                     .font(AppDesignSystem.Typography.caption.weight(.bold))
                     .foregroundStyle(AppDesignSystem.Colors.warning)
                     .padding(.horizontal, 10)
@@ -319,7 +315,7 @@ struct AnalyticsView: View {
             }
 
             if remainingCount > 0 {
-                Text("+\(remainingCount) more categories included in the chart")
+                Text(L10n.format("analytics.categories.more", remainingCount))
                     .font(AppDesignSystem.Typography.caption.weight(.medium))
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -483,7 +479,7 @@ struct AnalyticsView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
 
-                    Text(category?.name ?? "Uncategorized")
+                    Text(category?.name ?? L10n.string("Uncategorized"))
                         .font(AppDesignSystem.Typography.caption2.weight(.semibold))
                         .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                         .lineLimit(1)
@@ -505,7 +501,7 @@ struct AnalyticsView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(expense.title), \(category?.name ?? "Uncategorized"), \(dateText), \(amount)")
+            .accessibilityLabel("\(expense.title), \(category?.name ?? L10n.string("Uncategorized")), \(dateText), \(amount)")
         }
     }
 
@@ -561,7 +557,7 @@ private struct AnalyticsRangeChip: View {
     let isSelected: Bool
 
     var body: some View {
-        Text(title)
+        Text(LocalizedStringKey(title))
             .font(AppDesignSystem.Typography.footnote.weight(.bold))
             .foregroundStyle(isSelected ? .white : AppDesignSystem.Colors.textPrimary)
             .padding(.horizontal, 16)
@@ -596,7 +592,7 @@ private struct AnalyticsStoryMetric: View {
                 .background(tint.opacity(0.12), in: Circle())
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(AppDesignSystem.Typography.caption2.weight(.bold))
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .textCase(.uppercase)
@@ -638,7 +634,7 @@ private struct AnalyticsInsightChip: View {
                 .background(tint.opacity(0.12), in: Circle())
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(AppDesignSystem.Typography.caption2.weight(.bold))
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .textCase(.uppercase)
@@ -650,7 +646,7 @@ private struct AnalyticsInsightChip: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.74)
 
-                Text(detail)
+                Text(LocalizedStringKey(detail))
                     .font(AppDesignSystem.Typography.caption2.weight(.medium))
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .lineLimit(1)
@@ -683,7 +679,7 @@ private struct AnalyticsStatTile: View {
                 .background(tint.gradient, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(AppDesignSystem.Typography.caption.weight(.semibold))
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 Text(value)
@@ -691,7 +687,7 @@ private struct AnalyticsStatTile: View {
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.72)
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(AppDesignSystem.Typography.caption2)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .lineLimit(1)
@@ -784,7 +780,7 @@ private struct AnalyticsCategoryDetailView: View {
                     AnalyticsStatTile(
                         title: "Category Total",
                         value: viewModel.formatCurrency(viewModel.getCategorySpending(for: category)),
-                        subtitle: "\(expenses.count) expenses",
+                        subtitle: L10n.format("analytics.category.expenses", expenses.count),
                         icon: category.iconName,
                         tint: category.displayColor
                     )
@@ -867,7 +863,7 @@ struct SpendingAIAnalysis: Sendable {
     let insights: [SpendingAIInsight]
 }
 
-/// One expandable recommendation or observation shown in the AI Analyze section.
+/// One recommendation or observation produced by the local spending analysis engine.
 struct SpendingAIInsight: Identifiable, Sendable {
     enum Kind: Sendable {
         case category
@@ -1026,7 +1022,7 @@ enum SpendingAIAnalyzer {
                 kind: .category,
                 title: "Most Spending",
                 value: topCategory.category.name,
-                detail: "\(formatPercent(topCategory.percentage)) of your selected-period spend is in \(topCategory.category.name). This is the first category to optimize.",
+                detail: L10n.format("analytics.ai.detail.mostSpending", formatPercent(topCategory.percentage), topCategory.category.name),
                 icon: topCategory.category.iconName,
                 tint: topCategory.category.displayColor
             ))
@@ -1036,7 +1032,7 @@ enum SpendingAIAnalyzer {
             kind: .daily,
             title: "Daily Pace",
             value: formatCurrency(averageDailySpend),
-            detail: "Your average daily spend for \(dateRange.rawValue.lowercased()) is \(formatCurrency(averageDailySpend)). At this pace, a 30-day month lands near \(formatCurrency(projectedMonthlySpend)).",
+            detail: L10n.format("analytics.ai.detail.dailyPace", dateRange.localizedString.lowercased(), formatCurrency(averageDailySpend), formatCurrency(projectedMonthlySpend)),
             icon: "calendar.day.timeline.left",
             tint: AppDesignSystem.Colors.info
         ))
@@ -1046,7 +1042,7 @@ enum SpendingAIAnalyzer {
                 kind: .saving,
                 title: "Saving Day",
                 value: savingDay.date.formatted(date: .abbreviated, time: .omitted),
-                detail: savingDay.amount == .zero ? "This was your cleanest day with no recorded spend. Try repeating the same routine once or twice a week." : "This was your lowest-spend day at \(formatCurrency(savingDay.amount)). Use it as a template for lighter spending days.",
+                detail: savingDay.amount == .zero ? L10n.string("This was your cleanest day with no recorded spend. Try repeating the same routine once or twice a week.") : L10n.format("analytics.ai.detail.savingDay", formatCurrency(savingDay.amount)),
                 icon: "sparkles",
                 tint: AppDesignSystem.Colors.success
             ))
@@ -1057,7 +1053,7 @@ enum SpendingAIAnalyzer {
                 kind: .pattern,
                 title: "Peak Spend Day",
                 value: peakDay.date.formatted(date: .abbreviated, time: .omitted),
-                detail: "Your highest spending day was \(formatCurrency(peakDay.amount)). Review what happened that day and decide if it was planned or avoidable.",
+                detail: L10n.format("analytics.ai.detail.peakDay", formatCurrency(peakDay.amount)),
                 icon: "chart.line.uptrend.xyaxis",
                 tint: AppDesignSystem.Colors.warning
             ))
@@ -1068,7 +1064,7 @@ enum SpendingAIAnalyzer {
                 kind: .pattern,
                 title: "Largest Transaction",
                 value: biggestExpense.formattedAmount(),
-                detail: "\(biggestExpense.title) is your largest single spend. Big-ticket items are easier to plan than many small leaks, so mark these ahead in budgets.",
+                detail: L10n.format("analytics.ai.detail.largestTransaction", biggestExpense.title),
                 icon: "indianrupeesign.circle.fill",
                 tint: AppDesignSystem.Colors.primary
             ))
@@ -1088,21 +1084,21 @@ enum SpendingAIAnalyzer {
 
     private static func headlineText(topCategory: SpendingCategoryInsight?, savingsRate: Double?) -> String {
         if let savingsRate, savingsRate < 0 {
-            return "Spending is running ahead of income"
+            return L10n.string("Spending is running ahead of income")
         }
         if let topCategory, topCategory.percentage >= 0.45 {
-            return "\(topCategory.category.name) is driving your spend"
+            return L10n.format("analytics.ai.headline.categoryDriving", topCategory.category.name)
         }
-        return "Your spending pattern is ready to optimize"
+        return L10n.string("Your spending pattern is ready to optimize")
     }
 
     private static func summaryText(totalSpend: Decimal, averageDailySpend: Decimal, days: Int, dateRange: DateRangeOption) -> String {
-        "In \(dateRange.rawValue.lowercased()), Fintrax reviewed \(days) days and found \(formatCurrency(totalSpend)) total spend with a daily pace of \(formatCurrency(averageDailySpend))."
+        L10n.format("analytics.ai.summary", dateRange.localizedString.lowercased(), days, formatCurrency(totalSpend), formatCurrency(averageDailySpend))
     }
 
     private static func recommendationValue(savingsRate: Double?) -> String {
-        guard let savingsRate else { return "Set a cap" }
-        return savingsRate >= 0.2 ? "Protect surplus" : "Tighten spend"
+        guard let savingsRate else { return L10n.string("Set a cap") }
+        return savingsRate >= 0.2 ? L10n.string("Protect surplus") : L10n.string("Tighten spend")
     }
 
     private static func recommendationDetail(
@@ -1112,14 +1108,14 @@ enum SpendingAIAnalyzer {
     ) -> String {
         let suggestedDailyCut = averageDailySpend * Decimal(0.10)
         if let savingsRate, savingsRate >= 0.2 {
-            return "You are keeping a healthy surplus. Move part of it to savings first, then spend from the remainder."
+            return L10n.string("You are keeping a healthy surplus. Move part of it to savings first, then spend from the remainder.")
         }
 
         if let topCategory {
-            return "Try reducing \(topCategory.category.name) by 10%. That starts with a daily target cut near \(formatCurrency(suggestedDailyCut))."
+            return L10n.format("analytics.ai.detail.reduceCategory", topCategory.category.name, formatCurrency(suggestedDailyCut))
         }
 
-        return "Set a daily soft cap and review it every evening. A 10% daily reduction starts near \(formatCurrency(suggestedDailyCut))."
+        return L10n.format("analytics.ai.detail.softCap", formatCurrency(suggestedDailyCut))
     }
 
     private static func formatCurrency(_ amount: Decimal) -> String {
@@ -1144,251 +1140,6 @@ enum SpendingAIAnalyzer {
 
     private static func double(_ decimal: Decimal) -> Double {
         NSDecimalNumber(decimal: decimal).doubleValue
-    }
-}
-
-private struct AIAnalyzeSection: View {
-    let analysis: SpendingAIAnalysis
-    @Binding var hasRunAnalysis: Bool
-    let formatCurrency: (Decimal) -> String
-
-    @State private var isScanning = false
-    @State private var expandedInsightID: UUID?
-    @State private var pulse = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            header
-
-            if hasRunAnalysis {
-                summaryGrid
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-
-                LazyVStack(spacing: 12) {
-                    ForEach(Array(analysis.insights.enumerated()), id: \.element.id) { index, insight in
-                        AIInsightCard(
-                            insight: insight,
-                            isExpanded: expandedInsightID == insight.id,
-                            delay: Double(index) * 0.06
-                        ) {
-                            withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
-                                expandedInsightID = expandedInsightID == insight.id ? nil : insight.id
-                            }
-                        }
-                    }
-                }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
-        }
-        .padding(16)
-        .analyticsPanel(accent: AppDesignSystem.Colors.primary)
-        .animation(.spring(response: 0.48, dampingFraction: 0.86), value: hasRunAnalysis)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true)) {
-                pulse = true
-            }
-        }
-    }
-
-    private var header: some View {
-        HStack(alignment: .top, spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(AppDesignSystem.Gradients.primary)
-                    .frame(width: 56, height: 56)
-                    .shadow(color: AppDesignSystem.Colors.primary.opacity(pulse ? 0.28 : 0.08), radius: pulse ? 16 : 8, x: 0, y: 8)
-
-                Image(systemName: isScanning ? "wand.and.stars.inverse" : "brain.head.profile")
-                    .font(.system(size: 23, weight: .bold))
-                    .foregroundStyle(.white)
-                    .rotationEffect(.degrees(isScanning ? 8 : 0))
-            }
-
-            VStack(alignment: .leading, spacing: 5) {
-                Text("AI Analyze")
-                    .font(AppDesignSystem.Typography.title3)
-                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
-
-                Text(hasRunAnalysis ? analysis.headline : "Run a quick local scan of your spending behaviour.")
-                    .font(AppDesignSystem.Typography.footnote)
-                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer(minLength: 8)
-
-            if hasRunAnalysis {
-                Button {
-                    withAnimation(.spring(response: 0.42, dampingFraction: 0.86)) {
-                        hasRunAnalysis = false
-                        expandedInsightID = nil
-                    }
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                        .frame(width: 32, height: 32)
-                        .background(AppDesignSystem.Colors.elevatedSurface.opacity(0.72), in: Circle())
-                        .overlay(Circle().stroke(Color.white.opacity(0.22), lineWidth: 1))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Close AI analysis")
-            }
-
-            Button {
-                runAnalysis()
-            } label: {
-                HStack(spacing: 7) {
-                    Image(systemName: isScanning ? "sparkles" : "play.fill")
-                    Text(isScanning ? "Scanning" : (hasRunAnalysis ? "Refresh" : "Analyze"))
-                }
-                .font(AppDesignSystem.Typography.caption.weight(.bold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 9)
-                .background(AppDesignSystem.Gradients.primary, in: Capsule())
-            }
-            .buttonStyle(.plain)
-            .disabled(isScanning)
-        }
-    }
-
-    private var summaryGrid: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(analysis.summary)
-                .font(AppDesignSystem.Typography.footnote)
-                .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                AIFactTile(title: "Daily Spend", value: formatCurrency(analysis.averageDailySpend), icon: "calendar", tint: AppDesignSystem.Colors.info)
-                AIFactTile(title: "30-Day Pace", value: formatCurrency(analysis.projectedMonthlySpend), icon: "speedometer", tint: AppDesignSystem.Colors.warning)
-                AIFactTile(title: "Saving Day", value: analysis.savingDay?.date.formatted(.dateTime.weekday(.abbreviated)) ?? "N/A", icon: "leaf.fill", tint: AppDesignSystem.Colors.success)
-                AIFactTile(title: "Savings Rate", value: analysis.savingsRate.map { "\(Int(($0 * 100).rounded()))%" } ?? "Add income", icon: "chart.line.uptrend.xyaxis", tint: AppDesignSystem.Colors.primary)
-            }
-        }
-    }
-
-    private func runAnalysis() {
-        isScanning = true
-        expandedInsightID = nil
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 700_000_000)
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
-                hasRunAnalysis = true
-                isScanning = false
-            }
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-        }
-    }
-}
-
-private struct AIFactTile: View {
-    let title: String
-    let value: String
-    let icon: String
-    let tint: Color
-
-    var body: some View {
-        HStack(spacing: 9) {
-            Image(systemName: icon)
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(tint)
-                .frame(width: 30, height: 30)
-                .background(tint.opacity(0.12), in: Circle())
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(AppDesignSystem.Typography.caption2.weight(.semibold))
-                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                Text(value)
-                    .font(AppDesignSystem.Typography.footnote.weight(.bold))
-                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(tint.opacity(0.08), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
-    }
-}
-
-private struct AIInsightCard: View {
-    let insight: SpendingAIInsight
-    let isExpanded: Bool
-    let delay: Double
-    let onTap: () -> Void
-
-    @State private var appeared = false
-
-    var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: insight.icon)
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(insight.tint)
-                        .frame(width: 40, height: 40)
-                        .background(insight.tint.opacity(0.13), in: Circle())
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(insight.title)
-                            .font(AppDesignSystem.Typography.caption.weight(.bold))
-                            .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                            .textCase(.uppercase)
-
-                        Text(insight.value)
-                            .font(AppDesignSystem.Typography.calloutEmphasized)
-                            .foregroundStyle(AppDesignSystem.Colors.textPrimary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.75)
-                    }
-
-                    Spacer(minLength: 8)
-
-                    Image(systemName: isExpanded ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(insight.tint)
-                }
-
-                if isExpanded {
-                    Text(insight.detail)
-                        .font(AppDesignSystem.Typography.footnote)
-                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.top, 2)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                }
-            }
-            .padding(14)
-            .background(
-                LinearGradient(
-                    colors: [
-                        insight.tint.opacity(0.11),
-                        AppDesignSystem.Colors.elevatedSurface.opacity(0.68)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(insight.tint.opacity(isExpanded ? 0.34 : 0.14), lineWidth: 1)
-            }
-            .scaleEffect(appeared ? 1 : 0.96)
-            .opacity(appeared ? 1 : 0)
-        }
-        .buttonStyle(.plain)
-        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: isExpanded)
-        .onAppear {
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.82).delay(delay)) {
-                appeared = true
-            }
-        }
     }
 }
 

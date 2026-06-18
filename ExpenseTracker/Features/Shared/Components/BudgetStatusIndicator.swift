@@ -41,7 +41,7 @@ struct BudgetStatusIndicator: View {
                         .font(.subheadline)
                         .fontWeight(.semibold)
                     
-                    Text("of \(formatCurrency(limit))")
+                    Text(L10n.format("common.ofValue", formatCurrency(limit)))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

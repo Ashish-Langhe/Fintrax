@@ -77,7 +77,7 @@ struct BudgetGaugeView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
                     
-                    Text("of \(formatCurrency(budget))")
+                    Text(L10n.format("common.ofValue", formatCurrency(budget)))
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
@@ -244,7 +244,7 @@ struct CompactBudgetGaugeView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                 Spacer()
-                Text("/ \(formatCurrency(budget))")
+                Text(L10n.format("common.slashValue", formatCurrency(budget)))
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }

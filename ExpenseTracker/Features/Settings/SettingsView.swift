@@ -24,6 +24,18 @@ struct SettingsView: View {
     private let appInfo = AppInfo.current
     private let repository = FinanceDataRepository.shared
 
+    private var currentLanguage: AppLanguage {
+        settingsManager.settings.language
+    }
+
+    private var headerTitle: String {
+        L10n.string("settings.header.title", language: currentLanguage)
+    }
+
+    private var headerSubtitle: String {
+        L10n.string("settings.header.subtitle", language: currentLanguage)
+    }
+
     private var themeBinding: Binding<ThemeOption> {
         Binding(
             get: { settingsManager.settings.theme },
@@ -78,12 +90,12 @@ struct SettingsView: View {
             isPresented: $showDeveloperDataDialog,
             titleVisibility: .visible
         ) {
-            Button(mockDataEnabled ? "Mock Data Active" : "Use Mock Data") {
+            Button(LocalizedStringKey(mockDataEnabled ? "Mock Data Active" : "Use Mock Data")) {
                 setDeveloperMockMode(true)
             }
             .disabled(mockDataEnabled)
 
-            Button(mockDataEnabled ? "Switch to Real Data" : "Real Data Active") {
+            Button(LocalizedStringKey(mockDataEnabled ? "Switch to Real Data" : "Real Data Active")) {
                 setDeveloperMockMode(false)
             }
             .disabled(!mockDataEnabled)
@@ -115,11 +127,11 @@ struct SettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: AppDesignSystem.Spacing.xs) {
-                    Text("Control Center")
+                    Text(headerTitle)
                         .font(.title2.weight(.bold))
                         .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                    Text("Tune security, appearance, and app details from one clean place.")
+                    Text(headerSubtitle)
                         .font(AppDesignSystem.Typography.callout)
                         .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -139,7 +151,7 @@ struct SettingsView: View {
                 if mockDataEnabled {
                     SettingsPill(icon: "testtube.2", title: "Mock Data", tint: AppDesignSystem.Colors.info)
                 } else if developerTapCount > 0 {
-                    SettingsPill(icon: "hammer.fill", title: "Developer access \(developerTapCount)/5", tint: AppDesignSystem.Colors.primaryDark)
+                    SettingsPill(icon: "hammer.fill", title: L10n.format("settings.developer.accessProgress", developerTapCount), tint: AppDesignSystem.Colors.primaryDark)
                 }
             }
         }
@@ -182,7 +194,7 @@ struct SettingsView: View {
         ) {
             Picker(selection: themeBinding) {
                 ForEach(ThemeOption.allCases, id: \.self) { option in
-                    Label(option.displayName, systemImage: option.iconName)
+                    Label(LocalizedStringKey(option.displayName), systemImage: option.iconName)
                         .tag(option)
                 }
             } label: {
@@ -198,7 +210,7 @@ struct SettingsView: View {
 
                 Picker(selection: languageBinding) {
                     ForEach(AppLanguage.allCases) { language in
-                        Text(language.displayName)
+                        Text(LocalizedStringKey(language.displayName))
                             .tag(language)
                     }
                 } label: {
@@ -412,11 +424,11 @@ private struct ChangePinSheet: View {
                     }
 
                     VStack(alignment: .leading, spacing: AppDesignSystem.Spacing.xs) {
-                        Text(requiresCurrentPin ? "Change App PIN" : "Set App PIN")
+                        Text(LocalizedStringKey(requiresCurrentPin ? "Change App PIN" : "Set App PIN"))
                             .font(AppDesignSystem.Typography.title3)
                             .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                        Text(requiresCurrentPin ? "Create a new 6-digit code for app unlock." : "Choose a 6-digit PIN to enable app lock.")
+                        Text(LocalizedStringKey(requiresCurrentPin ? "Create a new 6-digit code for app unlock." : "Choose a 6-digit PIN to enable app lock."))
                             .font(AppDesignSystem.Typography.footnote)
                             .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     }
@@ -447,7 +459,7 @@ private struct ChangePinSheet: View {
                 Button {
                     savePin()
                 } label: {
-                    Text(saved ? (requiresCurrentPin ? "PIN Updated" : "PIN Enabled") : (requiresCurrentPin ? "Save New PIN" : "Enable PIN Lock"))
+                    Text(LocalizedStringKey(saved ? (requiresCurrentPin ? "PIN Updated" : "PIN Enabled") : (requiresCurrentPin ? "Save New PIN" : "Enable PIN Lock")))
                         .font(AppDesignSystem.Typography.calloutEmphasized)
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
@@ -497,7 +509,7 @@ private struct ChangePinSheet: View {
 
     private func showMessage(_ text: String, isError: Bool) {
         withAnimation(.easeInOut(duration: 0.2)) {
-            message = text
+            message = L10n.string(text)
             messageIsError = isError
         }
     }
@@ -510,7 +522,7 @@ private struct PinTextField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppDesignSystem.Spacing.sm) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(AppDesignSystem.Typography.footnote.weight(.semibold))
                 .foregroundStyle(AppDesignSystem.Colors.textSecondary)
 
@@ -591,13 +603,13 @@ private struct SettingsInfoRow: View {
                 .frame(width: 30, height: 30)
                 .background(tint.opacity(0.12), in: Circle())
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(AppDesignSystem.Typography.callout)
                 .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
             Spacer(minLength: AppDesignSystem.Spacing.md)
 
-            Text(value)
+            Text(LocalizedStringKey(value))
                 .font(AppDesignSystem.Typography.footnote.weight(.semibold))
                 .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 .lineLimit(1)
@@ -624,11 +636,11 @@ private struct SettingsActionRow: View {
                     .background(tint.opacity(0.13), in: Circle())
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(AppDesignSystem.Typography.calloutEmphasized)
                         .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                    Text(subtitle)
+                    Text(LocalizedStringKey(subtitle))
                         .font(AppDesignSystem.Typography.footnote)
                         .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 }
@@ -663,11 +675,11 @@ private struct SettingsToggleRow: View {
                 .background(tint.opacity(0.13), in: Circle())
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(AppDesignSystem.Typography.calloutEmphasized)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(AppDesignSystem.Typography.footnote)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -675,7 +687,7 @@ private struct SettingsToggleRow: View {
 
             Spacer(minLength: AppDesignSystem.Spacing.md)
 
-            Toggle(title, isOn: $isOn)
+            Toggle(LocalizedStringKey(title), isOn: $isOn)
                 .labelsHidden()
                 .tint(tint)
         }
@@ -699,11 +711,11 @@ private struct SettingsNavigationRow: View {
                 .background(tint.opacity(0.13), in: Circle())
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(AppDesignSystem.Typography.calloutEmphasized)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(AppDesignSystem.Typography.footnote)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -730,7 +742,7 @@ private struct SettingsPill: View {
         HStack(spacing: AppDesignSystem.Spacing.xs) {
             Image(systemName: icon)
                 .font(.caption.weight(.bold))
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(AppDesignSystem.Typography.caption.weight(.bold))
         }
         .foregroundStyle(tint)
