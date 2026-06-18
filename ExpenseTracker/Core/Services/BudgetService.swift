@@ -140,15 +140,15 @@ class BudgetService: ObservableObject, Sendable {
         let message: String
         switch score {
         case 90...100:
-            message = "Excellent - All budgets well managed"
+            message = L10n.string("Excellent - All budgets well managed")
         case 70...89:
-            message = "Good - Most budgets on track"
+            message = L10n.string("Good - Most budgets on track")
         case 50...69:
-            message = "Fair - Some budgets approaching limits"
+            message = L10n.string("Fair - Some budgets approaching limits")
         case 25...49:
-            message = "Poor - Multiple budgets exceeded"
+            message = L10n.string("Poor - Multiple budgets exceeded")
         default:
-            message = "Critical - Many budgets significantly exceeded"
+            message = L10n.string("Critical - Many budgets significantly exceeded")
         }
         
         return BudgetHealthScore(score: score, message: message)
@@ -219,8 +219,8 @@ class BudgetService: ObservableObject, Sendable {
                     categoryID: budget.categoryID,
                     type: .reduceSpending,
                     priority: .high,
-                    title: "Immediate Action Required",
-                    message: "Budget exceeded by ₹\(abs(progress.remaining).formattedAmount()). Consider reducing expenses in this category.",
+                    title: L10n.string("Immediate Action Required"),
+                    message: L10n.format("budget.recommendation.exceeded", abs(progress.remaining).formattedAmount()),
                     suggestedDailyLimit: progress.dailyAverage
                 ))
             case .approachingLimit:
@@ -229,8 +229,8 @@ class BudgetService: ObservableObject, Sendable {
                     categoryID: budget.categoryID,
                     type: .limitSpending,
                     priority: .medium,
-                    title: "Budget Warning",
-                    message: "Limit daily spending to ₹\(dailyLimit.formattedAmount()) to stay within budget.",
+                    title: L10n.string("Budget Warning"),
+                    message: L10n.format("budget.recommendation.limitDaily", dailyLimit.formattedAmount()),
                     suggestedDailyLimit: dailyLimit
                 ))
             case .withinLimit:
@@ -242,8 +242,8 @@ class BudgetService: ObservableObject, Sendable {
                         categoryID: budget.categoryID,
                         type: .monitor,
                         priority: .low,
-                        title: "Monitor Spending",
-                        message: "Budget on track but close to limit. Consider limiting to ₹\(suggestedDailyLimit.formattedAmount()) per day.",
+                        title: L10n.string("Monitor Spending"),
+                        message: L10n.format("budget.recommendation.monitor", suggestedDailyLimit.formattedAmount()),
                         suggestedDailyLimit: suggestedDailyLimit
                     ))
                 }

@@ -676,7 +676,7 @@ private struct AssistantInsightCard: View {
         VStack(alignment: .leading, spacing: 15) {
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Label(insight.title, systemImage: insight.icon)
+                    Label(LocalizedStringKey(insight.title), systemImage: insight.icon)
                         .font(AppDesignSystem.Typography.caption.weight(.bold))
                         .foregroundStyle(insight.tint)
                         .lineLimit(1)
@@ -713,7 +713,7 @@ private struct AssistantInsightCard: View {
                                 .frame(width: 26, height: 26)
                                 .background(insight.tint.opacity(0.11), in: Circle())
 
-                            Text(row.title)
+                            Text(LocalizedStringKey(row.title))
                                 .font(AppDesignSystem.Typography.caption2.weight(.bold))
                                 .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                                 .textCase(.uppercase)
@@ -779,7 +779,7 @@ private struct AssistantPromptChip: View {
                 .frame(width: 28, height: 28)
                 .background((isSelected ? Color.white.opacity(0.18) : prompt.tint.opacity(0.12)), in: Circle())
 
-            Text(prompt.title)
+            Text(LocalizedStringKey(prompt.title))
                 .font(AppDesignSystem.Typography.caption.weight(.bold))
                 .foregroundStyle(isSelected ? .white : AppDesignSystem.Colors.textPrimary)
                 .lineLimit(1)
@@ -891,7 +891,7 @@ private struct AssistantInsightRow: Identifiable {
 private enum AssistantInsightEngine {
     static func makeInsights(from snapshot: DashboardDataSnapshot, now: Date = Date(), calendar: Calendar = .current) -> [AssistantInsight] {
         guard let currentMonth = calendar.dateInterval(of: .month, for: now) else {
-            return [emptyInsight(message: "I could not identify the current month range.")]
+            return [emptyInsight(message: L10n.string("I could not identify the current month range."))]
         }
 
         let expenses = snapshot.expenses.filter { currentMonth.contains($0.date) }
@@ -901,7 +901,7 @@ private enum AssistantInsightEngine {
         let totalIncome = incomes.reduce(Decimal.zero) { $0 + $1.amount }
 
         guard !expenses.isEmpty || !incomes.isEmpty else {
-            return [emptyInsight(message: "Add a few expenses or switch to demo data, and I can start answering money questions.")]
+            return [emptyInsight(message: L10n.string("Add a few expenses or switch to demo data, and I can start answering money questions."))]
         }
 
         return [
@@ -921,7 +921,7 @@ private enum AssistantInsightEngine {
             .max { $0.amount < $1.amount }
 
         guard let best else {
-            return emptyInsight(promptID: "highest-day", message: "No expenses found for this month yet.")
+            return emptyInsight(promptID: "highest-day", message: L10n.string("No expenses found for this month yet."))
         }
 
         let share = totalSpend > 0 ? NSDecimalNumber(decimal: best.amount / totalSpend).doubleValue : 0
@@ -929,8 +929,8 @@ private enum AssistantInsightEngine {
             promptID: "highest-day",
             title: "Highest spend day",
             value: best.date.formatted(date: .abbreviated, time: .omitted),
-            message: "You spent \(CurrencyFormatter.format(best.amount)) across \(best.count) entries on this date, about \(Int((share * 100).rounded()))% of this month's spending.",
-            action: "Open expenses for this date before month-end review; one unusually heavy day often explains the whole trend.",
+            message: L10n.format("assistant.insight.highestDay.message", CurrencyFormatter.format(best.amount), best.count, Int((share * 100).rounded())),
+            action: L10n.string("Open expenses for this date before month-end review; one unusually heavy day often explains the whole trend."),
             icon: "calendar.badge.exclamationmark",
             tint: AppDesignSystem.Colors.warning,
             detailRows: [
@@ -948,15 +948,15 @@ private enum AssistantInsightEngine {
             .filter { $0.date <= today }
 
         guard let lowest = daysWithSpend.min(by: { $0.amount < $1.amount }) else {
-            return emptyInsight(promptID: "saving-day", message: "No expense days found for this month yet.")
+            return emptyInsight(promptID: "saving-day", message: L10n.string("No expense days found for this month yet."))
         }
 
         return AssistantInsight(
             promptID: "saving-day",
             title: "Best saving day",
             value: lowest.date.formatted(date: .abbreviated, time: .omitted),
-            message: "This was your calmest recorded spend day with \(CurrencyFormatter.format(lowest.amount)) across \(lowest.count) entries.",
-            action: "Notice what was different on that day. Repeating that routine is usually easier than only cutting big purchases.",
+            message: L10n.format("assistant.insight.savingDay.message", CurrencyFormatter.format(lowest.amount), lowest.count),
+            action: L10n.string("Notice what was different on that day. Repeating that routine is usually easier than only cutting big purchases."),
             icon: "leaf.fill",
             tint: AppDesignSystem.Colors.success,
             detailRows: [
@@ -980,11 +980,11 @@ private enum AssistantInsightEngine {
             title: "Food this month",
             value: CurrencyFormatter.format(amount),
             message: foodExpenses.isEmpty
-                ? "I did not find Food category expenses this month."
-                : "Food is \(Int((share * 100).rounded()))% of monthly spend with \(foodExpenses.count) entries.",
+                ? L10n.string("I did not find Food category expenses this month.")
+                : L10n.format("assistant.insight.food.message", Int((share * 100).rounded()), foodExpenses.count),
             action: foodExpenses.isEmpty
-                ? "If food items are going into Other, update those categories and I will read the pattern correctly."
-                : "A useful control is setting a weekly food ceiling near \(CurrencyFormatter.format((amount / Decimal(max(1, Calendar.current.component(.day, from: Date())))) * 7)).",
+                ? L10n.string("If food items are going into Other, update those categories and I will read the pattern correctly.")
+                : L10n.format("assistant.insight.food.action", CurrencyFormatter.format((amount / Decimal(max(1, Calendar.current.component(.day, from: Date())))) * 7)),
             icon: "fork.knife",
             tint: AppDesignSystem.Colors.primary,
             detailRows: [
@@ -999,9 +999,9 @@ private enum AssistantInsightEngine {
             return AssistantInsight(
                 promptID: "budget-risk",
                 title: "Budget risk",
-                value: "Budget not set",
-                message: "I can analyze budget pace once a monthly budget is configured.",
-                action: "Set a monthly budget to unlock risk, safe daily spend, and month-end projection.",
+                value: L10n.string("Budget not set"),
+                message: L10n.string("I can analyze budget pace once a monthly budget is configured."),
+                action: L10n.string("Set a monthly budget to unlock risk, safe daily spend, and month-end projection."),
                 icon: "target",
                 tint: AppDesignSystem.Colors.warning,
                 detailRows: []
@@ -1023,11 +1023,11 @@ private enum AssistantInsightEngine {
         return AssistantInsight(
             promptID: "budget-risk",
             title: "Budget risk",
-            value: "\(Int((usage * 100).rounded()))% used",
-            message: "You have \(daysLeft) days left. At the current pace, month-end spend may reach \(CurrencyFormatter.format(projected)).",
+            value: L10n.format("assistant.insight.budget.value", Int((usage * 100).rounded())),
+            message: L10n.format("assistant.insight.budget.message", daysLeft, CurrencyFormatter.format(projected)),
             action: usage >= 1
-                ? "Pause non-essential spends first; you are already beyond the planned monthly limit."
-                : "Keep daily spend near \(CurrencyFormatter.format(safeDaily)) to stay inside the budget.",
+                ? L10n.string("Pause non-essential spends first; you are already beyond the planned monthly limit.")
+                : L10n.format("assistant.insight.budget.action", CurrencyFormatter.format(safeDaily)),
             icon: usage >= 1 ? "exclamationmark.triangle.fill" : "target",
             tint: tint,
             detailRows: [
@@ -1046,17 +1046,17 @@ private enum AssistantInsightEngine {
             title: "Income vs spend",
             value: CurrencyFormatter.format(net),
             message: positive
-                ? "You are currently cash-flow positive this month."
-                : "Spending is ahead of recorded income this month.",
+                ? L10n.string("You are currently cash-flow positive this month.")
+                : L10n.string("Spending is ahead of recorded income this month."),
             action: positive
-                ? "Protect this surplus by moving a fixed amount into savings before discretionary spending."
-                : "Check whether income is missing first; if not, reduce the top two flexible categories.",
+                ? L10n.string("Protect this surplus by moving a fixed amount into savings before discretionary spending.")
+                : L10n.string("Check whether income is missing first; if not, reduce the top two flexible categories."),
             icon: positive ? "arrow.up.right.circle.fill" : "arrow.down.right.circle.fill",
             tint: positive ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.error,
             detailRows: [
                 AssistantInsightRow(icon: "plus.circle.fill", title: "Income", value: CurrencyFormatter.format(totalIncome)),
                 AssistantInsightRow(icon: "minus.circle.fill", title: "Spend", value: CurrencyFormatter.format(totalSpend)),
-                AssistantInsightRow(icon: "number", title: "Records", value: "\(incomes.count) income / \(expenses.count) expense")
+                AssistantInsightRow(icon: "number", title: "Records", value: L10n.format("assistant.insight.cashFlow.records", incomes.count, expenses.count))
             ]
         )
     }
@@ -1080,9 +1080,9 @@ private enum AssistantInsightEngine {
             return AssistantInsight(
                 promptID: "frequent-spend",
                 title: "Frequent spends",
-                value: "No repeats yet",
-                message: "I did not find repeated expense titles this month.",
-                action: "As more entries come in, I will flag repeat habits like coffee, fuel, groceries, or subscriptions.",
+                value: L10n.string("No repeats yet"),
+                message: L10n.string("I did not find repeated expense titles this month."),
+                action: L10n.string("As more entries come in, I will flag repeat habits like coffee, fuel, groceries, or subscriptions."),
                 icon: "repeat.circle.fill",
                 tint: AppDesignSystem.Colors.warning,
                 detailRows: []
@@ -1093,8 +1093,8 @@ private enum AssistantInsightEngine {
             promptID: "frequent-spend",
             title: "Frequent spends",
             value: top.title,
-            message: "This appeared \(top.count) times and totals \(CurrencyFormatter.format(top.amount)) this month.",
-            action: "Repeated small spends are worth reviewing because they are easier to tune than rare large spends.",
+            message: L10n.format("assistant.insight.frequent.message", top.count, CurrencyFormatter.format(top.amount)),
+            action: L10n.string("Repeated small spends are worth reviewing because they are easier to tune than rare large spends."),
             icon: "repeat.circle.fill",
             tint: AppDesignSystem.Colors.warning,
             detailRows: [
@@ -1108,9 +1108,9 @@ private enum AssistantInsightEngine {
         AssistantInsight(
             promptID: promptID,
             title: "No insight yet",
-            value: "Needs data",
+            value: L10n.string("Needs data"),
             message: message,
-            action: "Add expenses, income, and budget details so I can produce meaningful answers.",
+            action: L10n.string("Add expenses, income, and budget details so I can produce meaningful answers."),
             icon: "sparkles",
             tint: AppDesignSystem.Colors.primary,
             detailRows: []
