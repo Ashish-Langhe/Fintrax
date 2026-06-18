@@ -1,5 +1,10 @@
 # Fintrax
 
+
+[Fintrax_Professional_Product_Case_Study.pdf](https://github.com/user-attachments/files/29077991/Fintrax_Professional_Product_Case_Study.pdf)
+
+
+
 Fintrax is a local-first personal finance iOS app built with SwiftUI. It helps users track expenses, review spending behavior, manage budgets, record income, schedule payment reminders, generate reports, and use a lightweight in-app assistant for quick financial insights.
 
 The app is designed for private, practical money management without requiring bank aggregation, cloud sync, or external AI services.
