@@ -88,7 +88,7 @@ struct IncomeTrackingView: View {
         FinanceSummaryCard(
             title: "This Month Income",
             value: CurrencyFormatter.format(totalIncome),
-            subtitle: "\(DateRangeOption.thisMonth.filterIncome(incomes).count) income entries",
+            subtitle: L10n.format("finance.income.entries", DateRangeOption.thisMonth.filterIncome(incomes).count),
             icon: "chart.line.uptrend.xyaxis",
             tint: AppDesignSystem.Colors.success
         )
@@ -310,15 +310,15 @@ struct BillRemindersView: View {
     private func billSubtitle(for bill: BillReminder) -> String {
         var parts = [
             bill.dueDate.formatted(date: .abbreviated, time: .omitted),
-            bill.reminderEnabled ? "Reminder \(bill.formattedReminderTime)" : "Reminder off"
+            bill.reminderEnabled ? L10n.format("finance.bill.reminderTime", bill.formattedReminderTime) : L10n.string("Reminder off")
         ]
 
         if bill.reminderEnabled && bill.repeatsUntilPaid && !bill.isPaid {
-            parts.append("Repeats until complete")
+            parts.append(L10n.string("Repeats until complete"))
         }
 
         if bill.reminderEnabled {
-            parts.append(bill.alertStyle.title)
+            parts.append(L10n.string(bill.alertStyle.title))
         }
 
         return parts.joined(separator: " • ")
@@ -337,7 +337,7 @@ struct BillRemindersView: View {
     private func saveBill(_ bill: BillReminder) {
         do {
             try repository.saveBillReminder(bill)
-            statusMessage = "Payment reminder saved."
+            statusMessage = L10n.string("Payment reminder saved.")
             loadBills()
         } catch {
             errorMessage = error.localizedDescription
@@ -348,7 +348,7 @@ struct BillRemindersView: View {
     private func updateBill(_ bill: BillReminder) {
         do {
             try repository.updateBillReminder(bill)
-            statusMessage = "Payment reminder updated."
+            statusMessage = L10n.string("Payment reminder updated.")
             loadBills()
         } catch {
             errorMessage = error.localizedDescription
@@ -367,7 +367,7 @@ struct BillRemindersView: View {
     private func deleteBill(_ bill: BillReminder) {
         do {
             try repository.deleteBillReminder(id: bill.id)
-            statusMessage = "Payment reminder deleted."
+            statusMessage = L10n.string("Payment reminder deleted.")
             loadBills()
         } catch {
             errorMessage = error.localizedDescription
@@ -377,8 +377,8 @@ struct BillRemindersView: View {
     @MainActor
     private func sendTestReminder() async {
         let scheduled = await BillNotificationScheduler.scheduleTestReminder()
-        statusMessage = scheduled ? "Test alert scheduled. It should arrive in about 5 seconds." : nil
-        errorMessage = scheduled ? nil : "Notification permission is disabled for Fintrax."
+        statusMessage = scheduled ? L10n.string("Test alert scheduled. It should arrive in about 5 seconds.") : nil
+        errorMessage = scheduled ? nil : L10n.string("Notification permission is disabled for Fintrax.")
     }
 }
 
@@ -393,6 +393,7 @@ struct PDFReportView: View {
     @State private var previewItem: PDFPreviewItem?
     @State private var isExporting = false
     @State private var message: String?
+    @State private var messageIsSuccess = false
 
     var body: some View {
         FinanceScreen(title: "Export Reports", subtitle: "Create PDF summaries or CSV files for monthly review, sharing, and analysis.", icon: "doc.richtext.fill", tint: AppDesignSystem.Colors.info) {
@@ -406,7 +407,7 @@ struct PDFReportView: View {
 
             Picker("Date range", selection: $selectedRange) {
                 ForEach(DateRangeOption.allCases) { range in
-                    Text(range.rawValue).tag(range)
+                    Text(range.localizedKey).tag(range)
                 }
             }
             .pickerStyle(.menu)
@@ -427,7 +428,7 @@ struct PDFReportView: View {
                 }
                 .pickerStyle(.menu)
 
-                Text(selectedCategoryID.flatMap(categoryName(for:)).map { "Exports will include only \($0) expenses for the selected period." } ?? "Exports will include all expenses for the selected period.")
+                Text(selectedCategoryID.flatMap(categoryName(for:)).map { L10n.format("finance.report.scopeCategory", $0) } ?? L10n.string("Exports will include all expenses for the selected period."))
                     .font(AppDesignSystem.Typography.footnote)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -440,7 +441,7 @@ struct PDFReportView: View {
             } label: {
                 HStack {
                     Image(systemName: isExporting ? "hourglass" : "doc.badge.plus")
-                    Text(isExporting ? "Creating Report..." : "Create PDF Report")
+                    Text(LocalizedStringKey(isExporting ? "Creating Report..." : "Create PDF Report"))
                     Spacer()
                     Image(systemName: "chevron.right")
                 }
@@ -457,7 +458,7 @@ struct PDFReportView: View {
             } label: {
                 HStack {
                     Image(systemName: isExporting ? "hourglass" : "tablecells.fill")
-                    Text(isExporting ? "Creating Export..." : "Create CSV Export")
+                    Text(LocalizedStringKey(isExporting ? "Creating Export..." : "Create CSV Export"))
                     Spacer()
                     Image(systemName: "chevron.right")
                 }
@@ -512,7 +513,7 @@ struct PDFReportView: View {
             if let message {
                 Text(message)
                     .font(AppDesignSystem.Typography.footnote.weight(.semibold))
-                    .foregroundStyle(message.contains("created") ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.error)
+                    .foregroundStyle(messageIsSuccess ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.error)
             }
         }
         .task {
@@ -526,12 +527,14 @@ struct PDFReportView: View {
             csvURL = nil
             previewItem = nil
             message = nil
+            messageIsSuccess = false
         }
         .onChange(of: selectedCategoryID) { _, _ in
             reportURL = nil
             csvURL = nil
             previewItem = nil
             message = nil
+            messageIsSuccess = false
         }
     }
 
@@ -541,6 +544,7 @@ struct PDFReportView: View {
             categories = try await repository.loadCategories()
         } catch {
             message = error.localizedDescription
+            messageIsSuccess = false
         }
     }
 
@@ -565,9 +569,11 @@ struct PDFReportView: View {
             )
             reportURL = url
             previewItem = PDFPreviewItem(url: url)
-            message = selectedCategoryID.flatMap(categoryName(for:)).map { "\($0) PDF report ready to preview." } ?? "PDF report ready to preview."
+            message = selectedCategoryID.flatMap(categoryName(for:)).map { L10n.format("finance.report.pdfCategoryReady", $0) } ?? L10n.string("PDF report ready to preview.")
+            messageIsSuccess = true
         } catch {
             message = error.localizedDescription
+            messageIsSuccess = false
         }
     }
 
@@ -587,9 +593,11 @@ struct PDFReportView: View {
                 categories: snapshot.categories
             )
             csvURL = url
-            message = selectedCategoryID.flatMap(categoryName(for:)).map { "\($0) CSV export ready to share." } ?? "CSV export ready to share."
+            message = selectedCategoryID.flatMap(categoryName(for:)).map { L10n.format("finance.report.csvCategoryReady", $0) } ?? L10n.string("CSV export ready to share.")
+            messageIsSuccess = true
         } catch {
             message = error.localizedDescription
+            messageIsSuccess = false
         }
     }
 }
@@ -787,7 +795,7 @@ private struct FinanceMetricChip: View {
         VStack(alignment: .leading, spacing: 3) {
             Text(value)
                 .font(.system(.headline, design: .rounded).weight(.bold))
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(AppDesignSystem.Typography.caption.weight(.semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -867,7 +875,7 @@ private struct FinanceReminderAlertStylePanel: View {
 
             Picker("Alert Style", selection: $selection) {
                 ForEach(BillReminder.AlertStyle.allCases) { style in
-                    Label(style.title, systemImage: style.icon)
+                    Label(LocalizedStringKey(style.title), systemImage: style.icon)
                         .tag(style)
                 }
             }
@@ -913,9 +921,9 @@ private struct FinanceScreen<Content: View>: View {
                             .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(title)
+                            Text(LocalizedStringKey(title))
                                 .font(.title2.weight(.bold))
-                            Text(subtitle)
+                            Text(LocalizedStringKey(subtitle))
                                 .font(AppDesignSystem.Typography.footnote)
                                 .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                         }
@@ -928,7 +936,7 @@ private struct FinanceScreen<Content: View>: View {
                 .padding()
             }
         }
-        .navigationTitle(title)
+        .navigationTitle(LocalizedStringKey(title))
         .navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -949,12 +957,12 @@ private struct FinanceSummaryCard: View {
                 .background(tint.opacity(0.13), in: Circle())
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(AppDesignSystem.Typography.callout)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 Text(value)
                     .font(.title3.weight(.bold))
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(AppDesignSystem.Typography.footnote)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
             }
@@ -981,9 +989,9 @@ private struct FinanceListRow: View {
                 .background(tint.opacity(0.12), in: Circle())
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(AppDesignSystem.Typography.calloutEmphasized)
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(AppDesignSystem.Typography.footnote)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .lineLimit(1)
@@ -1010,9 +1018,9 @@ private struct FinanceEmptyState: View {
             Image(systemName: icon)
                 .font(.system(size: 32, weight: .semibold))
                 .foregroundStyle(AppDesignSystem.Colors.primary)
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(AppDesignSystem.Typography.headline)
-            Text(subtitle)
+            Text(LocalizedStringKey(subtitle))
                 .font(AppDesignSystem.Typography.footnote)
                 .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -1039,7 +1047,7 @@ private struct FinanceEditorShell<Content: View>: View {
                     .padding()
                 }
             }
-            .navigationTitle(title)
+            .navigationTitle(LocalizedStringKey(title))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -1058,10 +1066,10 @@ private struct FinanceTextField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(AppDesignSystem.Typography.footnote.weight(.semibold))
                 .foregroundStyle(AppDesignSystem.Colors.textSecondary)
-            TextField(placeholder, text: $text)
+            TextField(LocalizedStringKey(placeholder), text: $text)
                 .keyboardType(keyboardType)
                 .padding()
                 .background(AppDesignSystem.Colors.elevatedSurface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))

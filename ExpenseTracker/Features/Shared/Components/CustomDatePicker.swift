@@ -57,7 +57,7 @@ struct CustomDatePicker: View {
                 actionButtons
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle(title)
+            .navigationTitle(LocalizedStringKey(title))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -118,7 +118,7 @@ struct CustomDatePicker: View {
     
     private var calendarSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Calendar")
+            Text(LocalizedStringKey("Calendar"))
                 .font(.headline)
                 .padding(.horizontal)
             
@@ -255,7 +255,7 @@ struct PresetButton: View {
         Button(action: {
             date = preset.getDate(calendar: calendar)
         }) {
-            Text(preset.rawValue)
+            Text(LocalizedStringKey(preset.rawValue))
                 .font(.caption)
                 .fontWeight(isSelected ? .semibold : .medium)
                 .padding(.horizontal, 16)

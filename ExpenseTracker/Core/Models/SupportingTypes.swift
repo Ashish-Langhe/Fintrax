@@ -183,11 +183,11 @@ enum BudgetStatus: Sendable {
     var message: String {
         switch self {
         case .withinLimit(let percentage):
-            return "Within budget (\(Int(percentage * 100))%)"
+            return L10n.format("budget.status.withinLimit", Int(percentage * 100))
         case .approachingLimit(let percentage):
-            return "Approaching budget limit (\(Int(percentage * 100))%)"
+            return L10n.format("budget.status.approachingLimit", Int(percentage * 100))
         case .exceededLimit(let percentage):
-            return "Budget exceeded (\(Int(percentage * 100))%)"
+            return L10n.format("budget.status.exceededLimit", Int(percentage * 100))
         }
     }
     

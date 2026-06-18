@@ -121,9 +121,9 @@ enum AppSettingsError: LocalizedError, Sendable {
     var errorDescription: String? {
         switch self {
         case .invalidSecurityType:
-            return "Invalid security type for enabling security"
+            return L10n.string("Invalid security type for enabling security")
         case .inconsistentSettings:
-            return "Inconsistent settings configuration"
+            return L10n.string("Inconsistent settings configuration")
         }
     }
 }

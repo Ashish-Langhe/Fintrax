@@ -120,7 +120,7 @@ final class BudgetViewModel {
             
             // Reload data to recalculate everything
             await loadBudgetData()
-            return "Budget set successfully"
+            return L10n.string("Budget set successfully")
         } catch {
             loadingState = .failure(error)
             return nil
@@ -143,7 +143,7 @@ final class BudgetViewModel {
             
             // Reload data to recalculate everything
             await loadBudgetData()
-            return "Budget updated successfully"
+            return L10n.string("Budget updated successfully")
         } catch {
             loadingState = .failure(error)
             return nil
@@ -226,9 +226,9 @@ final class BudgetViewModel {
         let dailyReduction = max(currentDailySpend - safeDailySpend, .zero)
 
         var insights: [BudgetIntelligenceInsight] = [
-            BudgetIntelligenceInsight(
-                title: "Budget used",
-                message: "\(Int((usage * 100).rounded()))% used with \(daysRemaining) days left this month.",
+                BudgetIntelligenceInsight(
+                title: L10n.string("Budget used"),
+                message: L10n.format("budget.intelligence.used", Int((usage * 100).rounded()), daysRemaining),
                 icon: usage >= 1 ? "exclamationmark.triangle.fill" : "gauge.with.dots.needle.67percent",
                 tone: usage >= 1 ? .critical : usage >= 0.8 ? .warning : .positive
             )
@@ -237,8 +237,8 @@ final class BudgetViewModel {
         if projectedMonthSpend > budgetAmount {
             insights.append(
                 BudgetIntelligenceInsight(
-                    title: "Spending pace",
-                    message: "At this pace, month-end spend may reach \(CurrencyFormatter.format(projectedMonthSpend)).",
+                    title: L10n.string("Spending pace"),
+                    message: L10n.format("budget.intelligence.pace", CurrencyFormatter.format(projectedMonthSpend)),
                     icon: "speedometer",
                     tone: .warning
                 )
@@ -247,8 +247,8 @@ final class BudgetViewModel {
             if dailyReduction > 0, daysRemaining > 0 {
                 insights.append(
                     BudgetIntelligenceInsight(
-                        title: "Daily adjustment",
-                        message: "Reduce daily spend by about \(CurrencyFormatter.format(dailyReduction)) to stay within budget.",
+                        title: L10n.string("Daily adjustment"),
+                        message: L10n.format("budget.intelligence.dailyAdjustment", CurrencyFormatter.format(dailyReduction)),
                         icon: "arrow.down.forward.circle.fill",
                         tone: .action
                     )
@@ -257,8 +257,8 @@ final class BudgetViewModel {
         } else if usage < expectedUsage {
             insights.append(
                 BudgetIntelligenceInsight(
-                    title: "Healthy pace",
-                    message: "You are spending slower than the calendar pace for this month.",
+                    title: L10n.string("Healthy pace"),
+                    message: L10n.string("You are spending slower than the calendar pace for this month."),
                     icon: "checkmark.seal.fill",
                     tone: .positive
                 )
@@ -266,8 +266,8 @@ final class BudgetViewModel {
         } else {
             insights.append(
                 BudgetIntelligenceInsight(
-                    title: "Watch pace",
-                    message: "Spending is slightly ahead of the calendar pace. Keep daily spend near \(CurrencyFormatter.format(safeDailySpend)).",
+                    title: L10n.string("Watch pace"),
+                    message: L10n.format("budget.intelligence.watchPace", CurrencyFormatter.format(safeDailySpend)),
                     icon: "calendar.badge.clock",
                     tone: .warning
                 )
@@ -277,8 +277,8 @@ final class BudgetViewModel {
         if transactionCount > 0 {
             insights.append(
                 BudgetIntelligenceInsight(
-                    title: "Transaction rhythm",
-                    message: "\(transactionCount) entries this month, averaging \(CurrencyFormatter.format(currentDailySpend)) per day.",
+                    title: L10n.string("Transaction rhythm"),
+                    message: L10n.format("budget.intelligence.transactionRhythm", transactionCount, CurrencyFormatter.format(currentDailySpend)),
                     icon: "list.bullet.rectangle.fill",
                     tone: .neutral
                 )

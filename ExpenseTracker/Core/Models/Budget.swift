@@ -118,7 +118,7 @@ enum BudgetValidationError: LocalizedError, Sendable {
         case .invalidLimit(let message):
             return message
         case .duplicateBudgetForCategory:
-            return "A budget already exists for this category"
+            return L10n.string("A budget already exists for this category")
         }
     }
 }

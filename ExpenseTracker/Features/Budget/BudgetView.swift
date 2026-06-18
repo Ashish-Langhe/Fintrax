@@ -101,21 +101,21 @@ struct BudgetView: View {
             }
             .fintraxModal(
                 isPresented: showingDeleteAlert,
-                title: "Delete Budget?",
-                message: "This removes your monthly budget. Expense history stays untouched, but budget progress will disappear.",
+                title: L10n.string("Delete Budget?"),
+                message: L10n.string("This removes your monthly budget. Expense history stays untouched, but budget progress will disappear."),
                 icon: "trash.fill",
                 tint: AppDesignSystem.Colors.error,
-                primaryAction: FintraxModalAction(title: "Delete Budget", icon: "trash.fill", tint: AppDesignSystem.Colors.error, isDestructive: true) {
+                primaryAction: FintraxModalAction(title: L10n.string("Delete Budget"), icon: "trash.fill", tint: AppDesignSystem.Colors.error, isDestructive: true) {
                     showingDeleteAlert = false
                     Task {
                         await viewModel.deleteBudget()
                         if viewModel.currentError == nil {
-                            successMessage = "Budget deleted successfully"
+                            successMessage = L10n.string("Budget deleted successfully")
                             showingSuccessAlert = true
                         }
                     }
                 },
-                secondaryAction: FintraxModalAction(title: "Keep Budget", icon: "xmark", tint: AppDesignSystem.Colors.textSecondary) {
+                secondaryAction: FintraxModalAction(title: L10n.string("Keep Budget"), icon: "xmark", tint: AppDesignSystem.Colors.textSecondary) {
                     showingDeleteAlert = false
                 }
             )
@@ -183,7 +183,7 @@ struct BudgetView: View {
                                 .fontWeight(.semibold)
                                 .foregroundStyle(budgetAccentColor)
                             Spacer()
-                            Text(viewModel.isOverBudget ? "Limit exceeded" : "On track")
+                            Text(LocalizedStringKey(viewModel.isOverBudget ? "Limit exceeded" : "On track"))
                                 .foregroundStyle(.secondary)
                         }
                         .font(.caption)
@@ -266,7 +266,7 @@ struct BudgetView: View {
                 InsightCard(
                     title: "Spent This Month",
                     value: viewModel.formatCurrency(viewModel.spentThisMonth),
-                    subtitle: "\(viewModel.currentMonthTransactions) transactions",
+                    subtitle: L10n.format("budget.insight.transactions", viewModel.currentMonthTransactions),
                     icon: "creditcard.fill",
                     tint: .red
                 )
@@ -274,7 +274,7 @@ struct BudgetView: View {
                 InsightCard(
                     title: viewModel.isOverBudget ? "Over Budget" : "Remaining Budget",
                     value: viewModel.formatCurrency(abs(viewModel.remainingBudget)),
-                    subtitle: viewModel.isOverBudget ? "Over budget" : "\(BudgetCalculations.daysRemainingInCurrentMonth()) days left",
+                    subtitle: viewModel.isOverBudget ? L10n.string("Over budget") : L10n.format("budget.insight.daysLeft", BudgetCalculations.daysRemainingInCurrentMonth()),
                     icon: viewModel.isOverBudget ? "exclamationmark.triangle.fill" : "wallet.pass.fill",
                     tint: viewModel.isOverBudget ? .red : .green
                 )
@@ -361,7 +361,7 @@ private struct BudgetStatusCard: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                     
-                    Text(remainingBudget < 0 ? "Over by: \(currencyFormatter(abs(remainingBudget)))" : "Remaining: \(currencyFormatter(remainingBudget))")
+                    Text(remainingBudget < 0 ? L10n.format("budget.status.overBy", currencyFormatter(abs(remainingBudget))) : L10n.format("budget.status.remaining", currencyFormatter(remainingBudget)))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -478,7 +478,7 @@ private struct InsightCard: View {
             }
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.leading)
@@ -488,7 +488,7 @@ private struct InsightCard: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.72)
                 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -519,7 +519,7 @@ private struct BudgetMiniStat: View {
                 .background(tint.opacity(0.12), in: Circle())
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.caption2.weight(.medium))
                     .foregroundStyle(.secondary)
                 Text(value)
@@ -593,7 +593,7 @@ private struct BudgetSectionHeader: View {
                 .frame(width: 34, height: 34)
                 .background(tint, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.headline)
                 .fontWeight(.semibold)
 

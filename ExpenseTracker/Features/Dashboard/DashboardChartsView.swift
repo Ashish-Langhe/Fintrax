@@ -564,7 +564,7 @@ private struct RefinedMonthlyTrendChart: View {
                         .foregroundStyle(AppDesignSystem.Colors.textPrimary)
                         .lineLimit(1)
 
-                    Text(selectedData?.month ?? "No month selected")
+                    Text(selectedData?.month ?? L10n.string("No month selected"))
                         .font(AppDesignSystem.Typography.caption)
                         .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 }

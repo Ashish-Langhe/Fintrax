@@ -15,11 +15,11 @@ struct SmartCategorySuggestion: Equatable, Sendable {
     var confidenceLabel: String {
         switch confidence {
         case 0.82...:
-            return "High confidence"
+            return L10n.string("High confidence")
         case 0.66..<0.82:
-            return "Good match"
+            return L10n.string("Good match")
         default:
-            return "Suggested"
+            return L10n.string("Suggested")
         }
     }
 }
