@@ -32,7 +32,7 @@ struct DashboardView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Dashboard")
+            .navigationTitle(L10n.Dashboard.title)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -73,7 +73,7 @@ struct DashboardView: View {
         VStack(spacing: 16) {
             if let dashboard = viewModel.dashboardData {
                 DashboardHeroCard(
-                    period: "This Month",
+                    period: L10n.Dashboard.thisMonth,
                     spending: viewModel.formatCurrency(dashboard.totalSpending),
                     netFlow: viewModel.formatCurrency(viewModel.selectedRangeNetCashFlow),
                     transactionCount: dashboard.totalTransactions,
@@ -81,7 +81,7 @@ struct DashboardView: View {
                 )
             } else {
                 DashboardHeroCard(
-                    period: "This Month",
+                    period: L10n.Dashboard.thisMonth,
                     spending: viewModel.formatCurrency(.zero),
                     netFlow: viewModel.formatCurrency(.zero),
                     transactionCount: 0,
@@ -107,9 +107,9 @@ struct DashboardView: View {
                 budgetLeftCard
 
                 DashboardMetricCard(
-                    title: "Income",
+                    title: L10n.Dashboard.income,
                     value: viewModel.formatCurrency(viewModel.selectedRangeIncome),
-                    subtitle: "Cash received",
+                    subtitle: L10n.Dashboard.cashReceived,
                     icon: "arrow.down.circle.fill",
                     accent: AppDesignSystem.Colors.success
                 )
@@ -122,11 +122,11 @@ struct DashboardView: View {
     @ViewBuilder
     private var budgetLeftCard: some View {
         DashboardMetricCard(
-            title: "Budget Left",
-            value: viewModel.hasMonthlyBudget ? viewModel.formatCurrency(viewModel.remainingBudget) : "Not set",
+            title: L10n.Dashboard.budgetLeft,
+            value: viewModel.hasMonthlyBudget ? viewModel.formatCurrency(viewModel.remainingBudget) : L10n.string(L10n.Dashboard.notSet),
             subtitle: viewModel.hasMonthlyBudget
-                ? (viewModel.isOverBudget ? "Over budget" : "\(viewModel.daysRemainingInMonth) days left")
-                : "Set a monthly budget",
+                ? (viewModel.isOverBudget ? L10n.Dashboard.overBudget : LocalizedStringKey(L10n.format(L10n.Dashboard.daysLeft, viewModel.daysRemainingInMonth)))
+                : L10n.Dashboard.setMonthlyBudget,
             icon: viewModel.hasMonthlyBudget ? (viewModel.isOverBudget ? "exclamationmark.triangle.fill" : "target") : "plus.circle.fill",
             accent: viewModel.hasMonthlyBudget ? (viewModel.isOverBudget ? .red : .green) : AppDesignSystem.Colors.warning
         )
@@ -152,13 +152,13 @@ struct DashboardView: View {
     private var priorityBriefSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("Priority Brief", systemImage: "sparkles")
+                Label(L10n.Dashboard.priorityBrief, systemImage: "sparkles")
                     .font(AppDesignSystem.Typography.headline)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
                 Spacer()
 
-                Text("Actionable")
+                Text(L10n.Dashboard.actionable)
                     .font(AppDesignSystem.Typography.caption.weight(.bold))
                     .foregroundStyle(AppDesignSystem.Colors.primary)
                     .padding(.horizontal, 10)
@@ -169,19 +169,19 @@ struct DashboardView: View {
             VStack(spacing: 10) {
                 DashboardPriorityRow(
                     icon: viewModel.isOverBudget ? "exclamationmark.triangle.fill" : "target",
-                    title: viewModel.hasMonthlyBudget ? (viewModel.isOverBudget ? "Budget needs attention" : "Budget is on track") : "Monthly budget not set",
+                    title: viewModel.hasMonthlyBudget ? (viewModel.isOverBudget ? L10n.Dashboard.budgetNeedsAttention : L10n.Dashboard.budgetOnTrack) : L10n.Dashboard.monthlyBudgetNotSet,
                     subtitle: viewModel.hasMonthlyBudget
-                        ? "\(viewModel.formatCurrency(viewModel.remainingBudget)) left with \(viewModel.daysRemainingInMonth) days remaining"
-                        : "Set a monthly budget to unlock stronger guidance.",
+                        ? LocalizedStringKey(L10n.format(L10n.Dashboard.budgetRemaining, viewModel.formatCurrency(viewModel.remainingBudget), viewModel.daysRemainingInMonth))
+                        : L10n.Dashboard.setBudgetGuidance,
                     tint: viewModel.hasMonthlyBudget ? (viewModel.isOverBudget ? AppDesignSystem.Colors.error : AppDesignSystem.Colors.success) : AppDesignSystem.Colors.warning
                 )
 
                 DashboardPriorityRow(
                     icon: viewModel.upcomingBillCount > 0 ? "bell.badge.fill" : "bell.fill",
-                    title: viewModel.upcomingBillCount > 0 ? "\(viewModel.upcomingBillCount) bills due soon" : "No urgent bill reminders",
+                    title: viewModel.upcomingBillCount > 0 ? LocalizedStringKey(L10n.format(L10n.Dashboard.billsDueSoon, viewModel.upcomingBillCount)) : L10n.Dashboard.noUrgentBills,
                     subtitle: viewModel.upcomingBillCount > 0
-                        ? "\(viewModel.formatCurrency(viewModel.unpaidBillTotal)) unpaid across open bills"
-                        : "You are clear for the next few days.",
+                        ? LocalizedStringKey(L10n.format(L10n.Dashboard.unpaidBills, viewModel.formatCurrency(viewModel.unpaidBillTotal)))
+                        : L10n.Dashboard.clearNextFewDays,
                     tint: viewModel.upcomingBillCount > 0 ? AppDesignSystem.Colors.warning : AppDesignSystem.Colors.info
                 )
             }
@@ -193,8 +193,8 @@ struct DashboardView: View {
     private func spendingOverviewSection(_ dashboard: DashboardData) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             DashboardSectionHeader(
-                title: "Financial Pulse",
-                subtitle: dashboard.dateRange.rawValue,
+                title: L10n.Dashboard.financialPulse,
+                subtitle: dashboard.dateRange.localizedKey,
                 icon: "waveform.path.ecg.rectangle.fill",
                 tint: AppDesignSystem.Colors.info
             )
@@ -204,7 +204,7 @@ struct DashboardView: View {
                 income: viewModel.formatCurrency(viewModel.selectedRangeIncome),
                 netFlow: viewModel.formatCurrency(viewModel.selectedRangeNetCashFlow),
                 transactionCount: dashboard.totalTransactions,
-                remainingBudget: viewModel.hasMonthlyBudget ? viewModel.formatCurrency(viewModel.remainingBudget) : "Not set",
+                remainingBudget: viewModel.hasMonthlyBudget ? viewModel.formatCurrency(viewModel.remainingBudget) : L10n.string(L10n.Dashboard.notSet),
                 budgetProgress: budgetProgress,
                 isOverBudget: viewModel.isOverBudget,
                 hasBudget: viewModel.hasMonthlyBudget
@@ -228,7 +228,7 @@ struct DashboardView: View {
             HStack {
                 Image(systemName: viewModel.hasExceededBudgets ? "exclamationmark.triangle.fill" : "exclamationmark.triangle")
                     .foregroundColor(viewModel.hasExceededBudgets ? .red : .orange)
-                Text("Budget Alerts")
+                Text(L10n.Dashboard.budgetAlerts)
                     .font(.headline)
                     .fontWeight(.semibold)
             }
@@ -316,7 +316,7 @@ struct DashboardView: View {
                     .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: loadingRotation)
             }
             
-            Text("Loading dashboard...")
+            Text(L10n.Dashboard.loading)
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.secondary)
@@ -361,14 +361,14 @@ struct DashboardView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.largeTitle)
                 .foregroundColor(.red)
-            Text("Error Loading Dashboard")
+            Text(L10n.Dashboard.errorTitle)
                 .font(.headline)
             Text(error.localizedDescription)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            Button("Retry") {
+            Button(L10n.Dashboard.retry) {
                 Task {
                     await viewModel.loadDashboardData()
                 }
@@ -385,9 +385,9 @@ struct DashboardView: View {
             Image(systemName: "chart.bar.xaxis")
                 .font(.largeTitle)
                 .foregroundColor(.secondary)
-            Text("No Expenses Yet")
+            Text(L10n.Dashboard.emptyTitle)
                 .font(.headline)
-            Text("Start adding expenses to see your spending analytics here.")
+            Text(L10n.Dashboard.emptyMessage)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -402,8 +402,8 @@ struct DashboardView: View {
     private func destinationView(for destination: NavigationDestination) -> some View {
         switch destination {
         case .addExpense(_):
-            Text("Add/Edit Expense")
-                .navigationTitle("Expense Details")
+            Text(L10n.Dashboard.addEditExpense)
+                .navigationTitle(L10n.Dashboard.expenseDetails)
         case .expenseList:
             ExpenseListView()
         case .analytics:
@@ -505,7 +505,7 @@ struct ExpenseRowView: View {
 }
 
 private struct DashboardHeroCard: View {
-    let period: String
+    let period: LocalizedStringKey
     let spending: String
     let netFlow: String
     let transactionCount: Int
@@ -529,13 +529,13 @@ private struct DashboardHeroCard: View {
                     }
                     .foregroundStyle(.white.opacity(0.78))
 
-                    Text("Money Snapshot")
+                    Text(L10n.Dashboard.moneySnapshot)
                         .font(.system(.title3, design: .rounded).weight(.bold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
 
-                    Text("Current month spending overview")
+                    Text(L10n.Dashboard.currentMonthOverview)
                         .font(AppDesignSystem.Typography.caption.weight(.medium))
                         .foregroundStyle(.white.opacity(0.68))
                 }
@@ -556,7 +556,7 @@ private struct DashboardHeroCard: View {
 
             HStack(alignment: .lastTextBaseline, spacing: 12) {
                 VStack(alignment: .leading, spacing: 5) {
-                Text("Total Spent")
+                Text(L10n.Dashboard.totalSpent)
                     .font(AppDesignSystem.Typography.caption.weight(.bold))
                     .foregroundStyle(.white.opacity(0.72))
                     .textCase(.uppercase)
@@ -574,14 +574,14 @@ private struct DashboardHeroCard: View {
 
             HStack(spacing: 10) {
                 DashboardHeroMiniStat(
-                    title: "Entries",
+                    title: L10n.Dashboard.entries,
                     value: "\(transactionCount)",
                     icon: "list.bullet.rectangle.fill",
                     revealDelay: 0.08
                 )
 
                 DashboardHeroMiniStat(
-                    title: "Net Balance",
+                    title: L10n.Dashboard.netBalance,
                     value: netFlow,
                     icon: isPositiveFlow ? "arrow.down.left.circle.fill" : "arrow.up.right.circle.fill",
                     tint: isPositiveFlow ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.warning,
@@ -593,7 +593,7 @@ private struct DashboardHeroCard: View {
                 Image(systemName: isPositiveFlow ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
                     .font(.caption.weight(.bold))
 
-                Text(isPositiveFlow ? "Income is higher than spending" : "Spending is higher than income")
+                Text(isPositiveFlow ? L10n.Dashboard.incomeHigher : L10n.Dashboard.spendingHigher)
                     .font(AppDesignSystem.Typography.caption.weight(.bold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
@@ -674,7 +674,7 @@ private struct DashboardHeroCard: View {
 }
 
 private struct DashboardHeroMiniStat: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let icon: String
     var tint: Color = .white
@@ -733,22 +733,22 @@ private struct DashboardInsightStrip: View {
         HStack(spacing: 10) {
             DashboardMiniInsight(
                 icon: topCategory?.0.iconName ?? "tag.fill",
-                title: "Top",
-                value: topCategory?.0.name ?? "None",
+                title: L10n.Dashboard.top,
+                value: topCategory?.0.name ?? L10n.string(L10n.Dashboard.none),
                 tint: topCategory?.0.displayColor ?? AppDesignSystem.Colors.primary
             )
 
             DashboardMiniInsight(
                 icon: "waveform.path.ecg.rectangle.fill",
-                title: "Average",
+                title: L10n.Dashboard.average,
                 value: averageTransaction,
                 tint: AppDesignSystem.Colors.info
             )
 
             DashboardMiniInsight(
                 icon: upcomingBills > 0 ? "bell.badge.fill" : "bell.fill",
-                title: upcomingBills > 0 ? "\(upcomingBills) Due" : "Bills",
-                value: upcomingBills > 0 ? billTotal : "Clear",
+                title: upcomingBills > 0 ? LocalizedStringKey(L10n.format(L10n.Dashboard.due, upcomingBills)) : L10n.Dashboard.bills,
+                value: upcomingBills > 0 ? billTotal : L10n.string(L10n.Dashboard.clear),
                 tint: upcomingBills > 0 ? AppDesignSystem.Colors.warning : AppDesignSystem.Colors.success
             )
         }
@@ -757,7 +757,7 @@ private struct DashboardInsightStrip: View {
 
 private struct DashboardMiniInsight: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let tint: Color
 
@@ -789,8 +789,8 @@ private struct DashboardMiniInsight: View {
 }
 
 private struct DashboardSectionHeader: View {
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let icon: String
     let tint: Color
 
@@ -831,14 +831,14 @@ private struct DashboardPulseCard: View {
         VStack(spacing: 14) {
             HStack(spacing: 12) {
                 DashboardPulseMetric(
-                    title: "Spent",
+                    title: L10n.Dashboard.spent,
                     value: spending,
                     icon: "arrow.up.forward.circle.fill",
                     tint: AppDesignSystem.Colors.error
                 )
 
                 DashboardPulseMetric(
-                    title: "Income",
+                    title: L10n.Dashboard.income,
                     value: income,
                     icon: "arrow.down.forward.circle.fill",
                     tint: AppDesignSystem.Colors.success
@@ -847,14 +847,14 @@ private struct DashboardPulseCard: View {
 
             HStack(spacing: 12) {
                 DashboardPulseMetric(
-                    title: "Net Flow",
+                    title: L10n.Dashboard.netFlow,
                     value: netFlow,
                     icon: "equal.circle.fill",
                     tint: AppDesignSystem.Colors.info
                 )
 
                 DashboardPulseMetric(
-                    title: "Entries",
+                    title: L10n.Dashboard.entries,
                     value: "\(transactionCount)",
                     icon: "list.bullet.rectangle.fill",
                     tint: AppDesignSystem.Colors.primary
@@ -863,7 +863,7 @@ private struct DashboardPulseCard: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Label(hasBudget ? "Monthly Budget" : "Budget Setup", systemImage: hasBudget ? "target" : "plus.circle.fill")
+                    Label(hasBudget ? L10n.Dashboard.monthlyBudget : L10n.Dashboard.budgetSetup, systemImage: hasBudget ? "target" : "plus.circle.fill")
                         .font(AppDesignSystem.Typography.caption.weight(.bold))
                         .foregroundStyle(AppDesignSystem.Colors.textSecondary)
 
@@ -886,7 +886,7 @@ private struct DashboardPulseCard: View {
                 }
                 .frame(height: 9)
 
-                Text(hasBudget ? (isOverBudget ? "Spending has crossed the monthly plan" : "Spending pace is within the monthly plan") : "Set a monthly budget to track pace")
+                Text(hasBudget ? (isOverBudget ? L10n.Dashboard.spendingCrossedPlan : L10n.Dashboard.spendingWithinPlan) : L10n.Dashboard.setBudgetToTrack)
                     .font(AppDesignSystem.Typography.caption)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
             }
@@ -899,7 +899,7 @@ private struct DashboardPulseCard: View {
 }
 
 private struct DashboardPulseMetric: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let icon: String
     let tint: Color
@@ -938,8 +938,8 @@ private struct DashboardPulseMetric: View {
 
 private struct DashboardPriorityRow: View {
     let icon: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let tint: Color
 
     var body: some View {
@@ -975,9 +975,9 @@ private struct DashboardPriorityRow: View {
 }
 
 private struct DashboardMetricCard: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
-    let subtitle: String
+    let subtitle: LocalizedStringKey
     let icon: String
     let accent: Color
 
@@ -1166,13 +1166,13 @@ private struct CategoryDetailView: View {
     @ViewBuilder
     private var categoryHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Total Spending")
+            Text(L10n.Dashboard.totalSpending)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             Text(viewModel.formatCurrency(viewModel.getCategorySpending(for: category)))
                 .font(.largeTitle)
                 .fontWeight(.bold)
-            Text("\(expenses.count) transactions")
+            Text(L10n.format(L10n.Dashboard.transactions, expenses.count))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -1205,7 +1205,7 @@ private struct CategoryDetailView: View {
                 }
             }())
             VStack(alignment: .leading, spacing: 4) {
-                Text("Budget Status")
+                Text(L10n.Dashboard.budgetStatus)
                     .font(.headline)
                 Text(status.message)
                     .font(.subheadline)
@@ -1221,7 +1221,7 @@ private struct CategoryDetailView: View {
     @ViewBuilder
     private var expensesList: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Expenses")
+            Text(L10n.Dashboard.expenses)
                 .font(.headline)
                 .fontWeight(.semibold)
             

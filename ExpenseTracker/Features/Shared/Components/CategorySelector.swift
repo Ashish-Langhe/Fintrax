@@ -43,7 +43,7 @@ struct CategorySelectorView: View {
                                 .foregroundColor(.secondary)
                                 .frame(width: 24)
                             
-                            Text("All Categories")
+                            Text(L10n.Expenses.allCategories)
                             Spacer()
                             if selectedCategoryID == nil {
                                 Image(systemName: "checkmark")
@@ -58,9 +58,9 @@ struct CategorySelectorView: View {
             if categories.isEmpty {
                 Section {
                     ContentUnavailableView(
-                        "No Categories",
+                        L10n.Expenses.noCategoriesTitle,
                         systemImage: "tag",
-                        description: Text("Categories could not be loaded. Go back and try again.")
+                        description: Text(L10n.Expenses.noCategoriesDescription)
                     )
                 }
             } else {
@@ -88,7 +88,7 @@ struct CategorySelectorView: View {
                                 .foregroundColor(.blue)
                                 .frame(width: 24)
                             
-                            Text("Add New Category")
+                            Text(L10n.Expenses.addNewCategory)
                             Spacer()
                         }
                     }
@@ -96,31 +96,31 @@ struct CategorySelectorView: View {
                 }
             }
         }
-        .navigationTitle("Select Category")
+        .navigationTitle(L10n.Expenses.selectCategoryTitle)
         .navigationBarTitleDisplayMode(.inline)
         .fintraxModal(
             isPresented: showingAddCategory,
-            title: "Add Category",
-            message: "Enter a short category name. You can edit icon and color from the Categories tab.",
+            title: L10n.string(L10n.Expenses.addCategory),
+            message: L10n.string(L10n.Expenses.addCategoryMessage),
             icon: "tag.fill",
             tint: AppDesignSystem.Colors.primary,
-            primaryAction: FintraxModalAction(title: "Add Category", icon: "plus", tint: AppDesignSystem.Colors.primary) {
+            primaryAction: FintraxModalAction(title: L10n.string(L10n.Expenses.addCategory), icon: "plus", tint: AppDesignSystem.Colors.primary) {
                 addCategory()
             },
-            secondaryAction: FintraxModalAction(title: "Cancel", icon: "xmark", tint: AppDesignSystem.Colors.textSecondary) {
+            secondaryAction: FintraxModalAction(title: L10n.string("expenses.cancel"), icon: "xmark", tint: AppDesignSystem.Colors.textSecondary) {
                 showingAddCategory = false
                 newCategoryName = ""
             },
-            textFieldPlaceholder: "Category Name",
+            textFieldPlaceholder: L10n.string(L10n.Expenses.categoryNamePlaceholder),
             textFieldValue: $newCategoryName
         )
         .fintraxModal(
             isPresented: showingAlert,
-            title: "Category",
+            title: L10n.string("expenses.common.category"),
             message: alertMessage,
             icon: "exclamationmark.triangle.fill",
             tint: AppDesignSystem.Colors.warning,
-            primaryAction: FintraxModalAction(title: "Got It", icon: "checkmark", tint: AppDesignSystem.Colors.primary) {
+            primaryAction: FintraxModalAction(title: L10n.string(L10n.Expenses.gotIt), icon: "checkmark", tint: AppDesignSystem.Colors.primary) {
                 showingAlert = false
             }
         )
@@ -130,27 +130,27 @@ struct CategorySelectorView: View {
         let trimmedName = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
         
         guard !trimmedName.isEmpty else {
-            alertMessage = "Category name cannot be empty"
+            alertMessage = L10n.string(L10n.Expenses.categoryNameEmpty)
             showingAlert = true
             return
         }
         
         guard trimmedName.count <= 50 else {
-            alertMessage = "Category name cannot exceed 50 characters"
+            alertMessage = L10n.format(L10n.Expenses.categoryNameTooLong, 50)
             showingAlert = true
             return
         }
         
         // Check for duplicates
         if categories.contains(where: { $0.name.lowercased() == trimmedName.lowercased() }) {
-            alertMessage = "A category with this name already exists"
+            alertMessage = L10n.string(L10n.Expenses.categoryDuplicate)
             showingAlert = true
             return
         }
         
         // In a real app, you would create the category here
         // For now, just simulate it
-        alertMessage = "Feature to create new categories would be implemented here"
+        alertMessage = L10n.string(L10n.Expenses.categoryCreatePlaceholder)
         showingAddCategory = false
         showingAlert = true
         newCategoryName = ""
@@ -184,7 +184,7 @@ struct CategoryRow: View {
                         .foregroundColor(.primary)
                     
                     if category.isDefault {
-                        Text("Default category")
+                        Text(L10n.Expenses.defaultCategory)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -210,7 +210,7 @@ struct SimpleCategorySelector: View {
     let categories: [Category]
     let placeholder: String
     
-    init(selectedCategoryID: Binding<UUID?>, categories: [Category] = [], placeholder: String = "Select Category") {
+    init(selectedCategoryID: Binding<UUID?>, categories: [Category] = [], placeholder: String = L10n.string(L10n.Expenses.selectCategory)) {
         self._selectedCategoryID = selectedCategoryID
         self.categories = categories
         self.placeholder = placeholder

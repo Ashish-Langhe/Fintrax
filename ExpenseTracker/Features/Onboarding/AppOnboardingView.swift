@@ -49,7 +49,7 @@ struct AppLaunchSplashView: View {
                 VStack(spacing: 8) {
                     Text("Fintrax")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
-                    Text("Preparing your financial workspace")
+                    Text(L10n.Splash.preparingWorkspace)
                         .font(.callout.weight(.medium))
                         .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 }
@@ -151,7 +151,7 @@ struct AppOnboardingView: View {
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                Text("A calmer way to understand your money")
+                Text(L10n.Onboarding.splashSubtitle)
                     .font(.callout.weight(.medium))
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -197,7 +197,7 @@ struct AppOnboardingView: View {
                     }
                 } label: {
                     HStack(spacing: 10) {
-                        Text(selectedPage == pages.count - 1 ? "Start Securely" : "Continue")
+                        Text(selectedPage == pages.count - 1 ? L10n.Onboarding.startSecurely : L10n.Onboarding.continueButton)
                             .font(.headline.weight(.semibold))
 
                         Image(systemName: selectedPage == pages.count - 1 ? "lock.shield.fill" : "arrow.right")
@@ -215,7 +215,7 @@ struct AppOnboardingView: View {
                 Button {
                     onComplete()
                 } label: {
-                    Text("Skip")
+                    Text(L10n.Onboarding.skip)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                         .frame(height: 34)
@@ -285,7 +285,7 @@ private struct OnboardingPageView: View {
                 .offset(y: appeared ? 0 : 18)
 
                 VStack(spacing: isCompactHeight ? 9 : 12) {
-                    ForEach(page.highlights, id: \.title) { highlight in
+                    ForEach(page.highlights) { highlight in
                         OnboardingHighlightRow(highlight: highlight, tint: page.tint)
                     }
                 }
@@ -422,8 +422,8 @@ private struct OnboardingBackground: View {
 
 private struct OnboardingPage: Identifiable {
     let id = UUID()
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let heroIcon: String
     let tint: Color
     let gradient: LinearGradient
@@ -431,45 +431,46 @@ private struct OnboardingPage: Identifiable {
 
     static let all = [
         OnboardingPage(
-            title: "Track every spend with clarity",
-            subtitle: "Capture expenses quickly, organize them by rich categories, and keep your records easy to scan.",
+            title: L10n.Onboarding.trackTitle,
+            subtitle: L10n.Onboarding.trackSubtitle,
             heroIcon: "list.bullet.rectangle.portrait.fill",
             tint: AppDesignSystem.Colors.primary,
             gradient: AppDesignSystem.Gradients.primary,
             highlights: [
-                OnboardingHighlight(icon: "plus.circle.fill", title: "Fast entry", subtitle: "Add expenses in a focused flow"),
-                OnboardingHighlight(icon: "tag.fill", title: "Smart categories", subtitle: "Icons and colors stay synced")
+                OnboardingHighlight(icon: "plus.circle.fill", title: L10n.Onboarding.fastEntryTitle, subtitle: L10n.Onboarding.fastEntrySubtitle),
+                OnboardingHighlight(icon: "tag.fill", title: L10n.Onboarding.smartCategoriesTitle, subtitle: L10n.Onboarding.smartCategoriesSubtitle)
             ]
         ),
         OnboardingPage(
-            title: "AI analyze your spending behavior",
-            subtitle: "Fintrax studies your patterns to reveal daily spend, saving days, top categories, and smarter ways to save.",
+            title: L10n.Onboarding.aiTitle,
+            subtitle: L10n.Onboarding.aiSubtitle,
             heroIcon: "brain.head.profile",
             tint: AppDesignSystem.Colors.info,
             gradient: LinearGradient(colors: [AppDesignSystem.Colors.info, AppDesignSystem.Colors.primary], startPoint: .topLeading, endPoint: .bottomTrailing),
             highlights: [
-                OnboardingHighlight(icon: "sparkles", title: "AI Analyze", subtitle: "Find behavior patterns fast"),
-                OnboardingHighlight(icon: "leaf.fill", title: "Saving guidance", subtitle: "See better ways to save")
+                OnboardingHighlight(icon: "sparkles", title: L10n.Onboarding.aiAnalyzeTitle, subtitle: L10n.Onboarding.aiAnalyzeSubtitle),
+                OnboardingHighlight(icon: "leaf.fill", title: L10n.Onboarding.savingGuidanceTitle, subtitle: L10n.Onboarding.savingGuidanceSubtitle)
             ]
         ),
         OnboardingPage(
-            title: "Share verified PDF reports",
-            subtitle: "Create selected financial reports with charts, Fintrax watermark, and a verified stamp before sharing.",
+            title: L10n.Onboarding.reportsTitle,
+            subtitle: L10n.Onboarding.reportsSubtitle,
             heroIcon: "doc.richtext.fill",
             tint: AppDesignSystem.Colors.success,
             gradient: AppDesignSystem.Gradients.success,
             highlights: [
-                OnboardingHighlight(icon: "line.3.horizontal.decrease.circle.fill", title: "Selectable data", subtitle: "Share all or one category"),
-                OnboardingHighlight(icon: "checkmark.seal.fill", title: "Verified PDF", subtitle: "Stamped by Fintrax")
+                OnboardingHighlight(icon: "line.3.horizontal.decrease.circle.fill", title: L10n.Onboarding.selectableDataTitle, subtitle: L10n.Onboarding.selectableDataSubtitle),
+                OnboardingHighlight(icon: "checkmark.seal.fill", title: L10n.Onboarding.verifiedPDFTitle, subtitle: L10n.Onboarding.verifiedPDFSubtitle)
             ]
         )
     ]
 }
 
-private struct OnboardingHighlight {
+private struct OnboardingHighlight: Identifiable {
+    let id = UUID()
     let icon: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
 }
 
 #Preview {

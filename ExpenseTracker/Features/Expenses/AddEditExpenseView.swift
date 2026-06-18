@@ -11,6 +11,7 @@ import SwiftUI
 struct AddEditExpenseView: View {
     @StateObject private var viewModel: ExpenseViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @FocusState private var focusedField: Field?
     
     @State private var categories: [Category] = []
@@ -55,8 +56,10 @@ struct AddEditExpenseView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
+                Button {
                     dismiss()
+                } label: {
+                    Text(L10n.Expenses.cancel)
                 }
             }
             
@@ -75,11 +78,11 @@ struct AddEditExpenseView: View {
         .disabled(viewModel.isLoading)
         .fintraxModal(
             isPresented: viewModel.showAlert,
-            title: "Could Not Save",
+            title: L10n.string("expenses.form.couldNotSave"),
             message: viewModel.alertMessage,
             icon: "exclamationmark.triangle.fill",
             tint: AppDesignSystem.Colors.error,
-            primaryAction: FintraxModalAction(title: "Review Details", icon: "checkmark", tint: AppDesignSystem.Colors.primary) {
+            primaryAction: FintraxModalAction(title: L10n.string("expenses.form.reviewDetails"), icon: "checkmark", tint: AppDesignSystem.Colors.primary) {
                 viewModel.showAlert = false
             }
         )
@@ -91,6 +94,12 @@ struct AddEditExpenseView: View {
         }
         .onDisappear {
             smartCategoryTask?.cancel()
+        }
+        .onChange(of: locale.identifier) { _, _ in
+            viewModel.validateForm()
+            if categoryLoadError != nil {
+                categoryLoadError = L10n.string(L10n.Expenses.categoryLoadFailed)
+            }
         }
     }
 
@@ -107,9 +116,9 @@ struct AddEditExpenseView: View {
                     )
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Amount")
+                    Text(L10n.Expenses.amount)
                         .font(.headline)
-                    Text(selectedCategoryText == "Select Category" ? "Choose category and details" : selectedCategoryText)
+                    Text(selectedCategoryLabel)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -117,7 +126,7 @@ struct AddEditExpenseView: View {
 
                 Spacer()
 
-                Text(viewModel.isEditing ? "Update" : "New")
+                Text(viewModel.isEditing ? L10n.Expenses.update : L10n.Expenses.new)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 10)
@@ -171,7 +180,7 @@ struct AddEditExpenseView: View {
 
     private var detailsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            CardSectionHeader(title: "Details", icon: "doc.text.fill", tint: .blue)
+            CardSectionHeader(title: L10n.Expenses.details, icon: "doc.text.fill", tint: .blue)
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 10) {
@@ -179,7 +188,7 @@ struct AddEditExpenseView: View {
                         .foregroundStyle(.secondary)
                         .frame(width: 22)
 
-                    TextField("Expense title", text: $viewModel.title)
+                    TextField(L10n.Expenses.titlePlaceholder, text: $viewModel.title)
                         .focused($focusedField, equals: .title)
                         .submitLabel(.next)
                 }
@@ -202,7 +211,9 @@ struct AddEditExpenseView: View {
                 }
             }
 
-            DatePicker("Date", selection: $viewModel.date, in: ...Date())
+            DatePicker(selection: $viewModel.date, in: ...Date()) {
+                Text(L10n.Expenses.date)
+            }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
@@ -222,7 +233,7 @@ struct AddEditExpenseView: View {
         VStack(alignment: .leading, spacing: 6) {
             if isLoadingCategories {
                 HStack {
-                    Label("Category", systemImage: "tag.fill")
+                    Label(L10n.Expenses.category, systemImage: "tag.fill")
                     Spacer()
                     ProgressView()
                 }
@@ -231,12 +242,14 @@ struct AddEditExpenseView: View {
                 .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             } else if categories.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Label("Category", systemImage: "tag.fill")
-                    Text(categoryLoadError ?? "No categories available")
+                    Label(L10n.Expenses.category, systemImage: "tag.fill")
+                    Text(categoryLoadError ?? L10n.string("expenses.form.noCategories"))
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Button("Retry") {
+                    Button {
                         Task { await loadCategories() }
+                    } label: {
+                        Text(L10n.Expenses.retry)
                     }
                     .font(.caption)
                 }
@@ -257,7 +270,7 @@ struct AddEditExpenseView: View {
                             .frame(width: 32, height: 32)
                             .background(selectedCategory?.displayColor ?? Color.blue, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-                        Text("Category")
+                        Text(L10n.Expenses.category)
                             .font(.subheadline.weight(.medium))
                         Spacer()
                         Text(selectedCategoryText)
@@ -285,9 +298,9 @@ struct AddEditExpenseView: View {
 
     private var noteCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            CardSectionHeader(title: "Note", icon: "note.text", tint: .teal)
+            CardSectionHeader(title: L10n.Expenses.note, icon: "note.text", tint: .teal)
 
-            TextField("Optional note", text: $viewModel.note, axis: .vertical)
+            TextField(L10n.Expenses.optionalNote, text: $viewModel.note, axis: .vertical)
                 .lineLimit(3...6)
                 .padding(14)
                 .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
@@ -311,9 +324,9 @@ struct AddEditExpenseView: View {
                 .background((viewModel.isValid ? Color.green : Color.orange).opacity(0.12), in: Circle())
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(viewModel.isValid ? "Ready to save" : "Needs attention")
+                Text(viewModel.isValid ? L10n.Expenses.readyToSave : L10n.Expenses.needsAttention)
                     .font(.subheadline.weight(.semibold))
-                Text(viewModel.isValid ? viewModel.formattedAmount() : "Complete amount, title, and category")
+                Text(viewModel.isValid ? viewModel.formattedAmount() : L10n.string("expenses.form.completeRequiredFields"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -359,7 +372,7 @@ struct AddEditExpenseView: View {
             categories = try await repository.loadCategories()
                 .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         } catch {
-            categoryLoadError = "Failed to load categories"
+            categoryLoadError = L10n.string("expenses.form.categoryLoadFailed")
             categories = Category.sampleCategories()
         }
         
@@ -375,9 +388,13 @@ struct AddEditExpenseView: View {
     
     private var selectedCategoryText: String {
         guard let categoryID = viewModel.selectedCategoryID else {
-            return "Select Category"
+            return L10n.string(L10n.Expenses.selectCategory)
         }
-        return categories.first { $0.id == categoryID }?.name ?? "Unknown"
+        return categories.first { $0.id == categoryID }?.name ?? L10n.string(L10n.Expenses.unknown)
+    }
+
+    private var selectedCategoryLabel: LocalizedStringKey {
+        viewModel.selectedCategoryID == nil ? L10n.Expenses.chooseCategoryDetails : LocalizedStringKey(selectedCategoryText)
     }
 
     private var selectedCategory: Category? {
@@ -476,7 +493,7 @@ private struct SmartCategorySuggestionChip: View {
                 .scaleEffect(glow ? 1.04 : 0.96)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Smart Category")
+                Text(L10n.Expenses.smartCategory)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
 
@@ -518,7 +535,7 @@ private struct SmartCategorySuggestionChip: View {
                 .stroke(suggestion.category.displayColor.opacity(glow ? 0.34 : 0.18), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Smart Category suggested \(suggestion.category.name)")
+        .accessibilityLabel(L10n.format(L10n.Expenses.smartCategoryAccessibility, suggestion.category.name))
         .task(id: suggestion.category.id) {
             glow = false
             withAnimation(.easeInOut(duration: 0.9).repeatCount(2, autoreverses: true)) {
@@ -529,7 +546,7 @@ private struct SmartCategorySuggestionChip: View {
 }
 
 private struct CardSectionHeader: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     let tint: Color
 

@@ -24,7 +24,7 @@ struct AddEditExpenseNavigationView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading...")
+                ProgressView(L10n.Expenses.loadingShort)
             } else if let error = error {
                 ErrorView(message: error) {
                     Task {
@@ -55,7 +55,7 @@ struct AddEditExpenseNavigationView: View {
             expense = expenses.first { $0.id == expenseID }
             isLoading = false
         } catch {
-            self.error = "Failed to load expense: \(error.localizedDescription)"
+            self.error = L10n.format(L10n.Expenses.loadFailed, error.localizedDescription)
             isLoading = false
         }
     }
@@ -72,7 +72,7 @@ private struct ErrorView: View {
                 .font(.largeTitle)
                 .foregroundColor(.orange)
             
-            Text("Error")
+            Text(L10n.Expenses.error)
                 .font(.headline)
             
             Text(message)
@@ -80,7 +80,9 @@ private struct ErrorView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            Button("Retry", action: onRetry)
+            Button(action: onRetry) {
+                Text(L10n.Expenses.retry)
+            }
                 .buttonStyle(.borderedProminent)
         }
         .padding()

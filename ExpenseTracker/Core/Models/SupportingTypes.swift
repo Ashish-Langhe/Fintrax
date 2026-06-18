@@ -70,6 +70,40 @@ enum DateRangeOption: String, CaseIterable, Identifiable, Codable, Sendable {
     case allTime = "All Time"
     
     var id: String { rawValue }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .last7Days:
+            L10n.DateRange.last7Days
+        case .last30Days:
+            L10n.DateRange.last30Days
+        case .last90Days:
+            L10n.DateRange.last90Days
+        case .thisMonth:
+            L10n.DateRange.thisMonth
+        case .thisYear:
+            L10n.DateRange.thisYear
+        case .allTime:
+            L10n.DateRange.allTime
+        }
+    }
+
+    var localizedString: String {
+        switch self {
+        case .last7Days:
+            L10n.string("dateRange.last7Days")
+        case .last30Days:
+            L10n.string("dateRange.last30Days")
+        case .last90Days:
+            L10n.string("dateRange.last90Days")
+        case .thisMonth:
+            L10n.string("dateRange.thisMonth")
+        case .thisYear:
+            L10n.string("dateRange.thisYear")
+        case .allTime:
+            L10n.string("dateRange.allTime")
+        }
+    }
     
     /// Filters expenses by this date range
     func filterExpenses(_ expenses: [Expense]) -> [Expense] {
@@ -213,4 +247,38 @@ enum SortOption: String, CaseIterable, Identifiable, Sendable {
     case titleDescending = "Title (Z-A)"
     
     var id: String { rawValue }
+
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .dateDescending:
+            L10n.Sort.dateNewest
+        case .dateAscending:
+            L10n.Sort.dateOldest
+        case .amountDescending:
+            L10n.Sort.amountHighest
+        case .amountAscending:
+            L10n.Sort.amountLowest
+        case .titleAscending:
+            L10n.Sort.titleAZ
+        case .titleDescending:
+            L10n.Sort.titleZA
+        }
+    }
+
+    var localizedString: String {
+        switch self {
+        case .dateDescending:
+            L10n.string("sort.dateNewest")
+        case .dateAscending:
+            L10n.string("sort.dateOldest")
+        case .amountDescending:
+            L10n.string("sort.amountHighest")
+        case .amountAscending:
+            L10n.string("sort.amountLowest")
+        case .titleAscending:
+            L10n.string("sort.titleAZ")
+        case .titleDescending:
+            L10n.string("sort.titleZA")
+        }
+    }
 }

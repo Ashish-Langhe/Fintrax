@@ -92,11 +92,11 @@ struct PinEntryView: View {
             .accessibilityHidden(true)
 
             VStack(spacing: AppDesignSystem.Spacing.sm) {
-                Text("Welcome Back")
+                Text(L10n.PinLock.welcomeBack)
                     .font(AppDesignSystem.Typography.title1)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                Text("Enter your 6-digit app PIN")
+                Text(L10n.PinLock.enterPin)
                     .font(AppDesignSystem.Typography.callout)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
             }
@@ -121,13 +121,13 @@ struct PinEntryView: View {
             }
         }
         .frame(height: 28)
-        .accessibilityLabel("PIN entry")
-        .accessibilityValue("\(enteredPin.count) of \(pinLength) digits entered")
+        .accessibilityLabel(L10n.PinLock.pinEntryAccessibility)
+        .accessibilityValue(L10n.format(L10n.PinLock.digitsEntered, enteredPin.count, pinLength))
     }
 
     @ViewBuilder
     private var errorMessage: some View {
-        Text(showError ? "Incorrect PIN. Try again." : " ")
+        Text(showError ? L10n.PinLock.incorrectPin : " ")
             .font(AppDesignSystem.Typography.footnote.weight(.semibold))
             .foregroundStyle(AppDesignSystem.Colors.error)
             .frame(height: 18)
@@ -176,7 +176,7 @@ struct PinEntryView: View {
                 .frame(width: 72, height: 60)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(key == "delete.left" ? "Delete digit" : "Digit \(key)")
+            .accessibilityLabel(key == "delete.left" ? L10n.PinLock.deleteDigit : LocalizedStringKey(L10n.format(L10n.PinLock.digit, key)))
             .interactiveButton(scaleEffect: 0.92)
         }
     }

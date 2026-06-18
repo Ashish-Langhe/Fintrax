@@ -315,7 +315,7 @@ private struct SmartExpenseSearchQuery {
             minimumAmount: amountFilter.minimum,
             maximumAmount: amountFilter.maximum,
             dateRange: dateRange.range,
-            summary: chips.isEmpty ? nil : "Smart search: " + chips.joined(separator: " • ")
+            summary: chips.isEmpty ? nil : L10n.format(L10n.Expenses.smartSearchSummary, chips.joined(separator: " • "))
         )
     }
 
@@ -354,27 +354,27 @@ private struct SmartExpenseSearchQuery {
            let thisMonth = calendar.dateInterval(of: .month, for: now),
            let previousMonthStart = calendar.date(byAdding: .month, value: -1, to: thisMonth.start),
            let previousMonth = calendar.dateInterval(of: .month, for: previousMonthStart) {
-            return ((previousMonth.start, previousMonth.end), "Last month")
+            return ((previousMonth.start, previousMonth.end), L10n.string(L10n.Expenses.lastMonth))
         }
 
         if text.contains("this month") {
             let range = DateRangeOption.thisMonth.getDateRange()
-            return (range, "This month")
+            return (range, L10n.string(L10n.Expenses.thisMonth))
         }
 
         if text.contains("last 30") {
             let range = DateRangeOption.last30Days.getDateRange()
-            return (range, "Last 30 days")
+            return (range, L10n.string(L10n.Expenses.last30Days))
         }
 
         if text.contains("last 7") || text.contains("this week") {
             let range = DateRangeOption.last7Days.getDateRange()
-            return (range, "Recent")
+            return (range, L10n.string(L10n.Expenses.recent))
         }
 
         if text.contains("this year") {
             let range = DateRangeOption.thisYear.getDateRange()
-            return (range, "This year")
+            return (range, L10n.string(L10n.Expenses.thisYear))
         }
 
         return (nil, nil)

@@ -338,10 +338,10 @@ private struct FintraxAssistantSheet: View {
                 AssistantInsightCard(
                     insight: AssistantInsight(
                         promptID: "error",
-                        title: String(localized: "assistant.error.read.title"),
-                        value: String(localized: "assistant.error.read.value"),
+                        title: L10n.string("assistant.error.read.title"),
+                        value: L10n.string("assistant.error.read.value"),
                         message: message,
-                        action: String(localized: "assistant.error.read.action"),
+                        action: L10n.string("assistant.error.read.action"),
                         icon: "exclamationmark.triangle.fill",
                         tint: AppDesignSystem.Colors.error,
                         detailRows: []
