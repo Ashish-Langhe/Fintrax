@@ -1,8 +1,7 @@
 # Fintrax
 
 
-<img width="1182" height="710" alt="Screenshot 2026-06-18 at 10 54 31 AM" src="https://github.com/user-attachments/assets/b854a5f8-9c4a-4b56-828f-d1c893615a65" />
-
+<img width="1536" height="1024" alt="Fintrax_BG" src="https://github.com/user-attachments/assets/957781be-c0fd-4c06-b45c-e3ee598adb84" />
 
 
 
