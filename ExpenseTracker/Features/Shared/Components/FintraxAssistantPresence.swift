@@ -73,7 +73,7 @@ private struct FintraxAssistantLauncher: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Ask Fintrax assistant")
+        .accessibilityLabel(L10n.Assistant.accessibilityLabel)
         .opacity(hasEntered ? 1 : entrance == .dashboardArrival ? 0 : 1)
         .scaleEffect(hasEntered ? 1 : entrance == .dashboardArrival ? 0.58 : 1)
         .rotationEffect(.degrees(hasEntered ? 0 : entrance == .dashboardArrival ? -16 : 0))
@@ -106,7 +106,7 @@ private struct FintraxAssistantLauncher: View {
     }
 
     private var assistantGreeting: some View {
-        Text("Hi, I'm here for you.")
+        Text(L10n.Assistant.greeting)
             .font(AppDesignSystem.Typography.caption.weight(.semibold))
             .foregroundStyle(AppDesignSystem.Colors.textPrimary)
             .multilineTextAlignment(.leading)
@@ -229,18 +229,18 @@ private struct FintraxAssistantSheet: View {
                         .fill(AppDesignSystem.Colors.success)
                         .frame(width: 7, height: 7)
 
-                    Text("Live money assistant")
+                    Text(L10n.Assistant.liveStatus)
                         .font(AppDesignSystem.Typography.caption.weight(.bold))
                         .foregroundStyle(.white.opacity(0.76))
                         .textCase(.uppercase)
                 }
 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Ask Fintrax")
+                    Text(L10n.Assistant.title)
                         .font(.system(.title2, design: .rounded).weight(.bold))
                         .foregroundStyle(.white)
 
-                    Text("Quick answers for spending, budget risk, savings, and repeat habits.")
+                    Text(L10n.Assistant.subtitle)
                         .font(AppDesignSystem.Typography.caption.weight(.medium))
                         .foregroundStyle(.white.opacity(0.72))
                         .fixedSize(horizontal: false, vertical: true)
@@ -290,7 +290,7 @@ private struct FintraxAssistantSheet: View {
     private var promptGrid: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Choose a question")
+                Text(L10n.Assistant.chooseQuestion)
                     .font(AppDesignSystem.Typography.calloutEmphasized)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
@@ -338,10 +338,10 @@ private struct FintraxAssistantSheet: View {
                 AssistantInsightCard(
                     insight: AssistantInsight(
                         promptID: "error",
-                        title: "Could not read finance data",
-                        value: "Try again",
+                        title: String(localized: "assistant.error.read.title"),
+                        value: String(localized: "assistant.error.read.value"),
                         message: message,
-                        action: "I will keep the assistant available once the data store responds.",
+                        action: String(localized: "assistant.error.read.action"),
                         icon: "exclamationmark.triangle.fill",
                         tint: AppDesignSystem.Colors.error,
                         detailRows: []
@@ -629,11 +629,11 @@ private struct AssistantLoadingCard: View {
                 .scaleEffect(pulse ? 1.08 : 0.94)
 
             VStack(alignment: .leading, spacing: 7) {
-                Text("Reading your money pattern")
+                Text(L10n.Assistant.loadingTitle)
                     .font(AppDesignSystem.Typography.calloutEmphasized)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                Text("Checking expenses, income, budgets, bills, and daily spending behavior.")
+                Text(L10n.Assistant.loadingMessage)
                     .font(AppDesignSystem.Typography.caption)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)

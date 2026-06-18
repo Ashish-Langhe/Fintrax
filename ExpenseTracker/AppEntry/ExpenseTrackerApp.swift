@@ -20,6 +20,7 @@ struct ExpenseTrackerApp: SwiftUI.App {
             ContentView()
                 .environmentObject(settingsManager)
                 .preferredColorScheme(settingsManager.settings.theme.colorScheme)
+                .environment(\.locale, settingsManager.settings.language.locale)
         }
     }
 }
@@ -137,12 +138,12 @@ struct ContentView: View {
     private var dashboardTab: some View {
         NavigationStack {
             DashboardView()
-                .navigationTitle("Dashboard")
+                .navigationTitle(L10n.Tab.dashboard)
                 .navigationBarTitleDisplayMode(.large)
         }
         .tag(NavigationDestination.dashboard)
         .tabItem {
-            Label("Dashboard", systemImage: tabIcon(for: .dashboard))
+            Label(L10n.Tab.dashboard, systemImage: tabIcon(for: .dashboard))
                 .badge(navigationManager.selectedTab == NavigationDestination.dashboard ? "" : nil)
         }
     }
@@ -150,12 +151,12 @@ struct ContentView: View {
     private var expensesTab: some View {
         NavigationStack {
             ExpenseListView()
-                .navigationTitle("Expenses")
+                .navigationTitle(L10n.Tab.expenses)
                 .navigationBarTitleDisplayMode(.large)
         }
         .tag(NavigationDestination.expenseList)
         .tabItem {
-            Label("Expenses", systemImage: tabIcon(for: .expenseList))
+            Label(L10n.Tab.expenses, systemImage: tabIcon(for: .expenseList))
                 .badge(navigationManager.selectedTab == NavigationDestination.expenseList ? "" : nil)
         }
     }
@@ -163,12 +164,12 @@ struct ContentView: View {
     private var analyticsTab: some View {
         NavigationStack {
             AnalyticsView()
-                .navigationTitle("Analytics")
+                .navigationTitle(L10n.Tab.analytics)
                 .navigationBarTitleDisplayMode(.large)
         }
         .tag(NavigationDestination.analytics)
         .tabItem {
-            Label("Analytics", systemImage: tabIcon(for: .analytics))
+            Label(L10n.Tab.analytics, systemImage: tabIcon(for: .analytics))
                 .badge(navigationManager.selectedTab == NavigationDestination.analytics ? "" : nil)
         }
     }
@@ -176,12 +177,12 @@ struct ContentView: View {
     private var budgetTab: some View {
         NavigationStack {
             BudgetView()
-                .navigationTitle("Budget")
+                .navigationTitle(L10n.Tab.budget)
                 .navigationBarTitleDisplayMode(.large)
         }
         .tag(NavigationDestination.budgetSettings)
         .tabItem {
-            Label("Budget", systemImage: tabIcon(for: .budgetSettings))
+            Label(L10n.Tab.budget, systemImage: tabIcon(for: .budgetSettings))
                 .badge(navigationManager.selectedTab == NavigationDestination.budgetSettings ? "" : nil)
         }
     }
@@ -189,12 +190,12 @@ struct ContentView: View {
     private var settingsTab: some View {
         NavigationStack {
             SettingsView()
-                .navigationTitle("Settings")
+                .navigationTitle(L10n.Tab.settings)
                 .navigationBarTitleDisplayMode(.large)
         }
         .tag(NavigationDestination.settings)
         .tabItem {
-            Label("Settings", systemImage: tabIcon(for: .settings))
+            Label(L10n.Tab.settings, systemImage: tabIcon(for: .settings))
         }
     }
 

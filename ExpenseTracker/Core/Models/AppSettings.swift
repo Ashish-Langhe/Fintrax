@@ -10,13 +10,23 @@ import Foundation
 /// Represents app-wide settings
 struct AppSettings: Codable, Sendable {
     var theme: ThemeOption
+    var language: AppLanguage
     var securityEnabled: Bool
     var securityType: SecurityType
     var exportDateRange: DateRangeOption
+
+    enum CodingKeys: String, CodingKey {
+        case theme
+        case language
+        case securityEnabled
+        case securityType
+        case exportDateRange
+    }
     
     /// Initialize with default settings
     init() {
         self.theme = .system
+        self.language = .system
         self.securityEnabled = false
         self.securityType = .none
         self.exportDateRange = .allTime
@@ -28,11 +38,27 @@ struct AppSettings: Codable, Sendable {
     ///   - securityEnabled: Whether security is enabled
     ///   - securityType: Type of security authentication
     ///   - exportDateRange: Default date range for exports
-    init(theme: ThemeOption, securityEnabled: Bool, securityType: SecurityType, exportDateRange: DateRangeOption = .allTime) {
+    init(
+        theme: ThemeOption,
+        language: AppLanguage = .system,
+        securityEnabled: Bool,
+        securityType: SecurityType,
+        exportDateRange: DateRangeOption = .allTime
+    ) {
         self.theme = theme
+        self.language = language
         self.securityEnabled = securityEnabled
         self.securityType = securityType
         self.exportDateRange = exportDateRange
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        theme = try container.decodeIfPresent(ThemeOption.self, forKey: .theme) ?? .system
+        language = try container.decodeIfPresent(AppLanguage.self, forKey: .language) ?? .system
+        securityEnabled = try container.decodeIfPresent(Bool.self, forKey: .securityEnabled) ?? false
+        securityType = try container.decodeIfPresent(SecurityType.self, forKey: .securityType) ?? .none
+        exportDateRange = try container.decodeIfPresent(DateRangeOption.self, forKey: .exportDateRange) ?? .allTime
     }
     
     /// Enable security with specified type
@@ -56,6 +82,12 @@ struct AppSettings: Codable, Sendable {
     /// - Parameter theme: New theme preference
     mutating func updateTheme(_ theme: ThemeOption) {
         self.theme = theme
+    }
+
+    /// Update language preference
+    /// - Parameter language: New app language preference
+    mutating func updateLanguage(_ language: AppLanguage) {
+        self.language = language
     }
     
     /// Update default export date range
@@ -103,6 +135,7 @@ class SettingsManager: ObservableObject {
     // Keys for UserDefaults
     private enum Keys {
         static let theme = "appTheme"
+        static let language = "appLanguage"
         static let securityEnabled = "securityEnabled"
         static let securityType = "securityType"
         static let exportDateRange = "exportDateRange"
@@ -126,12 +159,14 @@ class SettingsManager: ObservableObject {
         let userDefaults = UserDefaults.standard
         
         let theme = ThemeOption(rawValue: userDefaults.string(forKey: Keys.theme) ?? ThemeOption.system.rawValue) ?? .system
+        let language = AppLanguage(rawValue: userDefaults.string(forKey: Keys.language) ?? AppLanguage.system.rawValue) ?? .system
         let securityEnabled = userDefaults.bool(forKey: Keys.securityEnabled)
         let securityType = SecurityType(rawValue: userDefaults.string(forKey: Keys.securityType) ?? "None") ?? .none
         let exportDateRange = DateRangeOption(rawValue: userDefaults.string(forKey: Keys.exportDateRange) ?? "All Time") ?? .allTime
         
         return AppSettings(
             theme: theme,
+            language: language,
             securityEnabled: securityEnabled,
             securityType: securityType,
             exportDateRange: exportDateRange
@@ -141,6 +176,7 @@ class SettingsManager: ObservableObject {
     /// Save settings to UserDefaults
     private func saveSettings() {
         userDefaults.set(settings.theme.rawValue, forKey: Keys.theme)
+        userDefaults.set(settings.language.rawValue, forKey: Keys.language)
         userDefaults.set(settings.securityEnabled, forKey: Keys.securityEnabled)
         userDefaults.set(settings.securityType.rawValue, forKey: Keys.securityType)
         userDefaults.set(settings.exportDateRange.rawValue, forKey: Keys.exportDateRange)
@@ -161,6 +197,12 @@ class SettingsManager: ObservableObject {
     /// - Parameter theme: New theme preference
     func updateTheme(_ theme: ThemeOption) {
         settings.updateTheme(theme)
+    }
+
+    /// Update language preference
+    /// - Parameter language: New app language preference
+    func updateLanguage(_ language: AppLanguage) {
+        settings.updateLanguage(language)
     }
 }
 

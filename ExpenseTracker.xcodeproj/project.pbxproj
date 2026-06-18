@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		902F87882FBB95E50093CBEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 902F87872FBB95E50093CBEF /* Assets.xcassets */; };
+		902F878A2FBB95E50093CBEF /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 902F87892FBB95E50093CBEF /* Localizable.xcstrings */; };
 		AA000001 /* ExpenseTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* ExpenseTrackerApp.swift */; };
 		AA000002 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppSettings.swift */; };
 		AA000003 /* Budget.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* Budget.swift */; };
@@ -66,6 +67,7 @@
 		AA000061 /* SmartCategoryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000061 /* SmartCategoryServiceTests.swift */; };
 		AA000062 /* FintraxTabBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000062 /* FintraxTabBackground.swift */; };
 		AA000063 /* FintraxAssistantPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063 /* FintraxAssistantPresence.swift */; };
+		AA000064 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000064 /* L10n.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,6 +82,7 @@
 
 /* Begin PBXFileReference section */
 		902F87872FBB95E50093CBEF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		902F87892FBB95E50093CBEF /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		AB000001 /* ExpenseTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseTrackerApp.swift; sourceTree = "<group>"; };
 		AB000002 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		AB000003 /* Budget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Budget.swift; sourceTree = "<group>"; };
@@ -138,6 +141,7 @@
 		AB000061 /* SmartCategoryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCategoryServiceTests.swift; sourceTree = "<group>"; };
 		AB000062 /* FintraxTabBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxTabBackground.swift; sourceTree = "<group>"; };
 		AB000063 /* FintraxAssistantPresence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAssistantPresence.swift; sourceTree = "<group>"; };
+		AB000064 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		AB000098 /* ExpenseTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExpenseTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000099 /* ExpenseTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExpenseTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -165,6 +169,7 @@
 			children = (
 				902F87872FBB95E50093CBEF /* Assets.xcassets */,
 				AC000002 /* ExpenseTracker */,
+				AC000041 /* Resources */,
 				AC000020 /* Tests */,
 				AC000030 /* Products */,
 			);
@@ -272,6 +277,7 @@
 			isa = PBXGroup;
 			children = (
 				AC000013 /* Components */,
+				AC000042 /* Localization */,
 				AB000021 /* FormValidationState.swift */,
 			);
 			path = Shared;
@@ -427,6 +433,22 @@
 			path = Data;
 			sourceTree = "<group>";
 		};
+		AC000041 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				902F87892FBB95E50093CBEF /* Localizable.xcstrings */,
+			);
+			path = ExpenseTracker/Resources;
+			sourceTree = "<group>";
+		};
+		AC000042 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				AB000064 /* L10n.swift */,
+			);
+			path = Localization;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -490,6 +512,10 @@
 			knownRegions = (
 				en,
 				Base,
+				hi,
+				mr,
+				es,
+				de,
 			);
 			mainGroup = AC000001;
 			productRefGroup = AC000030 /* Products */;
@@ -508,6 +534,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				902F87882FBB95E50093CBEF /* Assets.xcassets in Resources */,
+				902F878A2FBB95E50093CBEF /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -571,6 +598,7 @@
 				AA000060 /* SmartCategoryService.swift in Sources */,
 				AA000062 /* FintraxTabBackground.swift in Sources */,
 				AA000063 /* FintraxAssistantPresence.swift in Sources */,
+				AA000064 /* L10n.swift in Sources */,
 				AA000056 /* AppBadgeService.swift in Sources */,
 				AA000057 /* DashboardNotificationCenterView.swift in Sources */,
 			);

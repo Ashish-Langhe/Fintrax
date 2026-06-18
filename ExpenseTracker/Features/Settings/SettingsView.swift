@@ -31,6 +31,13 @@ struct SettingsView: View {
         )
     }
 
+    private var languageBinding: Binding<AppLanguage> {
+        Binding(
+            get: { settingsManager.settings.language },
+            set: { settingsManager.updateLanguage($0) }
+        )
+    }
+
     var body: some View {
         ZStack {
             FintraxTabBackground(style: .settings)
@@ -168,19 +175,40 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         SettingsSectionCard(
-            title: "Appearance",
-            subtitle: "Choose how the app should feel on this device.",
+            title: L10n.Settings.appearanceTitle,
+            subtitle: L10n.Settings.appearanceSubtitle,
             icon: "circle.lefthalf.filled",
             tint: AppDesignSystem.Colors.primary
         ) {
-            Picker("App theme", selection: themeBinding) {
+            Picker(selection: themeBinding) {
                 ForEach(ThemeOption.allCases, id: \.self) { option in
                     Label(option.displayName, systemImage: option.iconName)
                         .tag(option)
                 }
+            } label: {
+                Text(L10n.Settings.appTheme)
             }
             .pickerStyle(.segmented)
-            .accessibilityLabel("App theme")
+            .accessibilityLabel(L10n.Settings.appTheme)
+
+            VStack(alignment: .leading, spacing: AppDesignSystem.Spacing.sm) {
+                Label(L10n.Settings.appLanguage, systemImage: "globe")
+                    .font(AppDesignSystem.Typography.calloutEmphasized)
+                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+
+                Picker(selection: languageBinding) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(language.displayName)
+                            .tag(language)
+                    }
+                } label: {
+                    Text(L10n.Settings.appLanguage)
+                }
+                .pickerStyle(.menu)
+                .accessibilityLabel(L10n.Settings.appLanguage)
+            }
+            .padding(AppDesignSystem.Spacing.md)
+            .background(Color(.secondarySystemBackground).opacity(0.72), in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xl, style: .continuous))
         }
     }
 
@@ -509,8 +537,8 @@ private struct PinTextField: View {
 }
 
 private struct SettingsSectionCard<Content: View>: View {
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let icon: String
     let tint: Color
     @ViewBuilder let content: Content
@@ -833,6 +861,19 @@ private extension ThemeOption {
         case .system: return "circle.lefthalf.filled"
         case .light: return "sun.max.fill"
         case .dark: return "moon.stars.fill"
+        }
+    }
+}
+
+private extension AppLanguage {
+    var displayName: String {
+        switch self {
+        case .system: return "System"
+        case .english: return "English"
+        case .hindi: return "हिन्दी"
+        case .marathi: return "मराठी"
+        case .spanish: return "Español"
+        case .german: return "Deutsch"
         }
     }
 }

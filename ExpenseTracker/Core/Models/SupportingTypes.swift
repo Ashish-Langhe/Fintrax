@@ -24,6 +24,35 @@ enum ThemeOption: String, CaseIterable, Codable, Sendable {
     }
 }
 
+/// App language preference for localized UI.
+enum AppLanguage: String, CaseIterable, Identifiable, Codable, Sendable {
+    case system
+    case english = "en"
+    case hindi = "hi"
+    case marathi = "mr"
+    case spanish = "es"
+    case german = "de"
+
+    var id: String { rawValue }
+
+    var locale: Locale {
+        switch self {
+        case .system:
+            return .autoupdatingCurrent
+        case .english:
+            return Locale(identifier: "en")
+        case .hindi:
+            return Locale(identifier: "hi")
+        case .marathi:
+            return Locale(identifier: "mr")
+        case .spanish:
+            return Locale(identifier: "es")
+        case .german:
+            return Locale(identifier: "de")
+        }
+    }
+}
+
 /// Security type options for app protection
 enum SecurityType: String, CaseIterable, Codable, Sendable {
     case none = "None"
