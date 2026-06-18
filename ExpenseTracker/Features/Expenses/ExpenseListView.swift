@@ -11,6 +11,7 @@ import Foundation
 /// Main expense list view
 struct ExpenseListView: View {
     @StateObject private var viewModel = ExpenseListViewModel()
+    @Environment(\.locale) private var locale
     @State private var showingAddExpense = false
     @State private var expenseToEdit: Expense?
     @State private var showingFilterSheet = false
@@ -31,9 +32,9 @@ struct ExpenseListView: View {
 
     private var deleteExpenseMessage: String {
         guard let expense = viewModel.expenseToDelete else {
-            return "This expense will be removed from your history."
+            return L10n.string("expenses.delete.genericMessage")
         }
-        return "This removes '\(expense.title)' from your expense history and dashboard totals."
+        return L10n.format(L10n.Expenses.deleteSpecificMessage, expense.title)
     }
     
     var body: some View {
@@ -42,7 +43,7 @@ struct ExpenseListView: View {
                 FintraxTabBackground(style: .expenses)
 
                 if viewModel.loadingState.isLoading && viewModel.expenses.isEmpty {
-                    ProgressView("Loading expenses...")
+                    ProgressView(L10n.Expenses.loading)
                         .padding(18)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 } else {
@@ -85,7 +86,7 @@ struct ExpenseListView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.large)
-            .navigationTitle("Expenses")
+            .navigationTitle(L10n.Expenses.title)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -138,16 +139,16 @@ struct ExpenseListView: View {
             }
             .fintraxModal(
                 isPresented: viewModel.showingDeleteAlert,
-                title: "Delete Expense?",
+                title: L10n.string("expenses.delete.question"),
                 message: deleteExpenseMessage,
                 icon: "trash.fill",
                 tint: AppDesignSystem.Colors.error,
-                primaryAction: FintraxModalAction(title: "Delete Expense", icon: "trash.fill", tint: AppDesignSystem.Colors.error, isDestructive: true) {
+                primaryAction: FintraxModalAction(title: L10n.string("expenses.delete.action"), icon: "trash.fill", tint: AppDesignSystem.Colors.error, isDestructive: true) {
                     Task {
                         await viewModel.confirmDelete()
                     }
                 },
-                secondaryAction: FintraxModalAction(title: "Keep Expense", icon: "xmark", tint: AppDesignSystem.Colors.textSecondary) {
+                secondaryAction: FintraxModalAction(title: L10n.string("expenses.delete.keep"), icon: "xmark", tint: AppDesignSystem.Colors.textSecondary) {
                     viewModel.cancelDelete()
                 }
             )
@@ -177,6 +178,9 @@ struct ExpenseListView: View {
                 viewModel.applyFilters()
             }
             .onChange(of: viewModel.sortOption) { _, _ in
+                viewModel.applyFilters()
+            }
+            .onChange(of: locale.identifier) { _, _ in
                 viewModel.applyFilters()
             }
         }
@@ -242,7 +246,7 @@ struct ExpenseListView: View {
     }
 
     private var expenseListPeriod: String {
-        viewModel.selectedDateRange == .allTime ? "All time" : viewModel.selectedDateRange.rawValue
+        viewModel.selectedDateRange == .allTime ? L10n.string("expenses.period.allTime") : viewModel.selectedDateRange.localizedString
     }
 
 }
@@ -252,6 +256,15 @@ private enum ExpenseDisplayMode: String, CaseIterable, Identifiable {
     case calendar = "Month"
 
     var id: String { rawValue }
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .list:
+            L10n.Expenses.listMode
+        case .calendar:
+            L10n.Expenses.monthMode
+        }
+    }
 
     var icon: String {
         switch self {
@@ -267,14 +280,16 @@ private struct ExpenseDisplayModePicker: View {
     @Binding var selection: ExpenseDisplayMode
 
     var body: some View {
-        Picker("Expense view", selection: $selection) {
+        Picker(selection: $selection) {
             ForEach(ExpenseDisplayMode.allCases) { mode in
-                Label(mode.rawValue, systemImage: mode.icon)
+                Label(mode.title, systemImage: mode.icon)
                     .tag(mode)
             }
+        } label: {
+            Text(L10n.Expenses.displayModeAccessibility)
         }
         .pickerStyle(.segmented)
-        .accessibilityLabel("Expense display mode")
+        .accessibilityLabel(L10n.Expenses.displayModeAccessibility)
     }
 }
 
@@ -302,7 +317,7 @@ private struct ExpenseListSummaryCard: View {
                     )
 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(hasFilters ? "Filtered spend" : "Expense activity")
+                    Text(hasFilters ? L10n.Expenses.filteredSpend : L10n.Expenses.expenseActivity)
                         .font(AppDesignSystem.Typography.caption2.weight(.bold))
                         .foregroundStyle(.secondary)
                         .textCase(.uppercase)
@@ -327,8 +342,8 @@ private struct ExpenseListSummaryCard: View {
             }
 
             HStack(spacing: 10) {
-                SummaryMetricPill(title: "Average", value: average, icon: "chart.line.uptrend.xyaxis")
-                SummaryMetricPill(title: "Entries", value: count == 1 ? "1 item" : "\(count) items", icon: "list.bullet.rectangle")
+                SummaryMetricPill(title: L10n.Expenses.average, value: average, icon: "chart.line.uptrend.xyaxis")
+                SummaryMetricPill(title: L10n.Expenses.entries, value: L10n.format(L10n.Expenses.itemCount, count), icon: "list.bullet.rectangle")
             }
         }
         .padding(14)
@@ -358,7 +373,7 @@ private struct ExpenseListSummaryCard: View {
 }
 
 private struct SummaryMetricPill: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let icon: String
 
@@ -495,7 +510,7 @@ private struct ExpenseCalendarInsightView: View {
                 Text(selectedMonth.formatted(.dateTime.month(.wide).year()))
                     .font(AppDesignSystem.Typography.title3)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
-                Text("\(monthExpenses.count) entries in this month")
+                Text(L10n.format(L10n.Expenses.entriesInMonth, monthExpenses.count))
                     .font(AppDesignSystem.Typography.caption)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
             }
@@ -518,16 +533,16 @@ private struct ExpenseCalendarInsightView: View {
 
     private var monthStats: some View {
         HStack(spacing: 10) {
-            CalendarStatTile(title: "Total", value: totalSpend.formattedAmount(), icon: "indianrupeesign.circle.fill", tint: AppDesignSystem.Colors.primary)
-            CalendarStatTile(title: "Active Days", value: "\(activeSpendDays)", icon: "calendar.badge.checkmark", tint: AppDesignSystem.Colors.info)
-            CalendarStatTile(title: "Peak Day", value: maxDailySpend.formattedAmount(), icon: "flame.fill", tint: AppDesignSystem.Colors.warning)
+            CalendarStatTile(title: L10n.Expenses.total, value: totalSpend.formattedAmount(), icon: "indianrupeesign.circle.fill", tint: AppDesignSystem.Colors.primary)
+            CalendarStatTile(title: L10n.Expenses.activeDays, value: "\(activeSpendDays)", icon: "calendar.badge.checkmark", tint: AppDesignSystem.Colors.info)
+            CalendarStatTile(title: L10n.Expenses.peakDay, value: maxDailySpend.formattedAmount(), icon: "flame.fill", tint: AppDesignSystem.Colors.warning)
         }
     }
 
     private var monthCalendarGrid: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
-                ExpenseCalendarSectionHeader(title: "Month Calendar", icon: "calendar", tint: AppDesignSystem.Colors.primary)
+                ExpenseCalendarSectionHeader(title: L10n.Expenses.monthCalendar, icon: "calendar", tint: AppDesignSystem.Colors.primary)
 
                 Spacer(minLength: 8)
 
@@ -537,14 +552,14 @@ private struct ExpenseCalendarInsightView: View {
             HStack(spacing: 8) {
                 CalendarMicroMetric(
                     icon: "chart.bar.fill",
-                    title: "Avg active day",
+                    title: L10n.Expenses.avgActiveDay,
                     value: averageActiveDaySpend.formattedAmount(),
                     tint: AppDesignSystem.Colors.success
                 )
 
                 CalendarMicroMetric(
                     icon: "number",
-                    title: "Entries",
+                    title: L10n.Expenses.entries,
                     value: "\(monthExpenses.count)",
                     tint: AppDesignSystem.Colors.info
                 )
@@ -623,7 +638,7 @@ private struct ExpenseCalendarInsightView: View {
                 .background(AppDesignSystem.Colors.warning.opacity(0.13), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Monthly Insight")
+                Text(L10n.Expenses.monthlyInsight)
                     .font(AppDesignSystem.Typography.caption.weight(.bold))
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
@@ -641,13 +656,16 @@ private struct ExpenseCalendarInsightView: View {
 
     private var insightText: String {
         guard let highestSpendDay else {
-            return "No spending found for this month with the current filters."
+            return L10n.string("expenses.calendar.noMonthlySpending")
         }
 
         let day = highestSpendDay.date.formatted(.dateTime.day().month(.abbreviated))
         let amount = highestSpendDay.amount.formattedAmount()
-        let category = topCategoryName
-        return "Highest spending was \(amount) on \(day). \(category.map { "Top category: \($0)." } ?? "Add more category data to see stronger patterns.")"
+        if let category = topCategoryName {
+            return L10n.format(L10n.Expenses.highestSpendingWithCategory, amount, day, category)
+        }
+
+        return L10n.format(L10n.Expenses.highestSpendingWithoutCategory, amount, day)
     }
 
     private var topCategoryName: String? {
@@ -770,7 +788,7 @@ private struct ExpenseDayDetailSheet: View {
                         .foregroundStyle(AppDesignSystem.Colors.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Text(expenses.isEmpty ? "No expenses recorded on this date" : "\(expenses.count) \(expenses.count == 1 ? "expense" : "expenses") recorded")
+                    Text(expenses.isEmpty ? L10n.Expenses.noExpensesOnDate : LocalizedStringKey(L10n.format(L10n.Expenses.expensesRecorded, expenses.count)))
                         .font(AppDesignSystem.Typography.caption.weight(.semibold))
                         .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 }
@@ -787,7 +805,7 @@ private struct ExpenseDayDetailSheet: View {
 
                 Spacer()
 
-                Text("Day total")
+                Text(L10n.Expenses.dayTotal)
                     .font(AppDesignSystem.Typography.caption2.weight(.bold))
                     .foregroundStyle(AppDesignSystem.Colors.primary)
                     .padding(.horizontal, 10)
@@ -803,28 +821,28 @@ private struct ExpenseDayDetailSheet: View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
             DayDetailInsightChip(
                 icon: "list.bullet.rectangle.fill",
-                title: "Entries",
+                title: L10n.Expenses.entries,
                 value: "\(expenses.count)",
                 tint: AppDesignSystem.Colors.info
             )
 
             DayDetailInsightChip(
                 icon: topCategory?.iconName ?? "tag.fill",
-                title: "Top Category",
-                value: topCategory?.name ?? "None",
+                title: L10n.Expenses.topCategory,
+                value: topCategory?.name ?? L10n.string(L10n.Expenses.none),
                 tint: topCategory?.displayColor ?? AppDesignSystem.Colors.textSecondary
             )
 
             DayDetailInsightChip(
                 icon: "arrow.up.right.circle.fill",
-                title: "Highest Item",
+                title: L10n.Expenses.highestItem,
                 value: highestExpense?.formattedAmount() ?? "₹0",
                 tint: AppDesignSystem.Colors.warning
             )
 
             DayDetailInsightChip(
                 icon: "chart.pie.fill",
-                title: "Avg Entry",
+                title: L10n.Expenses.avgEntry,
                 value: averageExpenseAmount.formattedAmount(),
                 tint: AppDesignSystem.Colors.success
             )
@@ -839,13 +857,13 @@ private struct ExpenseDayDetailSheet: View {
     private var expenseRows: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Expenses")
+                Text(L10n.Expenses.title)
                     .font(AppDesignSystem.Typography.calloutEmphasized)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
                 Spacer()
 
-                Text("High to low")
+                Text(L10n.Expenses.highToLow)
                     .font(AppDesignSystem.Typography.caption2.weight(.bold))
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .padding(.horizontal, 9)
@@ -885,11 +903,11 @@ private struct ExpenseDayDetailSheet: View {
                 .background(AppDesignSystem.Colors.surfaceVariant.opacity(0.70), in: Circle())
 
             VStack(alignment: .leading, spacing: 3) {
-                Text("Quiet day")
+                Text(L10n.Expenses.quietDay)
                     .font(AppDesignSystem.Typography.calloutEmphasized)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                Text("No expense entries are attached to this calendar date.")
+                Text(L10n.Expenses.quietDayMessage)
                     .font(AppDesignSystem.Typography.caption)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -912,7 +930,7 @@ private struct ExpenseDayDetailSheet: View {
 
 private struct DayDetailInsightChip: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let tint: Color
 
@@ -950,7 +968,7 @@ private struct DayDetailInsightChip: View {
 }
 
 private struct CalendarStatTile: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let icon: String
     let tint: Color
@@ -985,7 +1003,7 @@ private struct CalendarStatTile: View {
 
 private struct CalendarMicroMetric: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let tint: Color
 
@@ -1032,7 +1050,7 @@ private struct CalendarLegendPill: View {
                     .frame(width: 12, height: 8)
             }
 
-            Text("Spend")
+            Text(L10n.Expenses.spend)
                 .font(AppDesignSystem.Typography.caption2.weight(.bold))
                 .foregroundStyle(AppDesignSystem.Colors.textSecondary)
         }
@@ -1043,7 +1061,7 @@ private struct CalendarLegendPill: View {
             Capsule()
                 .stroke(AppDesignSystem.Colors.primary.opacity(0.14), lineWidth: 1)
         }
-        .accessibilityLabel("Darker days mean higher spending")
+        .accessibilityLabel(L10n.Expenses.darkerDaysAccessibility)
     }
 }
 
@@ -1195,12 +1213,12 @@ private struct ExpenseMonthDayCell: View {
     }
 
     private var accessibilityLabel: String {
-        guard let date = day.date else { return "Blank calendar day" }
+        guard let date = day.date else { return L10n.string(L10n.Expenses.blankCalendarDay) }
         let dateText = date.formatted(.dateTime.day().month(.wide))
         if hasSpend {
-            return "\(dateText), \(day.amount.formattedAmount()), \(day.count) entries"
+            return L10n.format(L10n.Expenses.dayAccessibilityWithSpend, dateText, day.amount.formattedAmount(), day.count)
         }
-        return "\(dateText), no expenses"
+        return L10n.format(L10n.Expenses.dayAccessibilityNoSpend, dateText)
     }
 
     private func shortAmount(_ amount: Decimal) -> String {
@@ -1237,7 +1255,7 @@ private struct MonthDayExpenseRow: View {
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
                     .lineLimit(1)
 
-                Text(category?.name ?? "Uncategorized")
+                Text(category?.name ?? L10n.string(L10n.Expenses.uncategorized))
                     .font(AppDesignSystem.Typography.caption2.weight(.medium))
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .lineLimit(1)
@@ -1257,7 +1275,7 @@ private struct MonthDayExpenseRow: View {
 }
 
 private struct ExpenseCalendarSectionHeader: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     let tint: Color
 
@@ -1307,12 +1325,12 @@ struct FilterAndSearchBar: View {
                     )
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Search")
+                    Text(L10n.Expenses.search)
                         .font(AppDesignSystem.Typography.caption2.weight(.bold))
                         .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                         .textCase(.uppercase)
 
-                    TextField("Food, rent, note, category", text: $searchText)
+                    TextField(L10n.Expenses.searchPlaceholder, text: $searchText)
                         .font(AppDesignSystem.Typography.callout)
                         .foregroundStyle(AppDesignSystem.Colors.textPrimary)
                         .focused($isSearchFocused)
@@ -1332,7 +1350,7 @@ struct FilterAndSearchBar: View {
                             .background(AppDesignSystem.Colors.surfaceVariant.opacity(0.72), in: Circle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Clear search")
+                    .accessibilityLabel(L10n.Expenses.clearSearch)
                 }
             }
             .padding(12)
@@ -1380,7 +1398,7 @@ struct FilterAndSearchBar: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         FilterChip(
-                            title: selectedCategory.flatMap { categoryName(for: $0) } ?? "All Categories",
+                            title: selectedCategory.flatMap { categoryName(for: $0) } ?? L10n.string("expenses.filter.allCategories"),
                             icon: "folder.fill",
                         isActive: selectedCategory != nil,
                         onTap: {
@@ -1389,7 +1407,7 @@ struct FilterAndSearchBar: View {
                     )
 
                         FilterChip(
-                            title: selectedDateRange.rawValue,
+                            title: selectedDateRange.localizedString,
                             icon: "calendar",
                             isActive: selectedDateRange != .allTime,
                             onTap: {
@@ -1425,7 +1443,7 @@ struct FilterAndSearchBar: View {
                         .overlay(Circle().stroke(Color.white.opacity(0.28), lineWidth: 1))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Open filters")
+                .accessibilityLabel(L10n.Expenses.openFilters)
             }
         }
         .padding(.horizontal, 16)
@@ -1479,7 +1497,7 @@ private struct SearchStatusChip: View {
             .overlay(Capsule().stroke(AppDesignSystem.Colors.primary.opacity(0.18), lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Clear search text")
+        .accessibilityLabel(L10n.Expenses.clearSearchText)
     }
 }
 
@@ -1557,21 +1575,21 @@ struct EmptyExpenseState: View {
             }
             
             VStack(spacing: 8) {
-                Text(hasActiveFilters ? "No Matching Expenses" : "No Expenses Yet")
+                Text(hasActiveFilters ? L10n.Expenses.noMatchingExpenses : L10n.Expenses.noExpensesYet)
                     .font(.title2)
                     .fontWeight(.semibold)
                 
-                Text(hasActiveFilters 
-                     ? "Try adjusting your filters or search terms"
-                     : "Start by adding your first expense")
+                Text(hasActiveFilters ? L10n.Expenses.adjustFilters : L10n.Expenses.addFirstExpense)
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
             }
             
             if hasActiveFilters {
-                Button("Reset Filters") {
+                Button {
                     onResetFilters()
+                } label: {
+                    Text(L10n.Expenses.resetFilters)
                 }
                 .buttonStyle(.bordered)
             }
@@ -1595,7 +1613,7 @@ private struct ExpenseFeedHeader: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Transactions")
+                Text(L10n.Expenses.transactions)
                     .font(AppDesignSystem.Typography.caption.weight(.bold))
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
                     .textCase(.uppercase)
@@ -1607,7 +1625,7 @@ private struct ExpenseFeedHeader: View {
 
             Spacer()
 
-            Text(count == 1 ? "1 item" : "\(count) items")
+            Text(L10n.format(L10n.Expenses.itemCount, count))
                 .font(AppDesignSystem.Typography.caption.weight(.bold))
                 .foregroundStyle(AppDesignSystem.Colors.primary)
                 .padding(.horizontal, 10)
@@ -1698,7 +1716,7 @@ struct ExpenseRow: View {
             Button(role: .destructive) {
                 onDelete()
             } label: {
-                Label("Delete", systemImage: "trash")
+                Label(L10n.Expenses.deleteExpense, systemImage: "trash")
             }
         }
     }
@@ -1774,14 +1792,16 @@ struct FilterSheet: View {
                     .padding(.vertical, 18)
                 }
             }
-            .navigationTitle("Filter Expenses")
+            .navigationTitle(L10n.Expenses.filterTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Reset") {
+                    Button {
                         selectedCategory = nil
                         selectedDateRange = .allTime
                         sortOption = .dateDescending
+                    } label: {
+                        Text(L10n.Expenses.reset)
                     }
                     .disabled(!hasActiveFilters)
                 }
@@ -1790,7 +1810,7 @@ struct FilterSheet: View {
                     Button {
                         dismiss()
                     } label: {
-                        Text("Done")
+                        Text(L10n.Expenses.done)
                             .fontWeight(.semibold)
                     }
                 }
@@ -1810,7 +1830,7 @@ struct FilterSheet: View {
                 )
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Refine your expenses")
+                Text(L10n.Expenses.refine)
                     .font(.headline)
                 Text(activeSummary)
                     .font(.caption)
@@ -1826,12 +1846,12 @@ struct FilterSheet: View {
 
     private var categorySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            FilterSheetSectionHeader(title: "Category", icon: "folder.fill", tint: .blue)
+            FilterSheetSectionHeader(title: L10n.Expenses.category, icon: "folder.fill", tint: .blue)
 
             LazyVStack(spacing: 10) {
                 FilterSelectionRow(
-                    title: "All Categories",
-                    subtitle: "Show every expense",
+                    title: L10n.string("expenses.filter.allCategories"),
+                    subtitle: L10n.string("expenses.filter.showEveryExpense"),
                     icon: "square.grid.2x2.fill",
                     tint: .blue,
                     isSelected: selectedCategory == nil
@@ -1842,7 +1862,7 @@ struct FilterSheet: View {
                 ForEach(categories) { category in
                     FilterSelectionRow(
                         title: category.name,
-                        subtitle: "Filter by \(category.name)",
+                        subtitle: L10n.format(L10n.Expenses.filterByCategory, category.name),
                         icon: "tag.fill",
                         tint: category.displayColor,
                         isSelected: selectedCategory == category.id
@@ -1858,12 +1878,12 @@ struct FilterSheet: View {
 
     private var dateRangeSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            FilterSheetSectionHeader(title: "Date Range", icon: "calendar", tint: .teal)
+            FilterSheetSectionHeader(title: L10n.Expenses.dateRange, icon: "calendar", tint: .teal)
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 ForEach(DateRangeOption.allCases) { option in
                     FilterOptionChip(
-                        title: option.rawValue,
+                        title: option.localizedString,
                         icon: option == .allTime ? "clock.arrow.circlepath" : "calendar.badge.clock",
                         tint: .teal,
                         isSelected: selectedDateRange == option
@@ -1879,12 +1899,12 @@ struct FilterSheet: View {
 
     private var sortSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            FilterSheetSectionHeader(title: "Sort By", icon: "arrow.up.arrow.down", tint: .orange)
+            FilterSheetSectionHeader(title: L10n.Expenses.sortBy, icon: "arrow.up.arrow.down", tint: .orange)
 
             LazyVStack(spacing: 10) {
                 ForEach(SortOption.allCases) { option in
                     FilterSelectionRow(
-                        title: option.rawValue,
+                        title: option.localizedString,
                         subtitle: sortSubtitle(for: option),
                         icon: sortIcon(for: option),
                         tint: .orange,
@@ -1906,14 +1926,14 @@ struct FilterSheet: View {
     private var activeSummary: String {
         var parts: [String] = []
         parts.append(selectedCategoryName)
-        parts.append(selectedDateRange.rawValue)
-        parts.append(sortOption.rawValue)
+        parts.append(selectedDateRange.localizedString)
+        parts.append(sortOption.localizedString)
         return parts.joined(separator: " • ")
     }
 
     private var selectedCategoryName: String {
-        guard let selectedCategory else { return "All Categories" }
-        return categories.first { $0.id == selectedCategory }?.name ?? "Selected Category"
+        guard let selectedCategory else { return L10n.string("expenses.filter.allCategories") }
+        return categories.first { $0.id == selectedCategory }?.name ?? L10n.string(L10n.Expenses.selectedCategory)
     }
 
     private func sortIcon(for option: SortOption) -> String {
@@ -1930,23 +1950,23 @@ struct FilterSheet: View {
     private func sortSubtitle(for option: SortOption) -> String {
         switch option {
         case .dateDescending:
-            return "Newest expenses first"
+            return L10n.string("expenses.sortSubtitle.newest")
         case .dateAscending:
-            return "Oldest expenses first"
+            return L10n.string("expenses.sortSubtitle.oldest")
         case .amountDescending:
-            return "Highest amount first"
+            return L10n.string("expenses.sortSubtitle.highestAmount")
         case .amountAscending:
-            return "Lowest amount first"
+            return L10n.string("expenses.sortSubtitle.lowestAmount")
         case .titleAscending:
-            return "A to Z"
+            return L10n.string("expenses.sortSubtitle.aToZ")
         case .titleDescending:
-            return "Z to A"
+            return L10n.string("expenses.sortSubtitle.zToA")
         }
     }
 }
 
 private struct FilterSheetSectionHeader: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     let tint: Color
 

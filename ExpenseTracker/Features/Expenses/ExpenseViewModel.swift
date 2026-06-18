@@ -66,21 +66,21 @@ class ExpenseViewModel: ObservableObject {
         }
     }
     
-    var titleText: String {
+    var titleText: LocalizedStringKey {
         switch mode {
         case .create:
-            return "Add Expense"
+            return L10n.Expenses.addExpense
         case .edit:
-            return "Edit Expense"
+            return L10n.Expenses.editExpense
         }
     }
     
-    var saveButtonText: String {
+    var saveButtonText: LocalizedStringKey {
         switch mode {
         case .create:
-            return "Add Expense"
+            return L10n.Expenses.addExpense
         case .edit:
-            return "Save Changes"
+            return L10n.Expenses.saveChanges
         }
     }
     
@@ -93,7 +93,7 @@ class ExpenseViewModel: ObservableObject {
         guard isValid else {
             let messages = fieldErrors.values.joined(separator: "\n")
             alertMessage = messages.isEmpty
-                ? "Please fix the errors before saving"
+                ? L10n.string(L10n.Expenses.fixErrors)
                 : messages
             showAlert = true
             return
@@ -136,7 +136,7 @@ class ExpenseViewModel: ObservableObject {
         } catch {
             loadingState = .failure(error)
             isLoading = false
-            alertMessage = "Failed to save expense: \(error.localizedDescription)"
+            alertMessage = L10n.format(L10n.Expenses.saveFailed, error.localizedDescription)
             showAlert = true
         }
     }
@@ -165,21 +165,23 @@ class ExpenseViewModel: ObservableObject {
     func validateForm() {
         validation.clearAllErrors()
         
-        // Validate title
-        let titleValidator = FieldValidators.nonEmpty(fieldName: "Title", maxLength: 100)
-        validation.validateField("title", value: title, validator: titleValidator)
-        
-        // Validate amount
-        let amountValidator = FieldValidators.positiveAmount()
-        validation.validateField("amount", value: amount, validator: amountValidator)
-        
-        // Validate category
-        let categoryValidator = FieldValidators.categorySelected()
-        validation.validateField("category", value: selectedCategoryID, validator: categoryValidator)
+        if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            validation.setError(for: "title", message: L10n.string(L10n.Expenses.titleRequired))
+        } else if title.count > 100 {
+            validation.setError(for: "title", message: L10n.format(L10n.Expenses.titleTooLong, 100))
+        }
+
+        if amount <= .zero {
+            validation.setError(for: "amount", message: L10n.string(L10n.Expenses.amountPositive))
+        }
+
+        if selectedCategoryID == nil {
+            validation.setError(for: "category", message: L10n.string(L10n.Expenses.categoryRequired))
+        }
         
         // Validate note (optional)
         if !note.isEmpty && note.count > 500 {
-            validation.setError(for: "note", message: "Note cannot exceed 500 characters")
+            validation.setError(for: "note", message: L10n.format(L10n.Expenses.noteTooLong, 500))
         }
         
         fieldErrors = validation.errors

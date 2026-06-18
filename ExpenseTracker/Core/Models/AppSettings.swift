@@ -202,6 +202,7 @@ class SettingsManager: ObservableObject {
     /// Update language preference
     /// - Parameter language: New app language preference
     func updateLanguage(_ language: AppLanguage) {
+        userDefaults.set(language.rawValue, forKey: Keys.language)
         settings.updateLanguage(language)
     }
 }

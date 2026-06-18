@@ -42,7 +42,7 @@ struct DashboardNotificationButton: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(count > 0 ? "\(count) bill notifications" : "No bill notifications")
+        .accessibilityLabel(count > 0 ? L10n.format(L10n.Dashboard.notificationCount, count) : L10n.string("dashboard.notifications.none"))
     }
 }
 
@@ -89,11 +89,11 @@ struct DashboardNotificationCenterView: View {
                 .background(AppDesignSystem.Gradients.primary, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
             VStack(alignment: .leading, spacing: 5) {
-                Text("Notifications")
+                Text(L10n.Dashboard.notificationsTitle)
                     .font(AppDesignSystem.Typography.title2)
                     .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-                Text("Bills that need attention and reminder follow-ups.")
+                Text(L10n.Dashboard.notificationsSubtitle)
                     .font(AppDesignSystem.Typography.callout)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -118,14 +118,14 @@ struct DashboardNotificationCenterView: View {
         HStack(spacing: 10) {
             NotificationSummaryPill(
                 icon: "exclamationmark.circle.fill",
-                title: "Overdue",
+                title: L10n.Dashboard.overdue,
                 value: "\(overdueCount)",
                 tint: AppDesignSystem.Colors.error
             )
 
             NotificationSummaryPill(
                 icon: "calendar.badge.clock",
-                title: "Due soon",
+                title: L10n.Dashboard.dueSoon,
                 value: "\(max(bills.count - overdueCount, 0))",
                 tint: AppDesignSystem.Colors.warning
             )
@@ -138,11 +138,11 @@ struct DashboardNotificationCenterView: View {
                 .font(.system(size: 42, weight: .bold))
                 .foregroundStyle(AppDesignSystem.Colors.success)
 
-            Text("All caught up")
+            Text(L10n.Dashboard.allCaughtUp)
                 .font(AppDesignSystem.Typography.title3)
                 .foregroundStyle(AppDesignSystem.Colors.textPrimary)
 
-            Text("No bill reminders need attention right now.")
+            Text(L10n.Dashboard.noRemindersNeedAttention)
                 .font(AppDesignSystem.Typography.callout)
                 .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -156,7 +156,7 @@ struct DashboardNotificationCenterView: View {
 
 private struct NotificationSummaryPill: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let tint: Color
 
@@ -211,13 +211,13 @@ private struct NotificationBillRow: View {
                         .foregroundStyle(AppDesignSystem.Colors.textPrimary)
                 }
 
-                Text("\(bill.isOverdue ? "Overdue" : "Due soon") • \(bill.dueDate.formatted(date: .abbreviated, time: .omitted)) • \(bill.formattedReminderTime)")
+                Text("\(bill.isOverdue ? Text(L10n.Dashboard.overdueStatus) : Text(L10n.Dashboard.dueSoonStatus)) • \(bill.dueDate.formatted(date: .abbreviated, time: .omitted)) • \(bill.formattedReminderTime)")
                     .font(AppDesignSystem.Typography.footnote)
                     .foregroundStyle(AppDesignSystem.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 if bill.repeatsUntilPaid {
-                    Label("Repeats until marked complete", systemImage: "repeat")
+                    Label(L10n.Dashboard.repeatsUntilComplete, systemImage: "repeat")
                         .font(AppDesignSystem.Typography.caption.weight(.semibold))
                         .foregroundStyle(AppDesignSystem.Colors.primary)
                 }
@@ -231,7 +231,7 @@ private struct NotificationBillRow: View {
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: isCompleting ? "hourglass" : "checkmark.circle.fill")
-                        Text(isCompleting ? "Completing..." : "Mark Complete")
+                        Text(isCompleting ? L10n.Dashboard.completing : L10n.Dashboard.markComplete)
                     }
                     .font(AppDesignSystem.Typography.footnote.weight(.bold))
                     .foregroundStyle(.white)
