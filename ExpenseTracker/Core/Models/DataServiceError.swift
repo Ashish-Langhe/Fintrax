@@ -21,38 +21,38 @@ enum DataServiceError: LocalizedError, Equatable, Sendable {
     var errorDescription: String? {
         switch self {
         case .readError(let message):
-            return "Failed to read data: \(message)"
+            return L10n.format("error.data.read", message)
         case .writeError(let message):
-            return "Failed to save data: \(message)"
+            return L10n.format("error.data.write", message)
         case .notFound(let message):
-            return "Not found: \(message)"
+            return L10n.format("error.data.notFound", message)
         case .validationError(let message):
-            return "Validation error: \(message)"
+            return L10n.format("error.data.validation", message)
         case .constraintViolation(let message):
-            return "Constraint violation: \(message)"
+            return L10n.format("error.data.constraint", message)
         case .backupError(let message):
-            return "Backup error: \(message)"
+            return L10n.format("error.data.backup", message)
         case .fileAccessError(let message):
-            return "File access error: \(message)"
+            return L10n.format("error.data.fileAccess", message)
         case .deleteError(let message):
-            return "Delete error: \(message)"
+            return L10n.format("error.data.delete", message)
         }
     }
     
     var recoverySuggestion: String? {
         switch self {
         case .readError, .writeError, .backupError:
-            return "Please check available storage space and try again"
+            return L10n.string("Please check available storage space and try again")
         case .fileAccessError:
-            return "Please ensure the app has permission to access files"
+            return L10n.string("Please ensure the app has permission to access files")
         case .validationError:
-            return "Please check your input and try again"
+            return L10n.string("Please check your input and try again")
         case .constraintViolation:
-            return "Please review your data and try a different value"
+            return L10n.string("Please review your data and try a different value")
         case .notFound:
-            return "The requested data could not be found"
+            return L10n.string("The requested data could not be found")
         case .deleteError:
-            return "Please check file permissions and try again"
+            return L10n.string("Please check file permissions and try again")
         }
     }
 }
@@ -67,26 +67,26 @@ enum ExportError: LocalizedError, Equatable, Sendable {
     var errorDescription: String? {
         switch self {
         case .exportFailed(let message):
-            return "Export failed: \(message)"
+            return L10n.format("error.export.failed", message)
         case .formatError(let message):
-            return "Format error: \(message)"
+            return L10n.format("error.export.format", message)
         case .fileAccessError(let message):
-            return "File access error: \(message)"
+            return L10n.format("error.data.fileAccess", message)
         case .emptyDataSet:
-            return "No data available to export"
+            return L10n.string("No data available to export")
         }
     }
     
     var recoverySuggestion: String? {
         switch self {
         case .exportFailed:
-            return "Please try again with a smaller date range"
+            return L10n.string("Please try again with a smaller date range")
         case .formatError:
-            return "Please check your data and try again"
+            return L10n.string("Please check your data and try again")
         case .fileAccessError:
-            return "Please ensure the app has permission to save files"
+            return L10n.string("Please ensure the app has permission to save files")
         case .emptyDataSet:
-            return "Please add expenses before exporting"
+            return L10n.string("Please add expenses before exporting")
         }
     }
 }
@@ -103,34 +103,34 @@ enum SecurityError: LocalizedError, Equatable, Sendable {
     var errorDescription: String? {
         switch self {
         case .authenticationFailed(let message):
-            return "Authentication failed: \(message)"
+            return L10n.format("error.security.authenticationFailed", message)
         case .biometricsNotAvailable:
-            return "Biometric authentication is not available on this device"
+            return L10n.string("Biometric authentication is not available on this device")
         case .pinSetupFailed(let message):
-            return "PIN setup failed: \(message)"
+            return L10n.format("error.security.pinSetupFailed", message)
         case .securityRemovalFailed(let message):
-            return "Failed to remove security: \(message)"
+            return L10n.format("error.security.removalFailed", message)
         case .pinMismatch:
-            return "PIN codes do not match"
+            return L10n.string("PIN codes do not match")
         case .tooManyAttempts:
-            return "Too many failed authentication attempts"
+            return L10n.string("Too many failed authentication attempts")
         }
     }
     
     var recoverySuggestion: String? {
         switch self {
         case .authenticationFailed:
-            return "Please try again or use alternative authentication method"
+            return L10n.string("Please try again or use alternative authentication method")
         case .biometricsNotAvailable:
-            return "Please use PIN authentication instead"
+            return L10n.string("Please use PIN authentication instead")
         case .pinSetupFailed:
-            return "Please choose a different PIN"
+            return L10n.string("Please choose a different PIN")
         case .securityRemovalFailed:
-            return "Please try again or restart the app"
+            return L10n.string("Please try again or restart the app")
         case .pinMismatch:
-            return "Please ensure both PIN entries match"
+            return L10n.string("Please ensure both PIN entries match")
         case .tooManyAttempts:
-            return "Please wait before trying again"
+            return L10n.string("Please wait before trying again")
         }
     }
 }
@@ -145,13 +145,13 @@ enum EntityError: LocalizedError, Equatable, Sendable {
     var errorDescription: String? {
         switch self {
         case .duplicate(let message):
-            return "Duplicate entry: \(message)"
+            return L10n.format("error.entity.duplicate", message)
         case .invalidReference(let message):
-            return "Invalid reference: \(message)"
+            return L10n.format("error.entity.invalidReference", message)
         case .circularReference(let message):
-            return "Circular reference: \(message)"
+            return L10n.format("error.entity.circularReference", message)
         case .integrityViolation(let message):
-            return "Data integrity violation: \(message)"
+            return L10n.format("error.entity.integrityViolation", message)
         }
     }
 }
@@ -167,28 +167,28 @@ enum NetworkError: LocalizedError, Equatable, Sendable {
     var errorDescription: String? {
         switch self {
         case .timeout:
-            return "Request timed out"
+            return L10n.string("Request timed out")
         case .noConnection:
-            return "No internet connection"
+            return L10n.string("No internet connection")
         case .serverError(let code):
-            return "Server error: \(code)"
+            return L10n.format("error.network.server", code)
         case .invalidResponse:
-            return "Invalid server response"
+            return L10n.string("Invalid server response")
         case .unauthorized:
-            return "Authentication required"
+            return L10n.string("Authentication required")
         }
     }
     
     var recoverySuggestion: String? {
         switch self {
         case .timeout, .noConnection:
-            return "Please check your internet connection"
+            return L10n.string("Please check your internet connection")
         case .serverError:
-            return "Please try again later"
+            return L10n.string("Please try again later")
         case .invalidResponse:
-            return "Please try again"
+            return L10n.string("Please try again")
         case .unauthorized:
-            return "Please log in again"
+            return L10n.string("Please log in again")
         }
     }
 }
@@ -201,7 +201,7 @@ enum AppError: LocalizedError, Sendable {
     var errorDescription: String? {
         switch self {
         case .unknown:
-            return "An unexpected error occurred"
+            return L10n.string("An unexpected error occurred")
         case .custom(let message):
             return message
         }
@@ -210,7 +210,7 @@ enum AppError: LocalizedError, Sendable {
     var recoverySuggestion: String? {
         switch self {
         case .unknown, .custom:
-            return "Please try again or contact support"
+            return L10n.string("Please try again or contact support")
         }
     }
 }

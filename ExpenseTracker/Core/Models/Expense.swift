@@ -185,9 +185,9 @@ enum ExpenseValidationError: LocalizedError, Sendable {
         case .validationError(let message):
             return message
         case .negativeAmount:
-            return "Expense amount cannot be negative"
+            return L10n.string("Expense amount cannot be negative")
         case .invalidCategory:
-            return "Invalid expense category"
+            return L10n.string("Invalid expense category")
         }
     }
 }

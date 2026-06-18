@@ -151,11 +151,11 @@ struct Category: Identifiable, Codable, Hashable, Sendable {
     /// - Returns: Whether the category can be deleted and error message if not
     func canDelete(expensesCount: Int) -> (canDelete: Bool, reason: String?) {
         if isDefault {
-            return (false, "Default categories cannot be deleted")
+            return (false, L10n.string("Default categories cannot be deleted"))
         }
         
         if expensesCount > 0 {
-            return (false, "Cannot delete category with \(expensesCount) associated expense(s)")
+            return (false, L10n.format("category.error.deleteWithExpenses", expensesCount))
         }
         
         return (true, nil)
@@ -173,9 +173,9 @@ enum CategoryValidationError: LocalizedError, Sendable {
         case .invalidName(let message):
             return message
         case .cannotRenameDefault:
-            return "Default categories cannot be renamed"
+            return L10n.string("Default categories cannot be renamed")
         case .cannotDeleteDefault:
-            return "Default categories cannot be deleted"
+            return L10n.string("Default categories cannot be deleted")
         }
     }
 }

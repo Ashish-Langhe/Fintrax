@@ -12,6 +12,10 @@ enum L10n {
         localizedBundle.localizedString(forKey: key, value: nil, table: nil)
     }
 
+    static func string(_ key: String, language: AppLanguage) -> String {
+        localizedBundle(for: language).localizedString(forKey: key, value: nil, table: nil)
+    }
+
     static func format(_ key: String, _ arguments: CVarArg...) -> String {
         String(format: string(key), locale: locale, arguments: arguments)
     }
@@ -21,6 +25,16 @@ enum L10n {
 
         guard languageCode != AppLanguage.system.rawValue,
               let path = Bundle.main.path(forResource: languageCode, ofType: "lproj"),
+              let bundle = Bundle(path: path) else {
+            return .main
+        }
+
+        return bundle
+    }
+
+    private static func localizedBundle(for language: AppLanguage) -> Bundle {
+        guard language != .system,
+              let path = Bundle.main.path(forResource: language.rawValue, ofType: "lproj"),
               let bundle = Bundle(path: path) else {
             return .main
         }
@@ -316,6 +330,8 @@ enum L10n {
     }
 
     enum Settings {
+        static let headerTitle: LocalizedStringKey = "settings.header.title"
+        static let headerSubtitle: LocalizedStringKey = "settings.header.subtitle"
         static let appearanceTitle: LocalizedStringKey = "settings.appearance.title"
         static let appearanceSubtitle: LocalizedStringKey = "settings.appearance.subtitle"
         static let appTheme: LocalizedStringKey = "settings.appearance.theme"
