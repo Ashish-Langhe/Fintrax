@@ -96,6 +96,13 @@
 		AA000090 /* SettingsSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000090 /* SettingsSupport.swift */; };
 		AA000091 /* ExpenseDayDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000091 /* ExpenseDayDetailSheet.swift */; };
 		AA000092 /* ExpenseCalendarComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000092 /* ExpenseCalendarComponents.swift */; };
+		AA000093 /* AnalyticsSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000093 /* AnalyticsSections.swift */; };
+		AA000094 /* AnalyticsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000094 /* AnalyticsComponents.swift */; };
+		AA000095 /* AnalyticsCategoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000095 /* AnalyticsCategoryDetailView.swift */; };
+		AA000096 /* AnalyticsSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000096 /* AnalyticsSupport.swift */; };
+		AA000097 /* AnalyticsStatePanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000097 /* AnalyticsStatePanels.swift */; };
+		AA000100 /* ExpenseCSVExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000100 /* ExpenseCSVExporter.swift */; };
+		AA000101 /* FinancialPDFReportRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000101 /* FinancialPDFReportRenderer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -198,8 +205,15 @@
 		AB000090 /* SettingsSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSupport.swift; sourceTree = "<group>"; };
 		AB000091 /* ExpenseDayDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseDayDetailSheet.swift; sourceTree = "<group>"; };
 		AB000092 /* ExpenseCalendarComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseCalendarComponents.swift; sourceTree = "<group>"; };
+		AB000093 /* AnalyticsSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsSections.swift; sourceTree = "<group>"; };
+		AB000094 /* AnalyticsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsComponents.swift; sourceTree = "<group>"; };
+		AB000095 /* AnalyticsCategoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsCategoryDetailView.swift; sourceTree = "<group>"; };
+		AB000096 /* AnalyticsSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsSupport.swift; sourceTree = "<group>"; };
+		AB000097 /* AnalyticsStatePanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsStatePanels.swift; sourceTree = "<group>"; };
 		AB000098 /* ExpenseTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExpenseTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000099 /* ExpenseTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExpenseTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB000100 /* ExpenseCSVExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseCSVExporter.swift; sourceTree = "<group>"; };
+		AB000101 /* FinancialPDFReportRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancialPDFReportRenderer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -294,6 +308,8 @@
 				AB000010 /* CategoryService.swift */,
 				AB000011 /* ConfigurationService.swift */,
 				AB000012 /* ExportService.swift */,
+				AB000100 /* ExpenseCSVExporter.swift */,
+				AB000101 /* FinancialPDFReportRenderer.swift */,
 				AB000013 /* JSONDataService.swift */,
 				AB000060 /* SmartCategoryService.swift */,
 				AB000040 /* SwiftDataStore.swift */,
@@ -509,6 +525,11 @@
 			isa = PBXGroup;
 			children = (
 				AB000048 /* AnalyticsView.swift */,
+				AB000093 /* AnalyticsSections.swift */,
+				AB000094 /* AnalyticsComponents.swift */,
+				AB000095 /* AnalyticsCategoryDetailView.swift */,
+				AB000096 /* AnalyticsSupport.swift */,
+				AB000097 /* AnalyticsStatePanels.swift */,
 				AB000071 /* SpendingAIAnalyzer.swift */,
 			);
 			path = Analytics;
@@ -649,6 +670,8 @@
 				AA000010 /* CategoryService.swift in Sources */,
 				AA000011 /* ConfigurationService.swift in Sources */,
 				AA000012 /* ExportService.swift in Sources */,
+				AA000100 /* ExpenseCSVExporter.swift in Sources */,
+				AA000101 /* FinancialPDFReportRenderer.swift in Sources */,
 				AA000013 /* JSONDataService.swift in Sources */,
 				AA000014 /* AddEditExpenseView.swift in Sources */,
 				AA000015 /* ExpenseListView.swift in Sources */,
@@ -702,8 +725,13 @@
 					AA000083 /* FinanceEditors.swift in Sources */,
 					AA000084 /* FinanceComponents.swift in Sources */,
 					AA000047 /* FintraxModalOverlay.swift in Sources */,
-				AA000048 /* AnalyticsView.swift in Sources */,
-				AA000071 /* SpendingAIAnalyzer.swift in Sources */,
+					AA000048 /* AnalyticsView.swift in Sources */,
+					AA000093 /* AnalyticsSections.swift in Sources */,
+					AA000094 /* AnalyticsComponents.swift in Sources */,
+					AA000095 /* AnalyticsCategoryDetailView.swift in Sources */,
+					AA000096 /* AnalyticsSupport.swift in Sources */,
+					AA000097 /* AnalyticsStatePanels.swift in Sources */,
+					AA000071 /* SpendingAIAnalyzer.swift in Sources */,
 				AA000054 /* AppEventBus.swift in Sources */,
 				AA000058 /* DeveloperDataMode.swift in Sources */,
 				AA000055 /* FinanceDataRepository.swift in Sources */,
