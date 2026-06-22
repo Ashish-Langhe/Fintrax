@@ -43,7 +43,7 @@ final class DashboardViewModel {
     
     // MARK: - Private Properties
     
-    private let repository: FinanceDataRepository
+    private let repository: any DashboardDataProviding
     private let eventBus: AppEventBus
     
     // Monthly budget state
@@ -61,10 +61,10 @@ final class DashboardViewModel {
     
     @MainActor
     init(
-        repository: FinanceDataRepository? = nil,
+        repository: (any DashboardDataProviding)? = nil,
         eventBus: AppEventBus? = nil
     ) {
-        self.repository = repository ?? .shared
+        self.repository = repository ?? FinanceDataRepository.shared
         self.eventBus = eventBus ?? .shared
         setupNotifications()
     }
@@ -165,12 +165,7 @@ final class DashboardViewModel {
     
     /// Formats currency amount for display
     func formatCurrency(_ amount: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "INR"
-        formatter.locale = Locale(identifier: "en_IN")
-        formatter.maximumFractionDigits = 2
-        return formatter.string(from: NSDecimalNumber(decimal: amount)) ?? "₹0.00"
+        CurrencyFormatter.format(amount, maximumFractionDigits: 2, minimumFractionDigits: 2)
     }
     
     /// Gets spending amount for a specific category

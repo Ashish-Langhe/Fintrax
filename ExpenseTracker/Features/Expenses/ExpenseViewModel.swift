@@ -26,7 +26,7 @@ class ExpenseViewModel: ObservableObject {
     @Published private(set) var fieldErrors: [String: String] = [:]
     
     // MARK: - Private Properties
-    private let repository: FinanceDataRepository
+    private let repository: any ExpenseDataProviding
     private var existingExpense: Expense?
     private let validation = FormValidationState()
     private var cancellables = Set<AnyCancellable>()
@@ -41,10 +41,10 @@ class ExpenseViewModel: ObservableObject {
     
     // MARK: - Initialization
     init(
-        repository: FinanceDataRepository? = nil,
+        repository: (any ExpenseDataProviding)? = nil,
         expense: Expense? = nil
     ) {
-        self.repository = repository ?? .shared
+        self.repository = repository ?? FinanceDataRepository.shared
         self.mode = expense.map { .edit($0) } ?? .create
         
         if let expense = expense {

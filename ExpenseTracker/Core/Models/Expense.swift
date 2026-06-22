@@ -145,15 +145,7 @@ struct Expense: Identifiable, Codable, Hashable, Sendable {
     /// Format the amount for display with INR symbol
     /// - Returns: Formatted amount string
     func formattedAmount() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "INR"
-        formatter.currencySymbol = "₹"
-        formatter.locale = Locale(identifier: "en_IN")
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 2
-        
-        return formatter.string(from: NSNumber(value: Double(truncating: amount as NSNumber))) ?? "₹0.00"
+        CurrencyFormatter.format(amount, maximumFractionDigits: 2, minimumFractionDigits: 2)
     }
     
     /// Get month and year for filtering

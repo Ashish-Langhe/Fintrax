@@ -49,7 +49,7 @@ final class BudgetViewModel {
     
     // MARK: - Private Properties
     
-    private let repository: FinanceDataRepository
+    private let repository: any BudgetOverviewDataProviding
     private var cancellables = Set<AnyCancellable>()
     
     deinit {
@@ -59,8 +59,8 @@ final class BudgetViewModel {
     // MARK: - Initialization
     
     @MainActor
-    init(repository: FinanceDataRepository? = nil) {
-        self.repository = repository ?? .shared
+    init(repository: (any BudgetOverviewDataProviding)? = nil) {
+        self.repository = repository ?? FinanceDataRepository.shared
     }
     
     // MARK: - Public Methods
@@ -169,12 +169,7 @@ final class BudgetViewModel {
     
     /// Formats currency amount for display
     func formatCurrency(_ amount: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "INR"
-        formatter.locale = Locale(identifier: "en_IN")
-        formatter.maximumFractionDigits = 2
-        return formatter.string(from: NSDecimalNumber(decimal: amount)) ?? "₹0.00"
+        CurrencyFormatter.format(amount, maximumFractionDigits: 2, minimumFractionDigits: 2)
     }
     
     // MARK: - Computed Properties
