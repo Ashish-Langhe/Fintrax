@@ -602,34 +602,6 @@ private struct BudgetSectionHeader: View {
     }
 }
 
-private struct BudgetTexturedBackground: View {
-    var body: some View {
-        ZStack {
-            AppDesignSystem.Gradients.background
-
-            Canvas { context, size in
-                var path = Path()
-                let spacing: CGFloat = 22
-
-                for x in stride(from: CGFloat.zero, through: size.width, by: spacing) {
-                    path.move(to: CGPoint(x: x, y: 0))
-                    path.addLine(to: CGPoint(x: x + size.height * 0.36, y: size.height))
-                }
-
-                context.stroke(path, with: .color(Color.primary.opacity(0.04)), lineWidth: 1)
-
-                let dotColor = Color.primary.opacity(0.055)
-                for row in stride(from: CGFloat(28), through: size.height, by: 86) {
-                    for column in stride(from: CGFloat(22), through: size.width, by: 104) {
-                        context.fill(Path(ellipseIn: CGRect(x: column, y: row, width: 4, height: 4)), with: .color(dotColor))
-                    }
-                }
-            }
-        }
-        .ignoresSafeArea()
-    }
-}
-
 private extension View {
     func budgetCard(cornerRadius: CGFloat = 22) -> some View {
         self
