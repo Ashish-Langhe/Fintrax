@@ -190,14 +190,6 @@ struct FieldValidators {
 // MARK: - Decimal Formatting Extension
 extension Decimal {
     func formattedAmount() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "INR"
-        formatter.currencySymbol = "₹"
-        formatter.locale = Locale(identifier: "en_IN")
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 2
-        
-        return formatter.string(from: NSDecimalNumber(decimal: self)) ?? "₹0.00"
+        CurrencyFormatter.format(self, maximumFractionDigits: 2, minimumFractionDigits: 2)
     }
 }

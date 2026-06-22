@@ -28,6 +28,53 @@ struct ReportDataSnapshot: Sendable {
     let bills: [BillReminder]
 }
 
+// MARK: - Repository Capabilities
+
+@MainActor
+protocol ExpenseDataProviding {
+    func loadExpenses() async throws -> [Expense]
+    func saveExpense(_ expense: Expense) async throws
+    func updateExpense(_ expense: Expense) async throws
+    func deleteExpense(id expenseID: UUID) async throws
+}
+
+@MainActor
+protocol CategoryDataProviding {
+    func loadCategories() async throws -> [Category]
+    func saveCategory(_ category: Category) async throws
+    func updateCategory(_ category: Category) async throws
+    func deleteCategory(id categoryID: UUID) async throws
+}
+
+@MainActor
+protocol BudgetDataProviding {
+    func loadMonthlyBudget() async throws -> MonthlyBudget?
+    func saveMonthlyBudget(_ monthlyBudget: MonthlyBudget) async throws
+    func updateMonthlyBudget(_ monthlyBudget: MonthlyBudget) async throws
+    func deleteMonthlyBudget() async throws
+}
+
+@MainActor
+protocol DashboardSnapshotProviding {
+    func loadDashboardSnapshot() async throws -> DashboardDataSnapshot
+    func markBillReminderPaid(id billID: UUID) throws
+}
+
+@MainActor
+protocol ReportSnapshotProviding {
+    func loadReportSnapshot() async throws -> ReportDataSnapshot
+}
+
+@MainActor
+protocol DeveloperDataModeProviding {
+    func setMockDataEnabled(_ enabled: Bool)
+    func resetMockData()
+}
+
+typealias ExpenseListDataProviding = ExpenseDataProviding & CategoryDataProviding
+typealias BudgetOverviewDataProviding = BudgetDataProviding & ExpenseDataProviding
+typealias DashboardDataProviding = DashboardSnapshotProviding & ExpenseDataProviding
+
 /// Main data facade for Fintrax feature screens.
 ///
 /// The app currently uses JSON-backed stores for expenses/categories/budgets and
@@ -35,7 +82,13 @@ struct ReportDataSnapshot: Sendable {
 /// repository hides that split from screens, posts app-wide change events after
 /// mutations, and keeps bill notification/badge state synchronized with data.
 @MainActor
-final class FinanceDataRepository: Sendable {
+final class FinanceDataRepository: DashboardSnapshotProviding,
+                                   ExpenseDataProviding,
+                                   CategoryDataProviding,
+                                   BudgetDataProviding,
+                                   ReportSnapshotProviding,
+                                   DeveloperDataModeProviding,
+                                   Sendable {
     static let shared = FinanceDataRepository()
 
     private let dataService: JSONDataService

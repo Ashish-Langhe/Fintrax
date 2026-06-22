@@ -198,12 +198,22 @@ enum BillNotificationScheduler {
 
 /// Shared INR formatter used by finance and notification copy.
 enum CurrencyFormatter {
-    static func format(_ amount: Decimal, maximumFractionDigits: Int = 0) -> String {
+    static func format(
+        _ amount: Decimal,
+        maximumFractionDigits: Int = 0,
+        minimumFractionDigits: Int = 0
+    ) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "INR"
+        formatter.currencySymbol = "₹"
         formatter.locale = Locale(identifier: "en_IN")
         formatter.maximumFractionDigits = maximumFractionDigits
-        return formatter.string(from: NSDecimalNumber(decimal: amount)) ?? "₹0"
+        formatter.minimumFractionDigits = minimumFractionDigits
+        return formatter.string(from: NSDecimalNumber(decimal: amount)) ?? fallbackAmount(minimumFractionDigits: minimumFractionDigits)
+    }
+
+    private static func fallbackAmount(minimumFractionDigits: Int) -> String {
+        minimumFractionDigits > 0 ? "₹0.00" : "₹0"
     }
 }

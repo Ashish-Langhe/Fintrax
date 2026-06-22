@@ -27,16 +27,16 @@ class ExpenseListViewModel: ObservableObject {
     
     // MARK: - Private Properties
     private let categoryService: CategoryService
-    private let repository: FinanceDataRepository
+    private let repository: any ExpenseListDataProviding
     private(set) var categories: [Category] = []
     private(set) var hasMorePages = true
     private var pageSize = 50
     private var currentPage = 0
     
     // MARK: - Initialization
-    init() {
+    init(repository: (any ExpenseListDataProviding)? = nil) {
         // Initialize services without circular dependency
-        self.repository = .shared
+        self.repository = repository ?? FinanceDataRepository.shared
         self.categoryService = CategoryService.shared
     }
     
