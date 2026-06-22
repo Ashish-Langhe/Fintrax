@@ -68,6 +68,34 @@
 		AA000062 /* FintraxTabBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000062 /* FintraxTabBackground.swift */; };
 		AA000063 /* FintraxAssistantPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063 /* FintraxAssistantPresence.swift */; };
 		AA000064 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000064 /* L10n.swift */; };
+		AA000065 /* ExpenseViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000065 /* ExpenseViewModelTests.swift */; };
+		AA000066 /* ExpenseListDisplayComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000066 /* ExpenseListDisplayComponents.swift */; };
+		AA000067 /* ExpenseCalendarInsightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000067 /* ExpenseCalendarInsightView.swift */; };
+		AA000068 /* ExpenseFilterSearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000068 /* ExpenseFilterSearchBar.swift */; };
+		AA000069 /* ExpenseListRows.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000069 /* ExpenseListRows.swift */; };
+		AA000070 /* ExpenseFilterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000070 /* ExpenseFilterSheet.swift */; };
+		AA000071 /* SpendingAIAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000071 /* SpendingAIAnalyzer.swift */; };
+		AA000072 /* DashboardComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000072 /* DashboardComponents.swift */; };
+		AA000073 /* DashboardCategoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000073 /* DashboardCategoryDetailView.swift */; };
+		AA000074 /* FintraxAssistantLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000074 /* FintraxAssistantLauncher.swift */; };
+		AA000075 /* FintraxAssistantSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000075 /* FintraxAssistantSheet.swift */; };
+		AA000076 /* AssistantBlinkRhythm.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000076 /* AssistantBlinkRhythm.swift */; };
+		AA000077 /* FintraxAssistantBot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000077 /* FintraxAssistantBot.swift */; };
+		AA000078 /* AssistantInsightComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000078 /* AssistantInsightComponents.swift */; };
+		AA000079 /* AssistantInsightEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000079 /* AssistantInsightEngine.swift */; };
+		AA000080 /* IncomeTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000080 /* IncomeTrackingView.swift */; };
+		AA000081 /* BillRemindersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000081 /* BillRemindersView.swift */; };
+		AA000082 /* PDFReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000082 /* PDFReportView.swift */; };
+		AA000083 /* FinanceEditors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000083 /* FinanceEditors.swift */; };
+		AA000084 /* FinanceComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000084 /* FinanceComponents.swift */; };
+		AA000085 /* DashboardCategoryBreakdownChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000085 /* DashboardCategoryBreakdownChart.swift */; };
+		AA000086 /* DashboardMonthlyTrendChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000086 /* DashboardMonthlyTrendChart.swift */; };
+		AA000087 /* DashboardChartColorSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000087 /* DashboardChartColorSupport.swift */; };
+		AA000088 /* SettingsPinSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000088 /* SettingsPinSheet.swift */; };
+		AA000089 /* SettingsRows.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000089 /* SettingsRows.swift */; };
+		AA000090 /* SettingsSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000090 /* SettingsSupport.swift */; };
+		AA000091 /* ExpenseDayDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000091 /* ExpenseDayDetailSheet.swift */; };
+		AA000092 /* ExpenseCalendarComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000092 /* ExpenseCalendarComponents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -142,6 +170,34 @@
 		AB000062 /* FintraxTabBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxTabBackground.swift; sourceTree = "<group>"; };
 		AB000063 /* FintraxAssistantPresence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAssistantPresence.swift; sourceTree = "<group>"; };
 		AB000064 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		AB000065 /* ExpenseViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseViewModelTests.swift; sourceTree = "<group>"; };
+		AB000066 /* ExpenseListDisplayComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseListDisplayComponents.swift; sourceTree = "<group>"; };
+		AB000067 /* ExpenseCalendarInsightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseCalendarInsightView.swift; sourceTree = "<group>"; };
+		AB000068 /* ExpenseFilterSearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseFilterSearchBar.swift; sourceTree = "<group>"; };
+		AB000069 /* ExpenseListRows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseListRows.swift; sourceTree = "<group>"; };
+		AB000070 /* ExpenseFilterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseFilterSheet.swift; sourceTree = "<group>"; };
+		AB000071 /* SpendingAIAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendingAIAnalyzer.swift; sourceTree = "<group>"; };
+		AB000072 /* DashboardComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardComponents.swift; sourceTree = "<group>"; };
+		AB000073 /* DashboardCategoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardCategoryDetailView.swift; sourceTree = "<group>"; };
+		AB000074 /* FintraxAssistantLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAssistantLauncher.swift; sourceTree = "<group>"; };
+		AB000075 /* FintraxAssistantSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAssistantSheet.swift; sourceTree = "<group>"; };
+		AB000076 /* AssistantBlinkRhythm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantBlinkRhythm.swift; sourceTree = "<group>"; };
+		AB000077 /* FintraxAssistantBot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAssistantBot.swift; sourceTree = "<group>"; };
+		AB000078 /* AssistantInsightComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantInsightComponents.swift; sourceTree = "<group>"; };
+		AB000079 /* AssistantInsightEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantInsightEngine.swift; sourceTree = "<group>"; };
+		AB000080 /* IncomeTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomeTrackingView.swift; sourceTree = "<group>"; };
+		AB000081 /* BillRemindersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillRemindersView.swift; sourceTree = "<group>"; };
+		AB000082 /* PDFReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFReportView.swift; sourceTree = "<group>"; };
+		AB000083 /* FinanceEditors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinanceEditors.swift; sourceTree = "<group>"; };
+		AB000084 /* FinanceComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinanceComponents.swift; sourceTree = "<group>"; };
+		AB000085 /* DashboardCategoryBreakdownChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardCategoryBreakdownChart.swift; sourceTree = "<group>"; };
+		AB000086 /* DashboardMonthlyTrendChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMonthlyTrendChart.swift; sourceTree = "<group>"; };
+		AB000087 /* DashboardChartColorSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardChartColorSupport.swift; sourceTree = "<group>"; };
+		AB000088 /* SettingsPinSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPinSheet.swift; sourceTree = "<group>"; };
+		AB000089 /* SettingsRows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRows.swift; sourceTree = "<group>"; };
+		AB000090 /* SettingsSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSupport.swift; sourceTree = "<group>"; };
+		AB000091 /* ExpenseDayDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseDayDetailSheet.swift; sourceTree = "<group>"; };
+		AB000092 /* ExpenseCalendarComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseCalendarComponents.swift; sourceTree = "<group>"; };
 		AB000098 /* ExpenseTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExpenseTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000099 /* ExpenseTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExpenseTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -267,6 +323,13 @@
 			children = (
 				AB000014 /* AddEditExpenseView.swift */,
 				AB000015 /* ExpenseListView.swift */,
+					AB000066 /* ExpenseListDisplayComponents.swift */,
+					AB000067 /* ExpenseCalendarInsightView.swift */,
+					AB000091 /* ExpenseDayDetailSheet.swift */,
+					AB000092 /* ExpenseCalendarComponents.swift */,
+					AB000068 /* ExpenseFilterSearchBar.swift */,
+				AB000069 /* ExpenseListRows.swift */,
+				AB000070 /* ExpenseFilterSheet.swift */,
 				AB000016 /* ExpenseListViewModel.swift */,
 				AB000017 /* ExpenseViewModel.swift */,
 			);
@@ -292,21 +355,32 @@
 				AB000028 /* BudgetStatusIndicator.swift */,
 				AB000037 /* DesignSystem.swift */,
 				AB000047 /* FintraxModalOverlay.swift */,
-				AB000038 /* AppAnimations.swift */,
-				AB000062 /* FintraxTabBackground.swift */,
-				AB000063 /* FintraxAssistantPresence.swift */,
-			);
+					AB000038 /* AppAnimations.swift */,
+					AB000062 /* FintraxTabBackground.swift */,
+					AB000063 /* FintraxAssistantPresence.swift */,
+					AB000074 /* FintraxAssistantLauncher.swift */,
+					AB000075 /* FintraxAssistantSheet.swift */,
+					AB000076 /* AssistantBlinkRhythm.swift */,
+					AB000077 /* FintraxAssistantBot.swift */,
+					AB000078 /* AssistantInsightComponents.swift */,
+					AB000079 /* AssistantInsightEngine.swift */,
+				);
 			path = Components;
 			sourceTree = "<group>";
 		};
 		AC000014 /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
-				AB000025 /* DashboardView.swift */,
-				AB000026 /* DashboardViewModel.swift */,
-				AB000027 /* DashboardChartsView.swift */,
-				AB000057 /* DashboardNotificationCenterView.swift */,
-			);
+					AB000025 /* DashboardView.swift */,
+					AB000072 /* DashboardComponents.swift */,
+					AB000073 /* DashboardCategoryDetailView.swift */,
+					AB000026 /* DashboardViewModel.swift */,
+					AB000027 /* DashboardChartsView.swift */,
+					AB000085 /* DashboardCategoryBreakdownChart.swift */,
+					AB000086 /* DashboardMonthlyTrendChart.swift */,
+					AB000087 /* DashboardChartColorSupport.swift */,
+					AB000057 /* DashboardNotificationCenterView.swift */,
+				);
 			path = Dashboard;
 			sourceTree = "<group>";
 		};
@@ -315,6 +389,7 @@
 			children = (
 				AC000021 /* ModelTests */,
 				AC000022 /* ServiceTests */,
+				AC000023 /* ViewModelTests */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -334,6 +409,14 @@
 				AB000061 /* SmartCategoryServiceTests.swift */,
 			);
 			path = ServiceTests;
+			sourceTree = "<group>";
+		};
+		AC000023 /* ViewModelTests */ = {
+			isa = PBXGroup;
+			children = (
+				AB000065 /* ExpenseViewModelTests.swift */,
+			);
+			path = ViewModelTests;
 			sourceTree = "<group>";
 		};
 		AC000030 /* Products */ = {
@@ -402,6 +485,9 @@
 			isa = PBXGroup;
 			children = (
 				AB000043 /* SettingsView.swift */,
+				AB000088 /* SettingsPinSheet.swift */,
+				AB000089 /* SettingsRows.swift */,
+				AB000090 /* SettingsSupport.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -410,6 +496,11 @@
 			isa = PBXGroup;
 			children = (
 				AB000046 /* FinanceFeatureViews.swift */,
+				AB000080 /* IncomeTrackingView.swift */,
+				AB000081 /* BillRemindersView.swift */,
+				AB000082 /* PDFReportView.swift */,
+				AB000083 /* FinanceEditors.swift */,
+				AB000084 /* FinanceComponents.swift */,
 			);
 			path = Finance;
 			sourceTree = "<group>";
@@ -418,6 +509,7 @@
 			isa = PBXGroup;
 			children = (
 				AB000048 /* AnalyticsView.swift */,
+				AB000071 /* SpendingAIAnalyzer.swift */,
 			);
 			path = Analytics;
 			sourceTree = "<group>";
@@ -560,6 +652,13 @@
 				AA000013 /* JSONDataService.swift in Sources */,
 				AA000014 /* AddEditExpenseView.swift in Sources */,
 				AA000015 /* ExpenseListView.swift in Sources */,
+				AA000066 /* ExpenseListDisplayComponents.swift in Sources */,
+					AA000067 /* ExpenseCalendarInsightView.swift in Sources */,
+					AA000091 /* ExpenseDayDetailSheet.swift in Sources */,
+					AA000092 /* ExpenseCalendarComponents.swift in Sources */,
+					AA000068 /* ExpenseFilterSearchBar.swift in Sources */,
+				AA000069 /* ExpenseListRows.swift in Sources */,
+				AA000070 /* ExpenseFilterSheet.swift in Sources */,
 				AA000016 /* ExpenseListViewModel.swift in Sources */,
 				AA000017 /* ExpenseViewModel.swift in Sources */,
 				AA000018 /* CategorySelector.swift in Sources */,
@@ -568,9 +667,14 @@
 				AA000021 /* FormValidationState.swift in Sources */,
 				AA000024 /* DashboardData.swift in Sources */,
 				AA000025 /* DashboardView.swift in Sources */,
+				AA000072 /* DashboardComponents.swift in Sources */,
+				AA000073 /* DashboardCategoryDetailView.swift in Sources */,
 				AA000026 /* DashboardViewModel.swift in Sources */,
-				AA000027 /* DashboardChartsView.swift in Sources */,
-				AA000028 /* BudgetStatusIndicator.swift in Sources */,
+					AA000027 /* DashboardChartsView.swift in Sources */,
+					AA000085 /* DashboardCategoryBreakdownChart.swift in Sources */,
+					AA000086 /* DashboardMonthlyTrendChart.swift in Sources */,
+					AA000087 /* DashboardChartColorSupport.swift in Sources */,
+					AA000028 /* BudgetStatusIndicator.swift in Sources */,
 				AA000029 /* MonthlyBudget.swift in Sources */,
 				AA000030 /* BudgetValidation.swift in Sources */,
 				AA000031 /* BudgetCalculations.swift in Sources */,
@@ -585,20 +689,35 @@
 				AA000040 /* SwiftDataStore.swift in Sources */,
 				AA000041 /* CategoryManagementView.swift in Sources */,
 				AA000042 /* AppOnboardingView.swift in Sources */,
-				AA000043 /* SettingsView.swift in Sources */,
-				AA000044 /* FinanceModels.swift in Sources */,
+					AA000043 /* SettingsView.swift in Sources */,
+					AA000088 /* SettingsPinSheet.swift in Sources */,
+					AA000089 /* SettingsRows.swift in Sources */,
+					AA000090 /* SettingsSupport.swift in Sources */,
+					AA000044 /* FinanceModels.swift in Sources */,
 				AA000045 /* BillNotificationScheduler.swift in Sources */,
-				AA000046 /* FinanceFeatureViews.swift in Sources */,
-				AA000047 /* FintraxModalOverlay.swift in Sources */,
+					AA000046 /* FinanceFeatureViews.swift in Sources */,
+					AA000080 /* IncomeTrackingView.swift in Sources */,
+					AA000081 /* BillRemindersView.swift in Sources */,
+					AA000082 /* PDFReportView.swift in Sources */,
+					AA000083 /* FinanceEditors.swift in Sources */,
+					AA000084 /* FinanceComponents.swift in Sources */,
+					AA000047 /* FintraxModalOverlay.swift in Sources */,
 				AA000048 /* AnalyticsView.swift in Sources */,
+				AA000071 /* SpendingAIAnalyzer.swift in Sources */,
 				AA000054 /* AppEventBus.swift in Sources */,
 				AA000058 /* DeveloperDataMode.swift in Sources */,
 				AA000055 /* FinanceDataRepository.swift in Sources */,
 				AA000059 /* MockFinanceDataStore.swift in Sources */,
 				AA000060 /* SmartCategoryService.swift in Sources */,
-				AA000062 /* FintraxTabBackground.swift in Sources */,
-				AA000063 /* FintraxAssistantPresence.swift in Sources */,
-				AA000064 /* L10n.swift in Sources */,
+					AA000062 /* FintraxTabBackground.swift in Sources */,
+					AA000063 /* FintraxAssistantPresence.swift in Sources */,
+					AA000074 /* FintraxAssistantLauncher.swift in Sources */,
+					AA000075 /* FintraxAssistantSheet.swift in Sources */,
+					AA000076 /* AssistantBlinkRhythm.swift in Sources */,
+					AA000077 /* FintraxAssistantBot.swift in Sources */,
+					AA000078 /* AssistantInsightComponents.swift in Sources */,
+					AA000079 /* AssistantInsightEngine.swift in Sources */,
+					AA000064 /* L10n.swift in Sources */,
 				AA000056 /* AppBadgeService.swift in Sources */,
 				AA000057 /* DashboardNotificationCenterView.swift in Sources */,
 			);
@@ -611,6 +730,7 @@
 				AA000022 /* ExpenseModelTests.swift in Sources */,
 				AA000023 /* JSONDataServiceTests.swift in Sources */,
 				AA000061 /* SmartCategoryServiceTests.swift in Sources */,
+				AA000065 /* ExpenseViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
