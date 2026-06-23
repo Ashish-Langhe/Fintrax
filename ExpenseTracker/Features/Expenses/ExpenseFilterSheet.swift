@@ -260,10 +260,10 @@ private struct FilterSelectionRow: View {
                     .foregroundStyle(isSelected ? tint : .secondary.opacity(0.45))
             }
             .padding(12)
-            .background(Color(.systemBackground).opacity(isSelected ? 0.78 : 0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(AppDesignSystem.Colors.controlFill.opacity(isSelected ? 1 : 0.72), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? tint.opacity(0.42) : Color.white.opacity(0.24), lineWidth: 1)
+                    .stroke(isSelected ? tint.opacity(0.42) : AppDesignSystem.Colors.cardStroke, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -303,10 +303,10 @@ private struct FilterOptionChip: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.systemBackground).opacity(isSelected ? 0.78 : 0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(AppDesignSystem.Colors.controlFill.opacity(isSelected ? 1 : 0.72), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? tint.opacity(0.42) : Color.white.opacity(0.24), lineWidth: 1)
+                    .stroke(isSelected ? tint.opacity(0.42) : AppDesignSystem.Colors.cardStroke, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -316,23 +316,6 @@ private struct FilterOptionChip: View {
 private extension View {
     func filterSheetCard(cornerRadius: CGFloat = 22) -> some View {
         self
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(Color(.secondarySystemBackground).opacity(0.90))
-
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.22), Color.blue.opacity(0.07), Color.teal.opacity(0.08)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-                }
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.28), lineWidth: 1)
-            )
-            .shadow(color: Color.black.opacity(0.09), radius: 16, x: 0, y: 9)
+            .fintraxSurface(cornerRadius: cornerRadius, accent: AppDesignSystem.Colors.primary)
     }
 }

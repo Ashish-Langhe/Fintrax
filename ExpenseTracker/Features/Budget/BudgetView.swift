@@ -163,7 +163,7 @@ struct BudgetView: View {
                         GeometryReader { proxy in
                             ZStack(alignment: .leading) {
                                 Capsule()
-                                    .fill(Color(.systemBackground).opacity(0.62))
+                                    .fill(AppDesignSystem.Colors.controlFill)
 
                                 Capsule()
                                     .fill(
@@ -496,11 +496,7 @@ private struct InsightCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.white.opacity(0.24), lineWidth: 1)
-        )
+        .fintraxControlFill(cornerRadius: 16)
     }
 }
 
@@ -533,7 +529,7 @@ private struct BudgetMiniStat: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 9)
         .frame(maxWidth: .infinity)
-        .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .fintraxControlFill(cornerRadius: 14)
     }
 }
 
@@ -605,24 +601,7 @@ private struct BudgetSectionHeader: View {
 private extension View {
     func budgetCard(cornerRadius: CGFloat = 22) -> some View {
         self
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(Color(.secondarySystemBackground).opacity(0.90))
-
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.22), Color.blue.opacity(0.07), Color.teal.opacity(0.08)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-                }
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.28), lineWidth: 1)
-            )
-            .shadow(color: Color.black.opacity(0.09), radius: 16, x: 0, y: 9)
+            .fintraxSurface(cornerRadius: cornerRadius, accent: AppDesignSystem.Colors.primary)
     }
 }
 

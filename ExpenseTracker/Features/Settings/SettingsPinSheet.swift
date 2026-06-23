@@ -162,10 +162,10 @@ struct PinTextField: View {
                 .focused($isFocused)
                 .padding(.horizontal, AppDesignSystem.Spacing.lg)
                 .padding(.vertical, AppDesignSystem.Spacing.md)
-                .background(Color(.secondarySystemBackground).opacity(0.86), in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.lg, style: .continuous))
+                .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.lg, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.lg, style: .continuous)
-                        .stroke(isFocused ? AppDesignSystem.Colors.primary.opacity(0.7) : Color.white.opacity(0.25), lineWidth: 1)
+                        .stroke(isFocused ? AppDesignSystem.Colors.primary.opacity(0.7) : AppDesignSystem.Colors.cardStroke, lineWidth: 1)
                 }
                 .onChange(of: text) { _, newValue in
                     let sanitized = String(newValue.filter(\.isNumber).prefix(6))

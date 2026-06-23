@@ -147,31 +147,6 @@ extension AppLanguage {
 extension View {
     func settingsPanel(accent: Color) -> some View {
         self
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xxl, style: .continuous)
-                        .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.88))
-
-                    LinearGradient(
-                        colors: [accent.opacity(0.09), Color.clear, AppDesignSystem.Colors.surfaceVariant.opacity(0.34)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xxl, style: .continuous))
-                }
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xxl, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.primary.opacity(0.12), accent.opacity(0.20), Color.primary.opacity(0.06)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-            }
-            .shadow(color: accent.opacity(0.10), radius: 22, x: 0, y: 14)
-            .shadow(color: Color.black.opacity(0.06), radius: 18, x: 0, y: 10)
+            .fintraxSurface(cornerRadius: AppDesignSystem.CornerRadius.xxl, accent: accent)
     }
 }

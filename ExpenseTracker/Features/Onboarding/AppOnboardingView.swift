@@ -238,7 +238,7 @@ struct AppOnboardingView: View {
                     .frame(width: index == selectedPage ? 28 : 8, height: 8)
                     .overlay {
                         Capsule()
-                            .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                            .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
                     }
             }
         }

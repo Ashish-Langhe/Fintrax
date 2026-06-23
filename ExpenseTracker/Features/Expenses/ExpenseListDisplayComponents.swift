@@ -95,7 +95,7 @@ struct ExpenseListSummaryCard: View {
                     .font(AppDesignSystem.Typography.caption.weight(.bold))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(Color(.systemBackground).opacity(0.72), in: Capsule())
+                    .background(AppDesignSystem.Colors.controlFill, in: Capsule())
             }
 
             HStack(spacing: 10) {
@@ -107,11 +107,11 @@ struct ExpenseListSummaryCard: View {
         .background(
             ZStack {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Color(.secondarySystemBackground).opacity(0.92))
+                    .fill(AppDesignSystem.Colors.cardFill)
 
                 LinearGradient(
                     colors: [
-                        Color.white.opacity(0.22),
+                        AppDesignSystem.Colors.cardOverlay,
                         Color.blue.opacity(0.08),
                         Color.teal.opacity(0.10)
                     ],
@@ -123,9 +123,9 @@ struct ExpenseListSummaryCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.white.opacity(0.28), lineWidth: 1)
+                .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
         )
-        .shadow(color: Color.black.opacity(0.07), radius: 12, x: 0, y: 7)
+        .shadow(color: Color.black.opacity(0.10), radius: 12, x: 0, y: 7)
     }
 }
 
@@ -157,6 +157,6 @@ private struct SummaryMetricPill: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity)
-        .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .fintraxControlFill(cornerRadius: 14)
     }
 }
