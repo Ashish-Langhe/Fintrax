@@ -299,7 +299,7 @@ struct ExpenseCalendarInsightView: View {
             .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.72))
             .overlay {
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                    .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
             }
     }
 

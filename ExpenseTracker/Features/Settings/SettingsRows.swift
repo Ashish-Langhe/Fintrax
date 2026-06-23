@@ -109,7 +109,7 @@ struct SettingsActionRow: View {
                     .foregroundStyle(AppDesignSystem.Colors.textTertiary)
             }
             .padding(AppDesignSystem.Spacing.md)
-            .background(Color(.secondarySystemBackground).opacity(0.72), in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xl, style: .continuous))
+            .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xl, style: .continuous))
         }
         .buttonStyle(.plain)
         .interactiveButton()
@@ -149,7 +149,7 @@ struct SettingsToggleRow: View {
                 .tint(tint)
         }
         .padding(AppDesignSystem.Spacing.md)
-        .background(Color(.secondarySystemBackground).opacity(0.72), in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xl, style: .continuous))
+        .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xl, style: .continuous))
     }
 }
 
@@ -185,7 +185,7 @@ struct SettingsNavigationRow: View {
                 .foregroundStyle(AppDesignSystem.Colors.textTertiary)
         }
         .padding(AppDesignSystem.Spacing.md)
-        .background(Color(.secondarySystemBackground).opacity(0.72), in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xl, style: .continuous))
+        .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xl, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xl, style: .continuous))
     }
 }

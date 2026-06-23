@@ -48,8 +48,8 @@ struct CategoryManagementView: View {
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(.blue)
                         .frame(width: 34, height: 34)
-                        .background(Color(.systemBackground).opacity(0.68), in: Circle())
-                        .overlay(Circle().stroke(Color.white.opacity(0.30), lineWidth: 1))
+                        .background(AppDesignSystem.Colors.controlFill, in: Circle())
+                        .overlay(Circle().stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1))
                 }
             }
         }
@@ -244,7 +244,7 @@ private struct CategoryManagementRow: View {
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color(.systemBackground).opacity(0.62), in: Capsule())
+                            .background(AppDesignSystem.Colors.controlFill, in: Capsule())
                     }
                 }
 
@@ -382,10 +382,10 @@ private struct CategoryEditorSheet: View {
                 .focused($isNameFocused)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.white.opacity(0.24), lineWidth: 1)
+                        .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
                 )
         }
         .padding(18)
@@ -481,12 +481,12 @@ private struct SymbolPicker: View {
                                     .frame(height: 64)
                                     .frame(maxWidth: .infinity)
                                     .background(
-                                        selectedSymbol == symbol ? Color.blue : Color(.systemBackground).opacity(0.62),
+                                        selectedSymbol == symbol ? Color.blue : AppDesignSystem.Colors.controlFill,
                                         in: RoundedRectangle(cornerRadius: 18, style: .continuous)
                                     )
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                            .stroke(Color.white.opacity(0.26), lineWidth: 1)
+                                            .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
                                     )
                             }
                             .buttonStyle(.plain)
@@ -609,24 +609,7 @@ extension Color {
 private extension View {
     func categoryCard(cornerRadius: CGFloat = 22) -> some View {
         self
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(Color(.secondarySystemBackground).opacity(0.90))
-
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.22), Color.blue.opacity(0.07), Color.teal.opacity(0.08)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-                }
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.28), lineWidth: 1)
-            )
-            .shadow(color: Color.black.opacity(0.09), radius: 16, x: 0, y: 9)
+            .fintraxSurface(cornerRadius: cornerRadius, accent: AppDesignSystem.Colors.info)
     }
 }
 

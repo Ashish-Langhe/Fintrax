@@ -63,7 +63,7 @@ struct BudgetEditSheet: View {
             if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(.systemBackground).opacity(0.8))
+                    .background(AppDesignSystem.Colors.background.opacity(0.82))
             }
         }
     }
@@ -106,10 +106,10 @@ struct BudgetEditSheet: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 18)
-            .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(validationState == .invalid ? Color.red.opacity(0.55) : Color.white.opacity(0.26), lineWidth: 1)
+                    .stroke(validationState == .invalid ? Color.red.opacity(0.55) : AppDesignSystem.Colors.cardStroke, lineWidth: 1)
             )
 
             quickBudgetRow
@@ -133,13 +133,13 @@ struct BudgetEditSheet: View {
                         .padding(.vertical, 8)
                         .background(
                             LinearGradient(
-                                colors: [Color(.systemBackground).opacity(0.70), Color.blue.opacity(0.10)],
+                                colors: [AppDesignSystem.Colors.controlFill, Color.blue.opacity(0.08)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
                             in: Capsule()
                         )
-                        .overlay(Capsule().stroke(Color.white.opacity(0.22), lineWidth: 1))
+                        .overlay(Capsule().stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
             }
@@ -298,7 +298,7 @@ private struct GuidelineRow: View {
             Spacer()
         }
         .padding(10)
-        .background(Color(.systemBackground).opacity(0.58), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .fintraxControlFill(cornerRadius: 14)
     }
 }
 
@@ -348,7 +348,7 @@ private struct BudgetSheetInfoRow: View {
                 .minimumScaleFactor(0.72)
         }
         .padding(12)
-        .background(Color(.systemBackground).opacity(0.58), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .fintraxControlFill(cornerRadius: 14)
     }
 }
 
@@ -383,24 +383,7 @@ private struct BudgetSheetBackground: View {
 private extension View {
     func budgetSheetCard(cornerRadius: CGFloat = 22) -> some View {
         self
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(Color(.secondarySystemBackground).opacity(0.90))
-
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.22), Color.blue.opacity(0.07), Color.teal.opacity(0.08)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-                }
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.28), lineWidth: 1)
-            )
-            .shadow(color: Color.black.opacity(0.09), radius: 16, x: 0, y: 9)
+            .fintraxSurface(cornerRadius: cornerRadius, accent: AppDesignSystem.Colors.primary)
     }
 }
 

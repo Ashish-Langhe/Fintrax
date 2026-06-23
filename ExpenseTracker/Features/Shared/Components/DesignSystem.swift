@@ -46,6 +46,26 @@ struct AppDesignSystem {
             light: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1),
             dark: UIColor(red: 0.105, green: 0.115, blue: 0.155, alpha: 1)
         )
+        static let cardFill = Color.dynamic(
+            light: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.92),
+            dark: UIColor(red: 0.095, green: 0.105, blue: 0.145, alpha: 0.94)
+        )
+        static let cardOverlay = Color.dynamic(
+            light: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.24),
+            dark: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.045)
+        )
+        static let cardStroke = Color.dynamic(
+            light: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.34),
+            dark: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.10)
+        )
+        static let controlFill = Color.dynamic(
+            light: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.66),
+            dark: UIColor(red: 0.13, green: 0.145, blue: 0.19, alpha: 0.78)
+        )
+        static let darkReadableSurface = Color.dynamic(
+            light: UIColor.secondarySystemBackground,
+            dark: UIColor(red: 0.12, green: 0.135, blue: 0.18, alpha: 1)
+        )
         static let outline = Color(.separator).opacity(0.36)
         
         // Text Colors
@@ -224,6 +244,45 @@ extension View {
     
     func sectionPadding() -> some View {
         self.padding(AppDesignSystem.Spacing.sectionPadding)
+    }
+
+    func fintraxSurface(
+        cornerRadius: CGFloat = 22,
+        accent: Color = AppDesignSystem.Colors.primary,
+        shadow: Bool = true
+    ) -> some View {
+        self
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(AppDesignSystem.Colors.cardFill)
+
+                    LinearGradient(
+                        colors: [
+                            AppDesignSystem.Colors.cardOverlay,
+                            accent.opacity(0.06),
+                            AppDesignSystem.Colors.surfaceVariant.opacity(0.16)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                }
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
+            }
+            .shadow(color: shadow ? Color.black.opacity(0.10) : .clear, radius: shadow ? 16 : 0, x: 0, y: shadow ? 9 : 0)
+    }
+
+    func fintraxControlFill(cornerRadius: CGFloat = 14) -> some View {
+        self
+            .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
+            }
     }
 }
 

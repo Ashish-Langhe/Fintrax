@@ -220,7 +220,7 @@ struct SettingsView: View {
                 .accessibilityLabel(L10n.Settings.appLanguage)
             }
             .padding(AppDesignSystem.Spacing.md)
-            .background(Color(.secondarySystemBackground).opacity(0.72), in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xl, style: .continuous))
+            .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xl, style: .continuous))
         }
     }
 

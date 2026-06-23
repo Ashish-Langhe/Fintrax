@@ -132,7 +132,7 @@ struct FintraxModalOverlay: View {
             )
             .overlay {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                    .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
             }
             .shadow(color: Color.black.opacity(0.22), radius: 28, x: 0, y: 18)
             .padding(.horizontal, AppDesignSystem.Spacing.xl)

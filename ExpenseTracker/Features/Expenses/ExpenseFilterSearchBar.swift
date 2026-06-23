@@ -151,7 +151,7 @@ struct FilterAndSearchBar: View {
                             ], startPoint: .topLeading, endPoint: .bottomTrailing),
                             in: Circle()
                         )
-                        .overlay(Circle().stroke(Color.white.opacity(0.28), lineWidth: 1))
+                        .overlay(Circle().stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(L10n.Expenses.openFilters)
@@ -237,12 +237,12 @@ struct FilterChip: View {
             .background(
                 isActive ?
                 LinearGradient(colors: [Color.blue, Color.teal], startPoint: .topLeading, endPoint: .bottomTrailing) :
-                LinearGradient(colors: [Color(.systemBackground).opacity(0.74), Color(.systemBackground).opacity(0.54)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                LinearGradient(colors: [AppDesignSystem.Colors.controlFill, AppDesignSystem.Colors.surfaceVariant.opacity(0.34)], startPoint: .topLeading, endPoint: .bottomTrailing),
                 in: Capsule()
             )
             .overlay(
                 Capsule()
-                    .stroke(isActive ? Color.clear : Color.white.opacity(0.26), lineWidth: 1)
+                    .stroke(isActive ? Color.clear : AppDesignSystem.Colors.cardStroke, lineWidth: 1)
             )
             .foregroundColor(isActive ? .white : .primary)
         }

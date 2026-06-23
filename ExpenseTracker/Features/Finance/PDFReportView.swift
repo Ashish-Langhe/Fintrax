@@ -246,7 +246,7 @@ struct PDFReportPreviewSheet: View {
                         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                         .overlay {
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(Color.white.opacity(0.24), lineWidth: 1)
+                                .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
                         }
                         .shadow(color: Color.black.opacity(0.12), radius: 18, x: 0, y: 10)
 

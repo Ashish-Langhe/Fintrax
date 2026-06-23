@@ -18,8 +18,8 @@ struct ToolbarIconLabel: View {
             .font(.subheadline.weight(.bold))
             .foregroundStyle(tint)
             .frame(width: 34, height: 34)
-            .background(Color(.systemBackground).opacity(0.68), in: Circle())
-            .overlay(Circle().stroke(Color.white.opacity(0.30), lineWidth: 1))
+            .background(AppDesignSystem.Colors.controlFill, in: Circle())
+            .overlay(Circle().stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1))
             .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
             .rotationEffect(.degrees(isAnimating ? 360 : 0))
             .animation(isAnimating ? .linear(duration: 0.8).repeatForever(autoreverses: false) : .default, value: isAnimating)
@@ -65,11 +65,7 @@ struct EmptyExpenseState: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity)
-        .background(Color(.secondarySystemBackground).opacity(0.88), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.white.opacity(0.26), lineWidth: 1)
-        )
+        .fintraxSurface(cornerRadius: 24, accent: AppDesignSystem.Colors.primary)
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

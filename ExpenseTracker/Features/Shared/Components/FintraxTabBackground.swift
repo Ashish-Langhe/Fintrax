@@ -57,6 +57,7 @@ struct FintraxTabBackground: View {
     }
 
     let style: Style
+    @Environment(\.colorScheme) private var colorScheme
     @State private var drift = false
 
     var body: some View {
@@ -70,7 +71,7 @@ struct FintraxTabBackground: View {
                 ForEach(Array(style.symbols.enumerated()), id: \.offset) { index, symbol in
                     Image(systemName: symbol.name)
                         .font(.system(size: symbol.size, weight: .medium))
-                        .foregroundStyle(symbol.tint.opacity(symbol.opacity))
+                        .foregroundStyle(symbol.tint.opacity(symbol.opacity * backgroundSymbolOpacityMultiplier))
                         .rotationEffect(.degrees(rotation(for: index)))
                         .offset(
                             x: size.width * symbol.x,
@@ -80,18 +81,18 @@ struct FintraxTabBackground: View {
                 }
 
                 Circle()
-                    .stroke(AppDesignSystem.Colors.info.opacity(0.14), lineWidth: 18)
+                    .stroke(AppDesignSystem.Colors.info.opacity(0.14 * backgroundSymbolOpacityMultiplier), lineWidth: 18)
                     .frame(width: 210, height: 210)
                     .offset(x: drift ? -62 : -84, y: 86)
 
                 RoundedRectangle(cornerRadius: 36, style: .continuous)
-                    .stroke(AppDesignSystem.Colors.primary.opacity(0.08), lineWidth: 14)
+                    .stroke(AppDesignSystem.Colors.primary.opacity(0.08 * backgroundSymbolOpacityMultiplier), lineWidth: 14)
                     .frame(width: 180, height: 180)
                     .rotationEffect(.degrees(drift ? 18 : 9))
                     .offset(x: size.width - 96, y: size.height * 0.18)
 
                 Circle()
-                    .stroke(AppDesignSystem.Colors.success.opacity(0.10), lineWidth: 12)
+                    .stroke(AppDesignSystem.Colors.success.opacity(0.10 * backgroundSymbolOpacityMultiplier), lineWidth: 12)
                     .frame(width: 154, height: 154)
                     .offset(x: size.width - 52, y: size.height * 0.52)
             }
@@ -108,6 +109,10 @@ struct FintraxTabBackground: View {
         let base: [Double] = [-9, 9, 6, -8]
         let alternate: [Double] = [7, -7, -4, 5]
         return drift ? base[index % base.count] : alternate[index % alternate.count]
+    }
+
+    private var backgroundSymbolOpacityMultiplier: Double {
+        colorScheme == .dark ? 0.52 : 1.0
     }
 }
 

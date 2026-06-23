@@ -99,7 +99,7 @@ struct RefinedMonthlyTrendChart: View {
         )
         .overlay {
             RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
         }
         .shadow(color: AppDesignSystem.Colors.primary.opacity(0.10), radius: 18, x: 0, y: 12)
     }

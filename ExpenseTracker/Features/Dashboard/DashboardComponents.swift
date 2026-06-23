@@ -681,27 +681,6 @@ struct DashboardTexturedBackground: View {
 
 extension View {
     func dashboardPanel(accent: Color, cornerRadius: CGFloat = 22) -> some View {
-        background(
-            ZStack {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.thinMaterial)
-
-                LinearGradient(
-                    colors: [
-                        accent.opacity(0.10),
-                        Color.clear,
-                        AppDesignSystem.Colors.elevatedSurface.opacity(0.24)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            }
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .stroke(Color.white.opacity(0.22), lineWidth: 1)
-        }
-        .shadow(color: accent.opacity(0.08), radius: 14, x: 0, y: 8)
+        fintraxSurface(cornerRadius: cornerRadius, accent: accent)
     }
 }

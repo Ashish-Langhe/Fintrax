@@ -131,14 +131,14 @@ struct AddEditExpenseView: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(Color(.systemBackground).opacity(0.62), in: Capsule())
+                    .background(AppDesignSystem.Colors.controlFill, in: Capsule())
             }
 
             CurrencyInputField(value: $viewModel.amount, placeholder: "0.00")
                 .focused($focusedField, equals: .amount)
                 .padding(.horizontal, 2)
                 .padding(.vertical, 2)
-                .background(Color(.systemBackground).opacity(0.60), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .stroke(viewModel.hasError(for: "amount") ? Color.red.opacity(0.55) : Color.white.opacity(0.26), lineWidth: 1)
@@ -165,13 +165,13 @@ struct AddEditExpenseView: View {
                         .padding(.vertical, 8)
                         .background(
                             LinearGradient(
-                                colors: [Color(.systemBackground).opacity(0.70), Color.blue.opacity(0.10)],
+                                colors: [AppDesignSystem.Colors.controlFill, Color.blue.opacity(0.08)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
                             in: Capsule()
                         )
-                        .overlay(Capsule().stroke(Color.white.opacity(0.22), lineWidth: 1))
+                        .overlay(Capsule().stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
             }
@@ -194,10 +194,10 @@ struct AddEditExpenseView: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(viewModel.hasError(for: "title") ? Color.red.opacity(0.55) : Color.white.opacity(0.24), lineWidth: 1)
+                        .stroke(viewModel.hasError(for: "title") ? Color.red.opacity(0.55) : AppDesignSystem.Colors.cardStroke, lineWidth: 1)
                 )
 
                 validationText(for: "title")
@@ -216,10 +216,10 @@ struct AddEditExpenseView: View {
             }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.white.opacity(0.24), lineWidth: 1)
+                        .stroke(AppDesignSystem.Colors.cardStroke, lineWidth: 1)
                 )
 
             categoryPicker
@@ -239,7 +239,7 @@ struct AddEditExpenseView: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             } else if categories.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Label(L10n.Expenses.category, systemImage: "tag.fill")
@@ -254,7 +254,7 @@ struct AddEditExpenseView: View {
                     .font(.caption)
                 }
                 .padding()
-                .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             } else {
                 NavigationLink {
                     CategorySelectorView(
@@ -283,10 +283,10 @@ struct AddEditExpenseView: View {
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 12)
-                    .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(viewModel.hasError(for: "category") ? Color.red.opacity(0.55) : Color.white.opacity(0.24), lineWidth: 1)
+                            .stroke(viewModel.hasError(for: "category") ? Color.red.opacity(0.55) : AppDesignSystem.Colors.cardStroke, lineWidth: 1)
                     )
                 }
                 .buttonStyle(.plain)
@@ -303,10 +303,10 @@ struct AddEditExpenseView: View {
             TextField(L10n.Expenses.optionalNote, text: $viewModel.note, axis: .vertical)
                 .lineLimit(3...6)
                 .padding(14)
-                .background(Color(.systemBackground).opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(AppDesignSystem.Colors.controlFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(viewModel.hasError(for: "note") ? Color.red.opacity(0.55) : Color.white.opacity(0.24), lineWidth: 1)
+                        .stroke(viewModel.hasError(for: "note") ? Color.red.opacity(0.55) : AppDesignSystem.Colors.cardStroke, lineWidth: 1)
                 )
 
             validationText(for: "note")
@@ -598,24 +598,7 @@ private struct ExpenseFormBackground: View {
 private extension View {
     func expenseFormCard(cornerRadius: CGFloat = 22) -> some View {
         self
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(Color(.secondarySystemBackground).opacity(0.90))
-
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.22), Color.blue.opacity(0.07), Color.teal.opacity(0.08)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-                }
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.28), lineWidth: 1)
-            )
-            .shadow(color: Color.black.opacity(0.09), radius: 16, x: 0, y: 9)
+            .fintraxSurface(cornerRadius: cornerRadius, accent: AppDesignSystem.Colors.primary)
     }
 }
 
