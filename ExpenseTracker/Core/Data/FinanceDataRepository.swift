@@ -119,7 +119,7 @@ final class FinanceDataRepository: DashboardSnapshotProviding,
         if DeveloperDataMode.isMockDataEnabled {
             let snapshot = mockStore.snapshot
             AppBadgeService.updateBillBadgeCount(from: snapshot.bills)
-            return DashboardDataSnapshot(
+            let dashboardSnapshot = DashboardDataSnapshot(
                 expenses: snapshot.expenses,
                 categories: snapshot.categories,
                 budgets: snapshot.budgets,
@@ -127,6 +127,8 @@ final class FinanceDataRepository: DashboardSnapshotProviding,
                 incomes: snapshot.incomes,
                 bills: snapshot.bills
             )
+            WidgetBudgetSnapshotService.shared.update(from: dashboardSnapshot)
+            return dashboardSnapshot
         }
 
         async let expenses = dataService.loadExpenses()
@@ -137,7 +139,7 @@ final class FinanceDataRepository: DashboardSnapshotProviding,
         let bills = try store.loadBillReminders()
         AppBadgeService.updateBillBadgeCount(from: bills)
 
-        return try await DashboardDataSnapshot(
+        let dashboardSnapshot = try await DashboardDataSnapshot(
             expenses: expenses,
             categories: categories,
             budgets: budgets,
@@ -145,6 +147,8 @@ final class FinanceDataRepository: DashboardSnapshotProviding,
             incomes: store.loadIncomeRecords(),
             bills: bills
         )
+        WidgetBudgetSnapshotService.shared.update(from: dashboardSnapshot)
+        return dashboardSnapshot
     }
 
     /// Loads the report-facing data set and refreshes the app badge from bills.

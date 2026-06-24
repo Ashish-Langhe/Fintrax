@@ -109,6 +109,12 @@
 		AA000105 /* FintraxAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000105 /* FintraxAppIntents.swift */; };
 		AA000106 /* FintraxSpotlightIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000106 /* FintraxSpotlightIntents.swift */; };
 		AA000107 /* SpotlightIndexingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000107 /* SpotlightIndexingService.swift */; };
+		AA000108 /* WidgetBudgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000108 /* WidgetBudgetSnapshot.swift */; };
+		AA000109 /* WidgetBudgetSnapshotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000109 /* WidgetBudgetSnapshotService.swift */; };
+		AA000110 /* FintraxWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000110 /* FintraxWidgets.swift */; };
+		AA000111 /* WidgetBudgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000108 /* WidgetBudgetSnapshot.swift */; };
+		AA000112 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 902F87892FBB95E50093CBEF /* Localizable.xcstrings */; };
+		AA000113 /* FintraxWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AB000113 /* FintraxWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -119,7 +125,28 @@
 			remoteGlobalIDString = AD000001;
 			remoteInfo = ExpenseTracker;
 		};
+		902F878B2FBB8EE00093CBEF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA090001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AD000004;
+			remoteInfo = FintraxWidgets;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AF000009 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AA000113 /* FintraxWidgets.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		902F87872FBB95E50093CBEF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -226,6 +253,13 @@
 		AB000105 /* FintraxAppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAppIntents.swift; sourceTree = "<group>"; };
 		AB000106 /* FintraxSpotlightIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxSpotlightIntents.swift; sourceTree = "<group>"; };
 		AB000107 /* SpotlightIndexingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndexingService.swift; sourceTree = "<group>"; };
+		AB000108 /* WidgetBudgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBudgetSnapshot.swift; sourceTree = "<group>"; };
+		AB000109 /* WidgetBudgetSnapshotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBudgetSnapshotService.swift; sourceTree = "<group>"; };
+		AB000110 /* FintraxWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxWidgets.swift; sourceTree = "<group>"; };
+		AB000111 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AB000112 /* FintraxWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FintraxWidgets.entitlements; sourceTree = "<group>"; };
+		AB000113 /* FintraxWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FintraxWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB000114 /* ExpenseTracker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ExpenseTracker.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -243,6 +277,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AF000007 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -251,6 +292,7 @@
 			children = (
 				902F87872FBB95E50093CBEF /* Assets.xcassets */,
 				AC000002 /* ExpenseTracker */,
+				AC000045 /* FintraxWidgets */,
 				AC000041 /* Resources */,
 				AC000020 /* Tests */,
 				AC000030 /* Products */,
@@ -260,6 +302,7 @@
 		AC000002 /* ExpenseTracker */ = {
 			isa = PBXGroup;
 			children = (
+				AB000114 /* ExpenseTracker.entitlements */,
 				AC000003 /* AppEntry */,
 				AC000043 /* AppIntents */,
 				AC000004 /* Core */,
@@ -283,6 +326,7 @@
 				AC000040 /* Data */,
 				AC000006 /* Navigation */,
 				AC000007 /* Services */,
+				AC000044 /* Widgets */,
 				AC000031 /* Utils */,
 				AC000032 /* Notifications */,
 			);
@@ -465,6 +509,7 @@
 			isa = PBXGroup;
 			children = (
 				AB000099 /* ExpenseTracker.app */,
+				AB000113 /* FintraxWidgets.appex */,
 				AB000098 /* ExpenseTrackerTests.xctest */,
 			);
 			name = Products;
@@ -588,6 +633,25 @@
 			path = Localization;
 			sourceTree = "<group>";
 		};
+		AC000044 /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				AB000108 /* WidgetBudgetSnapshot.swift */,
+				AB000109 /* WidgetBudgetSnapshotService.swift */,
+			);
+			path = Widgets;
+			sourceTree = "<group>";
+		};
+		AC000045 /* FintraxWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				AB000110 /* FintraxWidgets.swift */,
+				AB000111 /* Info.plist */,
+				AB000112 /* FintraxWidgets.entitlements */,
+			);
+			path = FintraxWidgets;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -598,10 +662,12 @@
 				AF000001 /* Sources */,
 				AF000002 /* Frameworks */,
 				AF000003 /* Resources */,
+				AF000009 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				AD000005 /* PBXTargetDependency */,
 			);
 			name = ExpenseTracker;
 			productName = ExpenseTracker;
@@ -625,6 +691,23 @@
 			productReference = AB000098 /* ExpenseTrackerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		AD000004 /* FintraxWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AE000004 /* Build configuration list for PBXNativeTarget "FintraxWidgets" */;
+			buildPhases = (
+				AF000006 /* Sources */,
+				AF000007 /* Frameworks */,
+				AF000008 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FintraxWidgets;
+			productName = FintraxWidgets;
+			productReference = AB000113 /* FintraxWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -641,6 +724,9 @@
 					AD000002 = {
 						CreatedOnToolsVersion = 15.0;
 						TestTargetID = AD000001;
+					};
+					AD000004 = {
+						CreatedOnToolsVersion = 15.0;
 					};
 				};
 			};
@@ -663,6 +749,7 @@
 			targets = (
 				AD000001 /* ExpenseTracker */,
 				AD000002 /* ExpenseTrackerTests */,
+				AD000004 /* FintraxWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -674,6 +761,14 @@
 			files = (
 				902F87882FBB95E50093CBEF /* Assets.xcassets in Resources */,
 				902F878A2FBB95E50093CBEF /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AF000008 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000112 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -779,6 +874,8 @@
 				AA000106 /* FintraxSpotlightIntents.swift in Sources */,
 				AA000104 /* FintraxIntentService.swift in Sources */,
 				AA000107 /* SpotlightIndexingService.swift in Sources */,
+				AA000108 /* WidgetBudgetSnapshot.swift in Sources */,
+				AA000109 /* WidgetBudgetSnapshotService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -794,6 +891,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AF000006 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000110 /* FintraxWidgets.swift in Sources */,
+				AA000111 /* WidgetBudgetSnapshot.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -801,6 +907,11 @@
 			isa = PBXTargetDependency;
 			target = AD000001 /* ExpenseTracker */;
 			targetProxy = 902F87862FBB8EE00093CBEF /* PBXContainerItemProxy */;
+		};
+		AD000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AD000004 /* FintraxWidgets */;
+			targetProxy = 902F878B2FBB8EE00093CBEF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -854,6 +965,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ExpenseTracker/ExpenseTracker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8PD7G8XX5Y;
@@ -882,6 +994,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ExpenseTracker/ExpenseTracker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8PD7G8XX5Y;
@@ -940,6 +1053,60 @@
 			};
 			name = Release;
 		};
+		AE000040 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = FintraxWidgets/FintraxWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8PD7G8XX5Y;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FintraxWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.globant.ExpenseTracker.FintraxWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AE000041 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = FintraxWidgets/FintraxWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8PD7G8XX5Y;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FintraxWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.globant.ExpenseTracker.FintraxWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -957,6 +1124,15 @@
 			buildConfigurations = (
 				AE000030 /* Debug */,
 				AE000031 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AE000004 /* Build configuration list for PBXNativeTarget "FintraxWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE000040 /* Debug */,
+				AE000041 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

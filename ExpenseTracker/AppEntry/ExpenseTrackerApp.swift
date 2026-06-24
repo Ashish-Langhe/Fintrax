@@ -37,6 +37,9 @@ final class FintraxAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
         Task {
             await SpotlightIndexingService().reindexSelectedDestinations()
         }
+        Task { @MainActor in
+            _ = try? await FinanceDataRepository.shared.loadDashboardSnapshot()
+        }
         return true
     }
 
