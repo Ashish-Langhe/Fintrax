@@ -69,6 +69,7 @@
 		AA000063 /* FintraxAssistantPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063 /* FintraxAssistantPresence.swift */; };
 		AA000064 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000064 /* L10n.swift */; };
 		AA000065 /* ExpenseViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000065 /* ExpenseViewModelTests.swift */; };
+		AA000102 /* BudgetViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000102 /* BudgetViewModelTests.swift */; };
 		AA000066 /* ExpenseListDisplayComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000066 /* ExpenseListDisplayComponents.swift */; };
 		AA000067 /* ExpenseCalendarInsightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000067 /* ExpenseCalendarInsightView.swift */; };
 		AA000068 /* ExpenseFilterSearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000068 /* ExpenseFilterSearchBar.swift */; };
@@ -178,6 +179,7 @@
 		AB000063 /* FintraxAssistantPresence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAssistantPresence.swift; sourceTree = "<group>"; };
 		AB000064 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		AB000065 /* ExpenseViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseViewModelTests.swift; sourceTree = "<group>"; };
+		AB000102 /* BudgetViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetViewModelTests.swift; sourceTree = "<group>"; };
 		AB000066 /* ExpenseListDisplayComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseListDisplayComponents.swift; sourceTree = "<group>"; };
 		AB000067 /* ExpenseCalendarInsightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseCalendarInsightView.swift; sourceTree = "<group>"; };
 		AB000068 /* ExpenseFilterSearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseFilterSearchBar.swift; sourceTree = "<group>"; };
@@ -431,6 +433,7 @@
 			isa = PBXGroup;
 			children = (
 				AB000065 /* ExpenseViewModelTests.swift */,
+				AB000102 /* BudgetViewModelTests.swift */,
 			);
 			path = ViewModelTests;
 			sourceTree = "<group>";
@@ -759,6 +762,7 @@
 				AA000023 /* JSONDataServiceTests.swift in Sources */,
 				AA000061 /* SmartCategoryServiceTests.swift in Sources */,
 				AA000065 /* ExpenseViewModelTests.swift in Sources */,
+				AA000102 /* BudgetViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

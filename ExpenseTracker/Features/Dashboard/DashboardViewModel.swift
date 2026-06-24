@@ -45,6 +45,7 @@ final class DashboardViewModel {
     
     private let repository: any DashboardDataProviding
     private let eventBus: AppEventBus
+    private let userDefaults: UserDefaults
     
     // Monthly budget state
     private var monthlyBudget: MonthlyBudget?
@@ -62,10 +63,12 @@ final class DashboardViewModel {
     @MainActor
     init(
         repository: (any DashboardDataProviding)? = nil,
-        eventBus: AppEventBus? = nil
+        eventBus: AppEventBus? = nil,
+        userDefaults: UserDefaults = .standard
     ) {
         self.repository = repository ?? FinanceDataRepository.shared
         self.eventBus = eventBus ?? .shared
+        self.userDefaults = userDefaults
         setupNotifications()
     }
     
@@ -262,19 +265,31 @@ final class DashboardViewModel {
     
     /// Remaining budget for current month
     var remainingBudget: Decimal {
-        guard let budget = monthlyBudget else { return 0 }
-        return BudgetCalculations.calculateRemainingBudget(budget.amount, expenses: currentExpenses)
+        guard let budgetAmount = activeMonthlyBudgetAmount else { return 0 }
+        return BudgetCalculations.calculateRemainingBudget(budgetAmount, expenses: currentExpenses)
     }
 
     /// Whether a monthly budget has been configured
     var hasMonthlyBudget: Bool {
-        monthlyBudget != nil
+        activeMonthlyBudgetAmount != nil
     }
     
     /// Whether user is over budget
     var isOverBudget: Bool {
-        guard let budget = monthlyBudget else { return false }
-        return BudgetCalculations.isOverBudget(budget.amount, expenses: currentExpenses)
+        guard let budgetAmount = activeMonthlyBudgetAmount else { return false }
+        return BudgetCalculations.isOverBudget(budgetAmount, expenses: currentExpenses)
+    }
+
+    var isBudgetSyncedWithIncome: Bool {
+        userDefaults.bool(forKey: BudgetCalculations.incomeBudgetSyncKey)
+    }
+
+    var activeMonthlyBudgetAmount: Decimal? {
+        BudgetCalculations.activeMonthlyBudgetAmount(
+            manualBudget: monthlyBudget,
+            incomes: currentIncomes,
+            isSyncedWithIncome: isBudgetSyncedWithIncome
+        )
     }
     
     /// Days remaining in current month
