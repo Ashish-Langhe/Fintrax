@@ -9,6 +9,7 @@ import SwiftUI
 import UIKit
 import UserNotifications
 import AppIntents
+import CoreSpotlight
 
 /// Main app entry point
 @main
@@ -33,6 +34,9 @@ final class FintraxAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
         FintraxAppShortcutsProvider.updateAppShortcutParameters()
+        Task {
+            await SpotlightIndexingService().reindexSelectedDestinations()
+        }
         return true
     }
 
@@ -134,19 +138,51 @@ struct ContentView: View {
             isAuthenticated = !isPinGateRequired
             handleAppIntentDestination()
         }
+        .onContinueUserActivity(CSSearchableItemActionType) { activity in
+            handleSpotlightActivity(activity)
+        }
         .withAppDependencies()
+    }
+
+    private func handleSpotlightActivity(_ activity: NSUserActivity) {
+        guard let identifier = activity.userInfo?[SpotlightIndexingService.activityIdentifierKey] as? String,
+              let destination = SpotlightIndexingService().destination(for: identifier) else {
+            return
+        }
+
+        intentRouter.open(destination.appIntentDestination)
+        handleAppIntentDestination()
     }
 
     private func handleAppIntentDestination() {
         guard let destination = intentRouter.pendingDestination else { return }
 
         switch destination {
+        case .dashboard:
+            openTabFromAppIntent(.dashboard, consuming: true)
+        case .expenses:
+            openTabFromAppIntent(.expenseList, consuming: true)
+        case .analytics:
+            openTabFromAppIntent(.analytics, consuming: true)
+        case .budget:
+            openTabFromAppIntent(.budgetSettings, consuming: true)
+        case .settings:
+            openTabFromAppIntent(.settings, consuming: true)
         case .addExpense:
-            hasCompletedOnboarding = true
-            showReturningSplash = false
-            if !isPinGateRequired || isAuthenticated {
-                isAuthenticated = true
-                navigationManager.selectTab(.expenseList)
+            openTabFromAppIntent(.expenseList, consuming: false)
+        case .categories, .income, .bills, .reports:
+            openTabFromAppIntent(.settings, consuming: false)
+        }
+    }
+
+    private func openTabFromAppIntent(_ tab: NavigationDestination, consuming shouldConsume: Bool) {
+        hasCompletedOnboarding = true
+        showReturningSplash = false
+        if !isPinGateRequired || isAuthenticated {
+            isAuthenticated = true
+            navigationManager.selectTab(tab)
+            if shouldConsume {
+                _ = intentRouter.consumePendingDestination()
             }
         }
     }

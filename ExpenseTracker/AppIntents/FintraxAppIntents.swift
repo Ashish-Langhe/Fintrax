@@ -218,5 +218,18 @@ struct FintraxAppShortcutsProvider: AppShortcutsProvider {
             shortTitle: "siri.shortcut.openAddExpense.shortTitle",
             systemImageName: "square.and.pencil"
         )
+
+        AppShortcut(
+            intent: OpenFintraxSpotlightDestinationIntent(),
+            phrases: [
+                "Open \(\.$destination) in \(.applicationName)",
+                "Show \(\.$destination) in \(.applicationName)",
+                "Go to \(\.$destination) in \(.applicationName)",
+                "Find \(\.$destination) in \(.applicationName)",
+                "\(.applicationName) \(\.$destination)"
+            ],
+            shortTitle: "spotlight.shortcut.openDestination.shortTitle",
+            systemImageName: "magnifyingglass.circle.fill"
+        )
     }
 }

@@ -8,21 +8,34 @@
 import SwiftUI
 import UIKit
 
+private enum SettingsSpotlightSheet: String, Identifiable {
+    case categories
+    case income
+    case bills
+    case reports
+
+    var id: String { rawValue }
+}
+
 struct SettingsView: View {
     @EnvironmentObject private var settingsManager: SettingsManager
+    @ObservedObject private var intentRouter = AppIntentNavigationRouter.shared
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
     @AppStorage("pinLockEnabled") private var pinLockEnabled = false
     @AppStorage("appPin") private var appPin = ""
     @AppStorage(DeveloperDataMode.mockDataEnabledKey) private var mockDataEnabled = false
 
     @State private var activeSheet: SettingsSheet?
+    @State private var spotlightSheet: SettingsSpotlightSheet?
     @State private var appSize = "Calculating"
     @State private var appeared = false
     @State private var developerTapCount = 0
     @State private var showDeveloperDataDialog = false
+    @State private var spotlightDestinations: Set<FintraxSpotlightDestination> = []
 
     private let appInfo = AppInfo.current
     private let repository = FinanceDataRepository.shared
+    private let spotlightIndexingService = SpotlightIndexingService()
 
     private var currentLanguage: AppLanguage {
         settingsManager.settings.language
@@ -58,6 +71,7 @@ struct SettingsView: View {
                 VStack(spacing: AppDesignSystem.Spacing.xl) {
                     heroCard
                     financeSection
+                    spotlightSection
                     appearanceSection
                     securitySection
                     deviceSection
@@ -71,11 +85,21 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.large)
         .task {
             appSize = await AppInfo.formattedBundleSize()
+            spotlightDestinations = spotlightIndexingService.selectedDestinations()
+        }
+        .onChange(of: currentLanguage) { _, _ in
+            Task {
+                await spotlightIndexingService.reindexSelectedDestinations()
+            }
         }
         .onAppear {
             withAnimation(.spring(response: 0.62, dampingFraction: 0.86)) {
                 appeared = true
             }
+            presentPendingSpotlightDestinationIfNeeded()
+        }
+        .onChange(of: intentRouter.pendingDestination) { _, _ in
+            presentPendingSpotlightDestinationIfNeeded()
         }
         .sheet(item: $activeSheet) { sheet in
             switch sheet {
@@ -84,6 +108,13 @@ struct SettingsView: View {
                     .presentationDetents([.medium])
                     .presentationDragIndicator(.visible)
             }
+        }
+        .sheet(item: $spotlightSheet) { sheet in
+            NavigationStack {
+                spotlightDestinationView(for: sheet)
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .confirmationDialog(
             "Developer Data Mode",
@@ -185,6 +216,61 @@ struct SettingsView: View {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
+    private func setSpotlightDestination(_ destination: FintraxSpotlightDestination, enabled: Bool) {
+        if enabled {
+            spotlightDestinations.insert(destination)
+        } else {
+            spotlightDestinations.remove(destination)
+        }
+
+        Task {
+            await spotlightIndexingService.setEnabled(enabled, for: destination)
+            await MainActor.run {
+                spotlightDestinations = spotlightIndexingService.selectedDestinations()
+            }
+        }
+    }
+
+    private func isSpotlightDestinationEnabled(_ destination: FintraxSpotlightDestination) -> Binding<Bool> {
+        Binding(
+            get: { spotlightDestinations.contains(destination) },
+            set: { setSpotlightDestination(destination, enabled: $0) }
+        )
+    }
+
+    private func presentPendingSpotlightDestinationIfNeeded() {
+        guard let destination = intentRouter.pendingDestination else { return }
+
+        switch destination {
+        case .categories:
+            spotlightSheet = .categories
+        case .income:
+            spotlightSheet = .income
+        case .bills:
+            spotlightSheet = .bills
+        case .reports:
+            spotlightSheet = .reports
+        default:
+            return
+        }
+
+        _ = intentRouter.consumePendingDestination()
+    }
+
+    @ViewBuilder
+    private func spotlightDestinationView(for destination: SettingsSpotlightSheet) -> some View {
+        switch destination {
+        case .categories:
+            CategoryManagementView()
+        case .income:
+            IncomeTrackingView()
+        case .bills:
+            BillRemindersView()
+        case .reports:
+            PDFReportView()
+        }
+    }
+
     private var appearanceSection: some View {
         SettingsSectionCard(
             title: L10n.Settings.appearanceTitle,
@@ -278,6 +364,65 @@ struct SettingsView: View {
                 )
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    private var spotlightSection: some View {
+        SettingsSectionCard(
+            title: "settings.spotlight.title",
+            subtitle: "settings.spotlight.subtitle",
+            icon: "magnifyingglass.circle.fill",
+            tint: AppDesignSystem.Colors.primary
+        ) {
+            ForEach(FintraxSpotlightDestination.allCases) { destination in
+                SettingsToggleRow(
+                    icon: spotlightIcon(for: destination),
+                    title: destination.titleKey,
+                    subtitle: destination.subtitleKey,
+                    tint: spotlightTint(for: destination),
+                    isOn: isSpotlightDestinationEnabled(destination)
+                )
+            }
+        }
+    }
+
+    private func spotlightIcon(for destination: FintraxSpotlightDestination) -> String {
+        switch destination {
+        case .dashboard:
+            "rectangle.grid.2x2.fill"
+        case .expenses:
+            "creditcard.fill"
+        case .analytics:
+            "chart.line.uptrend.xyaxis"
+        case .budget:
+            "target"
+        case .settings:
+            "slider.horizontal.3"
+        case .income:
+            "arrow.down.circle.fill"
+        case .bills:
+            "bell.badge.fill"
+        case .reports:
+            "doc.richtext.fill"
+        case .categories:
+            "tag.fill"
+        }
+    }
+
+    private func spotlightTint(for destination: FintraxSpotlightDestination) -> Color {
+        switch destination {
+        case .dashboard, .settings:
+            AppDesignSystem.Colors.primary
+        case .expenses, .reports:
+            AppDesignSystem.Colors.info
+        case .analytics:
+            AppDesignSystem.Colors.primaryDark
+        case .budget, .bills:
+            AppDesignSystem.Colors.warning
+        case .income:
+            AppDesignSystem.Colors.success
+        case .categories:
+            AppDesignSystem.Colors.primaryLight
         }
     }
 

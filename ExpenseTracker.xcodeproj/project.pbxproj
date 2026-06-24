@@ -107,6 +107,8 @@
 		AA000103 /* AppIntentNavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000103 /* AppIntentNavigationRouter.swift */; };
 		AA000104 /* FintraxIntentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000104 /* FintraxIntentService.swift */; };
 		AA000105 /* FintraxAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000105 /* FintraxAppIntents.swift */; };
+		AA000106 /* FintraxSpotlightIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000106 /* FintraxSpotlightIntents.swift */; };
+		AA000107 /* SpotlightIndexingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000107 /* SpotlightIndexingService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -222,6 +224,8 @@
 		AB000103 /* AppIntentNavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentNavigationRouter.swift; sourceTree = "<group>"; };
 		AB000104 /* FintraxIntentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxIntentService.swift; sourceTree = "<group>"; };
 		AB000105 /* FintraxAppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAppIntents.swift; sourceTree = "<group>"; };
+		AB000106 /* FintraxSpotlightIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxSpotlightIntents.swift; sourceTree = "<group>"; };
+		AB000107 /* SpotlightIndexingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndexingService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -315,6 +319,7 @@
 			isa = PBXGroup;
 			children = (
 				AB000105 /* FintraxAppIntents.swift */,
+				AB000106 /* FintraxSpotlightIntents.swift */,
 				AB000104 /* FintraxIntentService.swift */,
 			);
 			path = AppIntents;
@@ -331,6 +336,7 @@
 				AB000101 /* FinancialPDFReportRenderer.swift */,
 				AB000013 /* JSONDataService.swift */,
 				AB000060 /* SmartCategoryService.swift */,
+				AB000107 /* SpotlightIndexingService.swift */,
 				AB000040 /* SwiftDataStore.swift */,
 			);
 			path = Services;
@@ -770,7 +776,9 @@
 				AA000056 /* AppBadgeService.swift in Sources */,
 				AA000057 /* DashboardNotificationCenterView.swift in Sources */,
 				AA000105 /* FintraxAppIntents.swift in Sources */,
+				AA000106 /* FintraxSpotlightIntents.swift in Sources */,
 				AA000104 /* FintraxIntentService.swift in Sources */,
+				AA000107 /* SpotlightIndexingService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
