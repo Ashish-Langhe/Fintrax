@@ -69,6 +69,7 @@
 		AA000063 /* FintraxAssistantPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000063 /* FintraxAssistantPresence.swift */; };
 		AA000064 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000064 /* L10n.swift */; };
 		AA000065 /* ExpenseViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000065 /* ExpenseViewModelTests.swift */; };
+		AA000102 /* BudgetViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000102 /* BudgetViewModelTests.swift */; };
 		AA000066 /* ExpenseListDisplayComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000066 /* ExpenseListDisplayComponents.swift */; };
 		AA000067 /* ExpenseCalendarInsightView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000067 /* ExpenseCalendarInsightView.swift */; };
 		AA000068 /* ExpenseFilterSearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000068 /* ExpenseFilterSearchBar.swift */; };
@@ -103,6 +104,9 @@
 		AA000097 /* AnalyticsStatePanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000097 /* AnalyticsStatePanels.swift */; };
 		AA000100 /* ExpenseCSVExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000100 /* ExpenseCSVExporter.swift */; };
 		AA000101 /* FinancialPDFReportRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000101 /* FinancialPDFReportRenderer.swift */; };
+		AA000103 /* AppIntentNavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000103 /* AppIntentNavigationRouter.swift */; };
+		AA000104 /* FintraxIntentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000104 /* FintraxIntentService.swift */; };
+		AA000105 /* FintraxAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000105 /* FintraxAppIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -178,6 +182,7 @@
 		AB000063 /* FintraxAssistantPresence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAssistantPresence.swift; sourceTree = "<group>"; };
 		AB000064 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		AB000065 /* ExpenseViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseViewModelTests.swift; sourceTree = "<group>"; };
+		AB000102 /* BudgetViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetViewModelTests.swift; sourceTree = "<group>"; };
 		AB000066 /* ExpenseListDisplayComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseListDisplayComponents.swift; sourceTree = "<group>"; };
 		AB000067 /* ExpenseCalendarInsightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseCalendarInsightView.swift; sourceTree = "<group>"; };
 		AB000068 /* ExpenseFilterSearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseFilterSearchBar.swift; sourceTree = "<group>"; };
@@ -214,6 +219,9 @@
 		AB000099 /* ExpenseTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExpenseTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000100 /* ExpenseCSVExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseCSVExporter.swift; sourceTree = "<group>"; };
 		AB000101 /* FinancialPDFReportRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancialPDFReportRenderer.swift; sourceTree = "<group>"; };
+		AB000103 /* AppIntentNavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentNavigationRouter.swift; sourceTree = "<group>"; };
+		AB000104 /* FintraxIntentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxIntentService.swift; sourceTree = "<group>"; };
+		AB000105 /* FintraxAppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FintraxAppIntents.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -249,6 +257,7 @@
 			isa = PBXGroup;
 			children = (
 				AC000003 /* AppEntry */,
+				AC000043 /* AppIntents */,
 				AC000004 /* Core */,
 				AC000010 /* Features */,
 			);
@@ -296,9 +305,19 @@
 		AC000006 /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
+				AB000103 /* AppIntentNavigationRouter.swift */,
 				AB000008 /* NavigationManager.swift */,
 			);
 			path = Navigation;
+			sourceTree = "<group>";
+		};
+		AC000043 /* AppIntents */ = {
+			isa = PBXGroup;
+			children = (
+				AB000105 /* FintraxAppIntents.swift */,
+				AB000104 /* FintraxIntentService.swift */,
+			);
+			path = AppIntents;
 			sourceTree = "<group>";
 		};
 		AC000007 /* Services */ = {
@@ -431,6 +450,7 @@
 			isa = PBXGroup;
 			children = (
 				AB000065 /* ExpenseViewModelTests.swift */,
+				AB000102 /* BudgetViewModelTests.swift */,
 			);
 			path = ViewModelTests;
 			sourceTree = "<group>";
@@ -666,6 +686,7 @@
 				AA000006 /* Expense.swift in Sources */,
 				AA000007 /* SupportingTypes.swift in Sources */,
 				AA000008 /* NavigationManager.swift in Sources */,
+				AA000103 /* AppIntentNavigationRouter.swift in Sources */,
 				AA000009 /* BudgetService.swift in Sources */,
 				AA000010 /* CategoryService.swift in Sources */,
 				AA000011 /* ConfigurationService.swift in Sources */,
@@ -748,6 +769,8 @@
 					AA000064 /* L10n.swift in Sources */,
 				AA000056 /* AppBadgeService.swift in Sources */,
 				AA000057 /* DashboardNotificationCenterView.swift in Sources */,
+				AA000105 /* FintraxAppIntents.swift in Sources */,
+				AA000104 /* FintraxIntentService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -759,6 +782,7 @@
 				AA000023 /* JSONDataServiceTests.swift in Sources */,
 				AA000061 /* SmartCategoryServiceTests.swift in Sources */,
 				AA000065 /* ExpenseViewModelTests.swift in Sources */,
+				AA000102 /* BudgetViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

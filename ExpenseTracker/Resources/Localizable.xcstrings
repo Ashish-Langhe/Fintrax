@@ -301,6 +301,9 @@
         }
       }
     },
+    "Add ${title} for ${amount}" : {
+
+    },
     "Add a few expenses or switch to demo data, and I can start answering money questions." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -407,6 +410,9 @@
           }
         }
       }
+    },
+    "Add expense from ${expenseDetails}" : {
+
     },
     "Add expenses to unlock category breakdowns and monthly trends." : {
       "comment" : "Analytics, budget, settings, and finance localization string.",
@@ -546,6 +552,113 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "उत्पन्न जोडा"
+          }
+        }
+      }
+    },
+    "Add income for this month to activate available-money tracking." : {
+      "comment" : "Warning under the income sync switch when no current-month income exists.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge Einkommen für diesen Monat hinzu, um die Verfolgung verfügbaren Geldes zu aktivieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add income for this month to activate available-money tracking."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega ingresos de este mes para activar el seguimiento del dinero disponible."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उपलब्ध धन ट्रैकिंग सक्रिय करने के लिए इस महीने की आय जोड़ें।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उपलब्ध पैशांचे ट्रॅकिंग सक्रिय करण्यासाठी या महिन्याचे उत्पन्न जोडा."
+          }
+        }
+      }
+    },
+    "Add income this month to activate synced budget" : {
+      "comment" : "Budget card subtitle when income sync is on but no income exists this month.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge diesen Monat Einkommen hinzu, um das synchronisierte Budget zu aktivieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add income this month to activate synced budget"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega ingresos este mes para activar el presupuesto sincronizado"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिंक बजट सक्रिय करने के लिए इस महीने आय जोड़ें"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिंक बजेट सक्रिय करण्यासाठी या महिन्यात उत्पन्न जोडा"
+          }
+        }
+      }
+    },
+    "Add income this month to sync your budget with available money." : {
+      "comment" : "Shown when income sync is enabled but there is no current-month income yet.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge diesen Monat Einkommen hinzu, um dein Budget mit verfügbarem Geld zu synchronisieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add income this month to sync your budget with available money."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega ingresos este mes para sincronizar tu presupuesto con el dinero disponible."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उपलब्ध धन के साथ बजट सिंक करने के लिए इस महीने आय जोड़ें।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उपलब्ध पैशांसोबत बजेट सिंक करण्यासाठी या महिन्यात उत्पन्न जोडा."
           }
         }
       }
@@ -2243,6 +2356,42 @@
         }
       }
     },
+    "Available Money" : {
+      "comment" : "Budget card title when budget is synced with income.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verfügbares Geld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available Money"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dinero disponible"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उपलब्ध धन"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उपलब्ध पैसे"
+          }
+        }
+      }
+    },
     "Average Expense" : {
       "comment" : "Analytics, budget, settings, and finance localization string.",
       "extractionState" : "stale",
@@ -3806,6 +3955,9 @@
           }
         }
       }
+    },
+    "Check ${category} spending this month" : {
+
     },
     "Check whether income is missing first; if not, reduce the top two flexible categories." : {
       "extractionState" : "stale",
@@ -15311,6 +15463,78 @@
         }
       }
     },
+    "Manual" : {
+      "comment" : "Label for the saved manual budget amount.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manuell"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैनुअल"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मॅन्युअल"
+          }
+        }
+      }
+    },
+    "Manual budget" : {
+      "comment" : "Budget card subtitle for manual budget mode.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manuelles Budget"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual budget"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presupuesto manual"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैनुअल बजट"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मॅन्युअल बजेट"
+          }
+        }
+      }
+    },
     "Mark paid" : {
       "comment" : "A button that marks a bill as paid.",
       "isCommentAutoGenerated" : true
@@ -16277,6 +16501,42 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "काही नाही"
+          }
+        }
+      }
+    },
+    "Not set" : {
+      "comment" : "Shown when no manual budget exists.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht festgelegt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not set"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin definir"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सेट नहीं"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सेट नाही"
           }
         }
       }
@@ -17300,6 +17560,9 @@
           }
         }
       }
+    },
+    "Open add expense" : {
+
     },
     "Open expenses for this date before month-end review; one unusually heavy day often explains the whole trend." : {
       "extractionState" : "stale",
@@ -20880,8 +21143,45 @@
         }
       }
     },
+    "Set a monthly budget or sync it with income to track your spending." : {
+      "comment" : "Shown in the empty budget state when income sync is off.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lege ein Monatsbudget fest oder synchronisiere es mit deinem Einkommen, um deine Ausgaben zu verfolgen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set a monthly budget or sync it with income to track your spending."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Define un presupuesto mensual o sincronízalo con tus ingresos para controlar tus gastos."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च ट्रैक करने के लिए मासिक बजट सेट करें या उसे आय से सिंक करें।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च ट्रॅक करण्यासाठी मासिक बजेट सेट करा किंवा ते उत्पन्नासोबत सिंक करा."
+          }
+        }
+      }
+    },
     "Set a monthly budget to track your spending and get personalized insights." : {
       "comment" : "Analytics, budget, settings, and finance localization string.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21021,6 +21321,42 @@
         }
       }
     },
+    "Set on" : {
+      "comment" : "Prefix before the manual budget set date.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Festgelegt am"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set on"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Definido el"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सेट किया गया"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सेट केले"
+          }
+        }
+      }
+    },
     "Set On" : {
       "comment" : "Analytics, budget, settings, and finance localization string.",
       "extractionState" : "stale",
@@ -21056,10 +21392,6 @@
           }
         }
       }
-    },
-    "Set on %@" : {
-      "comment" : "A label displaying the date the budget was set.",
-      "isCommentAutoGenerated" : true
     },
     "Set Up Budget" : {
       "comment" : "Analytics, budget, settings, and finance localization string.",
@@ -21532,6 +21864,760 @@
     "Simple Category Selector" : {
       "comment" : "A label displayed above the simple category selector.",
       "isCommentAutoGenerated" : true
+    },
+    "siri.dialog.expenseAdded" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ in %@ für %@ hinzugefügt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %@ in %@ for %@."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadido %@ en %@ por %@."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ को %@ में %@ के लिए जोड़ दिया।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ हा %@ मध्ये %@ साठी जोडला."
+          }
+        }
+      }
+    },
+    "siri.dialog.monthlySpend" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du hast diesen Monat %@ für %@ in %d Transaktionen ausgegeben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You spent %@ on %@ this month across %d transactions."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este mes gastaste %@ en %@ en %d transacciones."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस महीने आपने %@ में %@ खर्च किए, कुल %d लेन-देन में।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "या महिन्यात %@ वर %@ खर्च झाले, एकूण %d व्यवहारांमध्ये."
+          }
+        }
+      }
+    },
+    "siri.dialog.noMonthlySpend" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diesen Monat wurden keine Ausgaben für %@ gefunden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No %@ spending found this month."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró gasto en %@ este mes."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस महीने %@ में कोई खर्च नहीं मिला।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "या महिन्यात %@ मध्ये कोणताही खर्च आढळला नाही."
+          }
+        }
+      }
+    },
+    "siri.dialog.openAddExpense" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgabe erfassen in Fintrax wird geöffnet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opening Add Expense in Fintrax."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abriendo añadir gasto en Fintrax."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fintrax में खर्च जोड़ना खोल रहा हूँ।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fintrax मध्ये खर्च जोडणे उघडत आहे."
+          }
+        }
+      }
+    },
+    "siri.error.categoryNotFound" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ich konnte keine passende Kategorie finden. Nenne bitte eine Kategorie oder füge sie in Fintrax hinzu."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I could not find a matching category. Please include a category or add one in Fintrax."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No encontré una categoría coincidente. Indica una categoría o añádela en Fintrax."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मुझे मेल खाती श्रेणी नहीं मिली। कृपया श्रेणी बताएं या Fintrax में जोड़ें।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जुळणारी श्रेणी सापडली नाही. कृपया श्रेणी सांगा किंवा Fintrax मध्ये जोडा."
+          }
+        }
+      }
+    },
+    "siri.error.invalidExpense" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte gib einen gültigen Ausgabentitel und Betrag an."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please provide a valid expense title and amount."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indica un nombre de gasto y un importe válidos."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कृपया मान्य खर्च शीर्षक और राशि दें।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कृपया योग्य खर्चाचे नाव आणि रक्कम द्या."
+          }
+        }
+      }
+    },
+    "siri.intent.addExpense.description" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge mit Siri eine neue Ausgabe zu Fintrax hinzu."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a new expense to Fintrax using Siri."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade un nuevo gasto a Fintrax con Siri."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri का उपयोग करके Fintrax में नया खर्च जोड़ें।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri वापरून Fintrax मध्ये नवीन खर्च जोडा."
+          }
+        }
+      }
+    },
+    "siri.intent.addExpense.title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgabe hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Expense"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir gasto"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च जोड़ें"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च जोडा"
+          }
+        }
+      }
+    },
+    "siri.intent.monthlySpend.description" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frage, wie viel du diesen Monat in einer Kategorie ausgegeben hast."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask how much you spent in a category this month."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pregunta cuánto gastaste en una categoría este mes."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस महीने किसी श्रेणी में आपने कितना खर्च किया, यह पूछें।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "या महिन्यात एखाद्या श्रेणीत किती खर्च झाला ते विचारा."
+          }
+        }
+      }
+    },
+    "siri.intent.monthlySpend.title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monatsausgaben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly Spend"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto mensual"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मासिक खर्च"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मासिक खर्च"
+          }
+        }
+      }
+    },
+    "siri.intent.openAddExpense.description" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffne Fintrax direkt auf dem Bildschirm zum Hinzufügen einer Ausgabe."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Fintrax directly on the add expense screen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre Fintrax directamente en la pantalla para añadir gastos."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fintrax को सीधे खर्च जोड़ने वाली स्क्रीन पर खोलें।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fintrax थेट खर्च जोडण्याच्या स्क्रीनवर उघडा."
+          }
+        }
+      }
+    },
+    "siri.intent.openAddExpense.title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgabe erfassen öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Add Expense"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir añadir gasto"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च जोड़ना खोलें"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च जोडणे उघडा"
+          }
+        }
+      }
+    },
+    "siri.intent.quickAddExpense.description" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge eine Ausgabe aus einem gesprochenen Satz hinzu, zum Beispiel 250 Kaffee."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add an expense from one spoken phrase, like 250 coffee."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade un gasto desde una frase hablada, como 250 café."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक बोले गए वाक्य से खर्च जोड़ें, जैसे 250 coffee।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एका बोललेल्या वाक्यापासून खर्च जोडा, जसे 250 coffee."
+          }
+        }
+      }
+    },
+    "siri.intent.quickAddExpense.title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgabe schnell hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Add Expense"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir gasto rápido"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "तुरंत खर्च जोड़ें"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "झटपट खर्च जोडा"
+          }
+        }
+      }
+    },
+    "siri.parameter.amount" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Betrag"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importe"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "राशि"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रक्कम"
+          }
+        }
+      }
+    },
+    "siri.parameter.category" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kategorie"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categoría"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "श्रेणी"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "श्रेणी"
+          }
+        }
+      }
+    },
+    "siri.parameter.expense" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgabe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expense"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च"
+          }
+        }
+      }
+    },
+    "siri.parameter.expenseDetails" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgabendetails"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expense Details"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detalles del gasto"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च विवरण"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च तपशील"
+          }
+        }
+      }
+    },
+    "siri.parameter.note" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notiz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "नोट"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "टीप"
+          }
+        }
+      }
+    },
+    "siri.shortcut.addExpense.shortTitle" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgabe hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Expense"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir gasto"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च जोड़ें"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खर्च जोडा"
+          }
+        }
+      }
+    },
+    "siri.shortcut.monthlySpend.shortTitle" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monatsausgaben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly Spend"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto mensual"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मासिक खर्च"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मासिक खर्च"
+          }
+        }
+      }
+    },
+    "siri.shortcut.openAddExpense.shortTitle" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erfassen öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Add"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir añadir"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जोड़ना खोलें"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जोडणे उघडा"
+          }
+        }
+      }
     },
     "sort.amountHighest" : {
       "comment" : "Expenses localization string.",
@@ -22235,6 +23321,112 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "खऱ्या डेटावर जा"
+          }
+        }
+      }
+    },
+    "Sync budget with income" : {
+      "comment" : "Accessibility label for the income sync toggle.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Budget mit Einkommen synchronisieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync budget with income"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizar presupuesto con ingresos"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बजट को आय से सिंक करें"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बजेट उत्पन्नासोबत सिंक करा"
+          }
+        }
+      }
+    },
+    "Sync Budget with Income" : {
+      "comment" : "Title for the Budget screen toggle that syncs budget with monthly income.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Budget mit Einkommen synchronisieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync Budget with Income"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizar presupuesto con ingresos"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बजट को आय से सिंक करें"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बजेट उत्पन्नासोबत सिंक करा"
+          }
+        }
+      }
+    },
+    "Synced with income received this month" : {
+      "comment" : "Budget card subtitle when using current-month income as the budget.",
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit dem diesen Monat erhaltenen Einkommen synchronisiert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synced with income received this month"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizado con los ingresos recibidos este mes"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस महीने प्राप्त आय से सिंक किया गया"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "या महिन्यात मिळालेल्या उत्पन्नासोबत सिंक केले"
           }
         }
       }
@@ -23303,6 +24495,41 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "मॉक डेटा वापरा"
+          }
+        }
+      }
+    },
+    "Use money received this month as your spending limit. Manual budget stays saved." : {
+      "comment" : "Description for income-synced budget mode.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutze das diesen Monat erhaltene Geld als Ausgabenlimit. Das manuelle Budget bleibt gespeichert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use money received this month as your spending limit. Manual budget stays saved."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa el dinero recibido este mes como límite de gasto. El presupuesto manual se conserva."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस महीने प्राप्त धन को खर्च सीमा के रूप में उपयोग करें। मैनुअल बजट सेव रहेगा।"
+          }
+        },
+        "mr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "या महिन्यात मिळालेले पैसे खर्च मर्यादा म्हणून वापरा. मॅन्युअल बजेट सेव्ह राहील."
           }
         }
       }

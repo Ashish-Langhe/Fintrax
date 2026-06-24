@@ -11,6 +11,7 @@ import Foundation
 /// Main expense list view
 struct ExpenseListView: View {
     @StateObject private var viewModel = ExpenseListViewModel()
+    @ObservedObject private var intentRouter = AppIntentNavigationRouter.shared
     @Environment(\.locale) private var locale
     @State private var showingAddExpense = false
     @State private var expenseToEdit: Expense?
@@ -183,7 +184,18 @@ struct ExpenseListView: View {
             .onChange(of: locale.identifier) { _, _ in
                 viewModel.applyFilters()
             }
+            .onAppear {
+                presentPendingIntentDestinationIfNeeded()
+            }
+            .onChange(of: intentRouter.pendingDestination) { _, _ in
+                presentPendingIntentDestinationIfNeeded()
+            }
         }
+    }
+
+    private func presentPendingIntentDestinationIfNeeded() {
+        guard intentRouter.consumePendingDestination() == .addExpense else { return }
+        showingAddExpense = true
     }
     
     private var expenseList: some View {

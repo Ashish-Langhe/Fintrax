@@ -24,6 +24,8 @@ struct BudgetView: View {
 
                 ScrollView {
                     LazyVStack(spacing: 20) {
+                        budgetSyncSection
+
                         // Current budget display card
                         budgetDisplayCard
                         
@@ -43,7 +45,7 @@ struct BudgetView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if viewModel.hasBudget {
+                    if viewModel.currentBudget != nil {
                         Menu {
                             Button("Edit Budget", systemImage: "pencil") {
                                 showingEditSheet = true
@@ -127,25 +129,41 @@ struct BudgetView: View {
     }
     
     // MARK: - Budget Display Card
+
+    private var budgetSyncSection: some View {
+        BudgetIncomeSyncCard(
+            isEnabled: Binding(
+                get: { viewModel.isBudgetSyncedWithIncome },
+                set: { enabled in
+                    Task {
+                        await viewModel.setIncomeBudgetSyncEnabled(enabled)
+                    }
+                }
+            ),
+            incomeThisMonth: viewModel.formatCurrency(viewModel.incomeThisMonth),
+            manualBudget: viewModel.currentBudget.map { viewModel.formatCurrency($0.amount) },
+            isIncomeAvailable: viewModel.incomeThisMonth > 0
+        )
+    }
     
     @ViewBuilder
     private var budgetDisplayCard: some View {
         VStack(spacing: 16) {
-            if let budget = viewModel.currentBudget {
+            if let budgetAmount = viewModel.activeBudgetAmount {
                 VStack(alignment: .leading, spacing: 18) {
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("Monthly Budget")
+                            Text(viewModel.activeBudgetTitle)
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(.secondary)
                                 .textCase(.uppercase)
 
-                            Text(viewModel.formatCurrency(budget.amount))
+                            Text(viewModel.formatCurrency(budgetAmount))
                                 .font(.system(.largeTitle, design: .rounded, weight: .bold))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.70)
 
-                            Text("Set on \(budget.setAt, style: .date)")
+                            Text(viewModel.activeBudgetSubtitle)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -321,16 +339,18 @@ struct BudgetView: View {
                 .font(.title2)
                 .fontWeight(.semibold)
             
-            Text("Set a monthly budget to track your spending and get personalized insights.")
+            Text(LocalizedStringKey(viewModel.isBudgetSyncedWithIncome ? "Add income this month to sync your budget with available money." : "Set a monthly budget or sync it with income to track your spending."))
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
-            Button("Set Up Budget") {
-                showingEditSheet = true
+            if !viewModel.isBudgetSyncedWithIncome {
+                Button("Set Up Budget") {
+                    showingEditSheet = true
+                }
+                .buttonStyle(.borderedProminent)
             }
-            .buttonStyle(.borderedProminent)
         }
         .padding(26)
         .frame(maxWidth: .infinity)
@@ -340,6 +360,72 @@ struct BudgetView: View {
 }
 
 // MARK: - Supporting Views
+
+private struct BudgetIncomeSyncCard: View {
+    @Binding var isEnabled: Bool
+    let incomeThisMonth: String
+    let manualBudget: String?
+    let isIncomeAvailable: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(isEnabled ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.primary)
+                    .frame(width: 42, height: 42)
+                    .background((isEnabled ? AppDesignSystem.Colors.success : AppDesignSystem.Colors.primary).opacity(0.12), in: Circle())
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(LocalizedStringKey("Sync Budget with Income"))
+                        .font(AppDesignSystem.Typography.subheadline.weight(.bold))
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+
+                    Text(LocalizedStringKey("Use money received this month as your spending limit. Manual budget stays saved."))
+                        .font(AppDesignSystem.Typography.caption)
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 6)
+
+                Toggle("", isOn: $isEnabled)
+                    .labelsHidden()
+                    .accessibilityLabel(LocalizedStringKey("Sync budget with income"))
+            }
+
+            HStack(spacing: 10) {
+                BudgetMiniStat(
+                    title: "Income",
+                    value: incomeThisMonth,
+                    icon: "banknote.fill",
+                    tint: isIncomeAvailable ? .green : .secondary
+                )
+
+                BudgetMiniStat(
+                    title: "Manual",
+                    value: manualBudget ?? L10n.string("Not set"),
+                    icon: "slider.horizontal.3",
+                    tint: .blue
+                )
+            }
+
+            if isEnabled && !isIncomeAvailable {
+                HStack(spacing: 8) {
+                    Image(systemName: "info.circle.fill")
+                        .foregroundStyle(AppDesignSystem.Colors.warning)
+                    Text(LocalizedStringKey("Add income for this month to activate available-money tracking."))
+                        .font(AppDesignSystem.Typography.caption)
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                }
+                .padding(10)
+                .fintraxControlFill(cornerRadius: 14)
+            }
+        }
+        .padding(18)
+        .budgetCard(cornerRadius: 20)
+    }
+}
 
 private struct BudgetStatusCard: View {
     let status: BudgetStatus

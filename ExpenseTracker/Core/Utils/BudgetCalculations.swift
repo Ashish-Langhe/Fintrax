@@ -9,6 +9,7 @@ import Foundation
 
 /// Utility functions for budget calculations
 struct BudgetCalculations {
+    static let incomeBudgetSyncKey = "budget.syncWithMonthlyIncome"
     
     /// Calculate total expenses for the current month
     /// - Parameter expenses: Array of expenses to aggregate
@@ -27,6 +28,35 @@ struct BudgetCalculations {
                 expense.date >= startOfMonth && expense.date < endOfMonth
             }
             .reduce(Decimal(0)) { $0 + $1.amount }
+    }
+
+    static func calculateCurrentMonthIncome(_ incomes: [IncomeRecord]) -> Decimal {
+        let calendar = Calendar.current
+        let now = Date()
+
+        guard let startOfMonth = calendar.dateInterval(of: .month, for: now)?.start,
+              let endOfMonth = calendar.dateInterval(of: .month, for: now)?.end else {
+            return .zero
+        }
+
+        return incomes
+            .filter { income in
+                income.date >= startOfMonth && income.date < endOfMonth
+            }
+            .reduce(Decimal(0)) { $0 + $1.amount }
+    }
+
+    static func activeMonthlyBudgetAmount(
+        manualBudget: MonthlyBudget?,
+        incomes: [IncomeRecord],
+        isSyncedWithIncome: Bool
+    ) -> Decimal? {
+        if isSyncedWithIncome {
+            let income = calculateCurrentMonthIncome(incomes)
+            return income > 0 ? income : nil
+        }
+
+        return manualBudget?.amount
     }
     
     /// Calculate total expenses for a specific month

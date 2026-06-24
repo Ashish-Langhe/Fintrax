@@ -38,6 +38,12 @@ final class BudgetViewModel {
     /// Number of transactions this month
     private(set) var currentMonthTransactions: Int = 0
 
+    /// Total income received this month
+    private(set) var incomeThisMonth: Decimal = 0
+
+    /// Whether budget limit is synced with monthly income
+    private(set) var isBudgetSyncedWithIncome: Bool
+
     /// Smart guidance generated from current budget pace
     private(set) var budgetIntelligenceInsights: [BudgetIntelligenceInsight] = []
 
@@ -50,6 +56,9 @@ final class BudgetViewModel {
     // MARK: - Private Properties
     
     private let repository: any BudgetOverviewDataProviding
+    private let userDefaults: UserDefaults
+    private let eventBus: AppEventBus
+    private var currentIncomes: [IncomeRecord] = []
     private var cancellables = Set<AnyCancellable>()
     
     deinit {
@@ -59,8 +68,16 @@ final class BudgetViewModel {
     // MARK: - Initialization
     
     @MainActor
-    init(repository: (any BudgetOverviewDataProviding)? = nil) {
+    init(
+        repository: (any BudgetOverviewDataProviding)? = nil,
+        userDefaults: UserDefaults = .standard,
+        eventBus: AppEventBus? = nil
+    ) {
         self.repository = repository ?? FinanceDataRepository.shared
+        self.userDefaults = userDefaults
+        self.eventBus = eventBus ?? .shared
+        self.isBudgetSyncedWithIncome = userDefaults.bool(forKey: BudgetCalculations.incomeBudgetSyncKey)
+        observeDataChanges()
     }
     
     // MARK: - Public Methods
@@ -74,23 +91,26 @@ final class BudgetViewModel {
             // Load budget and expenses
             async let budget = repository.loadMonthlyBudget()
             async let expenses = repository.loadExpenses()
+            let incomes = try repository.loadIncomeRecords()
             
             let (budgetData, expensesData) = try await (budget, expenses)
             
             currentBudget = budgetData
+            currentIncomes = incomes
+            incomeThisMonth = BudgetCalculations.calculateCurrentMonthIncome(incomes)
             
             // Calculate current month spending
             spentThisMonth = BudgetCalculations.calculateCurrentMonthExpenses(expensesData)
             currentMonthTransactions = BudgetCalculations.getCurrentMonthTransactions(expensesData)
             
             // Calculate budget metrics
-            if let budget = budgetData {
-                remainingBudget = BudgetCalculations.calculateRemainingBudget(budget.amount, expenses: expensesData)
-                budgetStatus = BudgetCalculations.getBudgetStatus(budget.amount, expenses: expensesData)
-                budgetUsagePercentage = BudgetCalculations.calculateBudgetUsagePercentage(budget.amount, expenses: expensesData)
-                recommendedDailySpending = BudgetCalculations.calculateRecommendedDailySpending(budget.amount, expenses: expensesData)
+            if let budgetAmount = activeBudgetAmount {
+                remainingBudget = BudgetCalculations.calculateRemainingBudget(budgetAmount, expenses: expensesData)
+                budgetStatus = BudgetCalculations.getBudgetStatus(budgetAmount, expenses: expensesData)
+                budgetUsagePercentage = BudgetCalculations.calculateBudgetUsagePercentage(budgetAmount, expenses: expensesData)
+                recommendedDailySpending = BudgetCalculations.calculateRecommendedDailySpending(budgetAmount, expenses: expensesData)
                 budgetIntelligenceInsights = Self.makeBudgetIntelligenceInsights(
-                    budgetAmount: budget.amount,
+                    budgetAmount: budgetAmount,
                     spentThisMonth: spentThisMonth,
                     transactionCount: currentMonthTransactions
                 )
@@ -166,6 +186,14 @@ final class BudgetViewModel {
             loadingState = .failure(error)
         }
     }
+
+    @MainActor
+    func setIncomeBudgetSyncEnabled(_ enabled: Bool) async {
+        userDefaults.set(enabled, forKey: BudgetCalculations.incomeBudgetSyncKey)
+        isBudgetSyncedWithIncome = enabled
+        await loadBudgetData()
+        eventBus.post(.budget)
+    }
     
     /// Formats currency amount for display
     func formatCurrency(_ amount: Decimal) -> String {
@@ -176,7 +204,33 @@ final class BudgetViewModel {
     
     /// Whether a budget is set
     var hasBudget: Bool {
-        return currentBudget != nil
+        return activeBudgetAmount != nil
+    }
+
+    var activeBudgetAmount: Decimal? {
+        BudgetCalculations.activeMonthlyBudgetAmount(
+            manualBudget: currentBudget,
+            incomes: currentIncomes,
+            isSyncedWithIncome: isBudgetSyncedWithIncome
+        )
+    }
+
+    var activeBudgetTitle: String {
+        isBudgetSyncedWithIncome ? L10n.string("Available Money") : L10n.string("Monthly Budget")
+    }
+
+    var activeBudgetSubtitle: String {
+        if isBudgetSyncedWithIncome {
+            return incomeThisMonth > 0
+                ? L10n.string("Synced with income received this month")
+                : L10n.string("Add income this month to activate synced budget")
+        }
+
+        if let setAt = currentBudget?.setAt {
+            return L10n.string("Set on") + " " + setAt.formatted(date: .abbreviated, time: .omitted)
+        }
+
+        return L10n.string("Manual budget")
     }
     
     /// Whether the budget is exceeded
@@ -194,6 +248,21 @@ final class BudgetViewModel {
     var currentError: Error? {
         if case .failure(let error) = loadingState { return error }
         return nil
+    }
+
+    @MainActor
+    private func observeDataChanges() {
+        let changes: [AppDataChange] = [.budget, .expense, .income]
+
+        changes.forEach { change in
+            AppEventBus.shared.publisher(for: change)
+                .sink { [weak self] in
+                    Task { @MainActor [weak self] in
+                        await self?.loadBudgetData()
+                    }
+                }
+                .store(in: &cancellables)
+        }
     }
 
     private static func makeBudgetIntelligenceInsights(

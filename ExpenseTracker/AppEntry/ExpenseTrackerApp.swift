@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 import UserNotifications
+import AppIntents
 
 /// Main app entry point
 @main
@@ -31,6 +32,7 @@ final class FintraxAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        FintraxAppShortcutsProvider.updateAppShortcutParameters()
         return true
     }
 
@@ -51,6 +53,7 @@ struct ContentView: View {
     @AppStorage("pinLockEnabled") private var pinLockEnabled = false
     @AppStorage("appPin") private var appPin = ""
     @StateObject private var navigationManager = NavigationManager()
+    @StateObject private var intentRouter = AppIntentNavigationRouter.shared
     @State private var isAuthenticated = false
     @State private var showReturningSplash = true
 
@@ -116,13 +119,36 @@ struct ContentView: View {
         .onChange(of: pinLockEnabled) { _, enabled in
             isAuthenticated = !(enabled && !appPin.isEmpty)
         }
+        .onChange(of: isAuthenticated) { _, authenticated in
+            guard authenticated else { return }
+            handleAppIntentDestination()
+        }
         .onChange(of: appPin) { _, pin in
             isAuthenticated = !(pinLockEnabled && !pin.isEmpty)
         }
+        .onChange(of: intentRouter.pendingDestination) { _, destination in
+            guard destination != nil else { return }
+            handleAppIntentDestination()
+        }
         .onAppear {
             isAuthenticated = !isPinGateRequired
+            handleAppIntentDestination()
         }
         .withAppDependencies()
+    }
+
+    private func handleAppIntentDestination() {
+        guard let destination = intentRouter.pendingDestination else { return }
+
+        switch destination {
+        case .addExpense:
+            hasCompletedOnboarding = true
+            showReturningSplash = false
+            if !isPinGateRequired || isAuthenticated {
+                isAuthenticated = true
+                navigationManager.selectTab(.expenseList)
+            }
+        }
     }
 
     @MainActor

@@ -55,6 +55,11 @@ protocol BudgetDataProviding {
 }
 
 @MainActor
+protocol IncomeDataProviding {
+    func loadIncomeRecords() throws -> [IncomeRecord]
+}
+
+@MainActor
 protocol DashboardSnapshotProviding {
     func loadDashboardSnapshot() async throws -> DashboardDataSnapshot
     func markBillReminderPaid(id billID: UUID) throws
@@ -72,7 +77,7 @@ protocol DeveloperDataModeProviding {
 }
 
 typealias ExpenseListDataProviding = ExpenseDataProviding & CategoryDataProviding
-typealias BudgetOverviewDataProviding = BudgetDataProviding & ExpenseDataProviding
+typealias BudgetOverviewDataProviding = BudgetDataProviding & ExpenseDataProviding & IncomeDataProviding
 typealias DashboardDataProviding = DashboardSnapshotProviding & ExpenseDataProviding
 
 /// Main data facade for Fintrax feature screens.
@@ -86,6 +91,7 @@ final class FinanceDataRepository: DashboardSnapshotProviding,
                                    ExpenseDataProviding,
                                    CategoryDataProviding,
                                    BudgetDataProviding,
+                                   IncomeDataProviding,
                                    ReportSnapshotProviding,
                                    DeveloperDataModeProviding,
                                    Sendable {
