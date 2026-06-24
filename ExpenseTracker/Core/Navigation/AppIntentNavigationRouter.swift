@@ -15,6 +15,10 @@ final class AppIntentNavigationRouter: ObservableObject {
 
     private init() {}
 
+    func open(_ destination: AppIntentDestination) {
+        pendingDestination = destination
+    }
+
     func openAddExpense() {
         pendingDestination = .addExpense
     }
@@ -27,5 +31,14 @@ final class AppIntentNavigationRouter: ObservableObject {
 }
 
 enum AppIntentDestination: Equatable {
+    case dashboard
+    case expenses
+    case analytics
+    case budget
+    case settings
     case addExpense
+    case categories
+    case income
+    case bills
+    case reports
 }
