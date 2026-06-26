@@ -14,11 +14,15 @@ struct PinEntryView: View {
     let onAuthenticated: () -> Void
 
     @AppStorage("appPin") private var appPin = ""
+    @AppStorage("biometricUnlockEnabled") private var biometricUnlockEnabled = false
     @State private var enteredPin = ""
     @State private var showError = false
+    @State private var biometricPromptAttempted = false
     @State private var shakeOffset: CGFloat = 0
     @State private var headerAppeared = false
     @State private var shieldPulse = false
+
+    private let biometricService = BiometricAuthService()
 
     private let keypadRows = [
         ["1", "2", "3"],
@@ -39,6 +43,7 @@ struct PinEntryView: View {
                 VStack(spacing: AppDesignSystem.Spacing.xxl) {
                     pinDots
                     errorMessage
+                    biometricUnlockButton
                     keypad
                 }
                 .padding(.horizontal, AppDesignSystem.Spacing.xxl)
@@ -67,6 +72,8 @@ struct PinEntryView: View {
             withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
                 shieldPulse = true
             }
+
+            authenticateWithBiometricsIfAvailable(automatic: true)
         }
     }
 
@@ -147,6 +154,26 @@ struct PinEntryView: View {
     }
 
     @ViewBuilder
+    private var biometricUnlockButton: some View {
+        let availability = biometricService.availability()
+        if biometricUnlockEnabled, availability.isAvailable {
+            Button {
+                authenticateWithBiometricsIfAvailable(automatic: false)
+            } label: {
+                Label(LocalizedStringKey("biometric.unlock.button"), systemImage: availability.kind.iconName)
+                    .font(AppDesignSystem.Typography.calloutEmphasized)
+                    .foregroundStyle(AppDesignSystem.Colors.primary)
+                    .padding(.horizontal, AppDesignSystem.Spacing.lg)
+                    .padding(.vertical, AppDesignSystem.Spacing.sm)
+                    .background(AppDesignSystem.Colors.primary.opacity(0.12), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .interactiveButton(scaleEffect: 0.96)
+            .accessibilityHint(LocalizedStringKey("biometric.unlock.hint"))
+        }
+    }
+
+    @ViewBuilder
     private func keypadButton(for key: String) -> some View {
         if key.isEmpty {
             Color.clear
@@ -203,16 +230,7 @@ struct PinEntryView: View {
 
     private func validatePin() {
         if enteredPin == appPin {
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-
-            withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
-                headerAppeared = false
-            }
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-                onAuthenticated()
-                enteredPin = ""
-            }
+            completeAuthentication()
         } else {
             UINotificationFeedbackGenerator().notificationOccurred(.error)
             showError = true
@@ -221,6 +239,37 @@ struct PinEntryView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 enteredPin = ""
             }
+        }
+    }
+
+    private func authenticateWithBiometricsIfAvailable(automatic: Bool) {
+        guard biometricUnlockEnabled else { return }
+        let availability = biometricService.availability()
+        guard availability.isAvailable else { return }
+        if automatic {
+            guard !biometricPromptAttempted else { return }
+            biometricPromptAttempted = true
+        }
+
+        Task {
+            let success = await biometricService.authenticate(reason: L10n.string("biometric.unlock.reason"))
+            guard success else { return }
+            await MainActor.run {
+                completeAuthentication()
+            }
+        }
+    }
+
+    private func completeAuthentication() {
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
+            headerAppeared = false
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            onAuthenticated()
+            enteredPin = ""
         }
     }
 

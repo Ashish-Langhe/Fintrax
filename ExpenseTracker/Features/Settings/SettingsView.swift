@@ -17,12 +17,18 @@ private enum SettingsSpotlightSheet: String, Identifiable {
     var id: String { rawValue }
 }
 
+private struct DeveloperBackupShareItem: Identifiable {
+    let id = UUID()
+    let fileURL: URL
+}
+
 struct SettingsView: View {
     @EnvironmentObject private var settingsManager: SettingsManager
     @ObservedObject private var intentRouter = AppIntentNavigationRouter.shared
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = true
     @AppStorage("pinLockEnabled") private var pinLockEnabled = false
     @AppStorage("appPin") private var appPin = ""
+    @AppStorage("biometricUnlockEnabled") private var biometricUnlockEnabled = false
     @AppStorage(DeveloperDataMode.mockDataEnabledKey) private var mockDataEnabled = false
 
     @State private var activeSheet: SettingsSheet?
@@ -31,11 +37,16 @@ struct SettingsView: View {
     @State private var appeared = false
     @State private var developerTapCount = 0
     @State private var showDeveloperDataDialog = false
+    @State private var showDeveloperBackupAlert = false
+    @State private var developerBackupMessage = ""
+    @State private var developerBackupShareItem: DeveloperBackupShareItem?
     @State private var spotlightDestinations: Set<FintraxSpotlightDestination> = []
 
     private let appInfo = AppInfo.current
     private let repository = FinanceDataRepository.shared
     private let spotlightIndexingService = SpotlightIndexingService()
+    private let biometricService = BiometricAuthService()
+    private let developerBackupService = DeveloperDataBackupService()
 
     private var currentLanguage: AppLanguage {
         settingsManager.settings.language
@@ -47,6 +58,10 @@ struct SettingsView: View {
 
     private var headerSubtitle: String {
         L10n.string("settings.header.subtitle", language: currentLanguage)
+    }
+
+    private var biometricAvailability: BiometricAuthService.Availability {
+        biometricService.availability()
     }
 
     private var themeBinding: Binding<ThemeOption> {
@@ -116,6 +131,9 @@ struct SettingsView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
+        .sheet(item: $developerBackupShareItem) { item in
+            ActivityShareSheet(activityItems: [item.fileURL])
+        }
         .confirmationDialog(
             "Developer Data Mode",
             isPresented: $showDeveloperDataDialog,
@@ -136,9 +154,29 @@ struct SettingsView: View {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
 
+            Button("settings.developer.backup.take") {
+                takeDeveloperBackup()
+            }
+
+            Button("settings.developer.backup.fetch") {
+                fetchDeveloperBackup()
+            }
+
+            Button("settings.developer.backup.export") {
+                exportDeveloperBackup()
+            }
+
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("Real data is never deleted. Mock mode is developer-only and replaces app reads with demo data.")
+        }
+        .alert(
+            "settings.developer.backup.alertTitle",
+            isPresented: $showDeveloperBackupAlert
+        ) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(developerBackupMessage)
         }
     }
 
@@ -214,6 +252,65 @@ struct SettingsView: View {
         repository.setMockDataEnabled(enabled)
         mockDataEnabled = enabled
         UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+
+    private func takeDeveloperBackup() {
+        Task {
+            do {
+                let summary = try await developerBackupService.createBackup()
+                await MainActor.run {
+                    developerBackupMessage = L10n.format("settings.developer.backup.success", summary.totalRecords)
+                    showDeveloperBackupAlert = true
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                }
+            } catch {
+                ErrorLogger.log(error, context: "SettingsView.takeDeveloperBackup")
+                await MainActor.run {
+                    developerBackupMessage = L10n.string("settings.developer.backup.failed")
+                    showDeveloperBackupAlert = true
+                    UINotificationFeedbackGenerator().notificationOccurred(.error)
+                }
+            }
+        }
+    }
+
+    private func fetchDeveloperBackup() {
+        Task {
+            do {
+                let summary = try await developerBackupService.restoreLatestBackup()
+                await MainActor.run {
+                    developerBackupMessage = L10n.format("settings.developer.backup.restoreSuccess", summary.totalRecords)
+                    showDeveloperBackupAlert = true
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                }
+            } catch {
+                ErrorLogger.log(error, context: "SettingsView.fetchDeveloperBackup")
+                await MainActor.run {
+                    developerBackupMessage = L10n.string("settings.developer.backup.restoreFailed")
+                    showDeveloperBackupAlert = true
+                    UINotificationFeedbackGenerator().notificationOccurred(.error)
+                }
+            }
+        }
+    }
+
+    private func exportDeveloperBackup() {
+        Task {
+            do {
+                let summary = try await developerBackupService.exportBackup()
+                await MainActor.run {
+                    developerBackupShareItem = DeveloperBackupShareItem(fileURL: summary.fileURL)
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                }
+            } catch {
+                ErrorLogger.log(error, context: "SettingsView.exportDeveloperBackup")
+                await MainActor.run {
+                    developerBackupMessage = L10n.string("settings.developer.backup.exportFailed")
+                    showDeveloperBackupAlert = true
+                    UINotificationFeedbackGenerator().notificationOccurred(.error)
+                }
+            }
+        }
     }
 
     private func setSpotlightDestination(_ destination: FintraxSpotlightDestination, enabled: Bool) {
@@ -457,10 +554,33 @@ struct SettingsView: View {
                             }
                         } else {
                             pinLockEnabled = false
+                            biometricUnlockEnabled = false
                         }
                     }
                 )
             )
+
+            SettingsInfoRow(
+                icon: biometricAvailability.kind.iconName,
+                title: "biometric.settings.status",
+                value: biometricStatusValue,
+                tint: biometricAvailability.isAvailable ? AppDesignSystem.Colors.primary : AppDesignSystem.Colors.textTertiary
+            )
+
+            SettingsToggleRow(
+                icon: biometricAvailability.kind.iconName,
+                title: "biometric.settings.toggle",
+                subtitle: biometricToggleSubtitle,
+                tint: biometricAvailability.isAvailable ? AppDesignSystem.Colors.primary : AppDesignSystem.Colors.textTertiary,
+                isOn: Binding(
+                    get: { biometricUnlockEnabled && pinLockEnabled && biometricAvailability.isAvailable },
+                    set: { enabled in
+                        setBiometricUnlock(enabled)
+                    }
+                )
+            )
+            .disabled(!biometricAvailability.isAvailable)
+            .opacity(biometricAvailability.isAvailable ? 1 : 0.68)
 
             SettingsActionRow(
                 icon: "key.fill",
@@ -469,6 +589,63 @@ struct SettingsView: View {
                 tint: AppDesignSystem.Colors.warning
             ) {
                 activeSheet = .changePin
+            }
+        }
+    }
+
+    private var biometricStatusValue: String {
+        guard biometricAvailability.isAvailable else {
+            return L10n.string("biometric.settings.unavailable")
+        }
+
+        if biometricUnlockEnabled && pinLockEnabled {
+            return L10n.string("biometric.settings.enabled")
+        }
+
+        return L10n.string(biometricAvailability.kind.titleKey)
+    }
+
+    private var biometricToggleSubtitle: String {
+        guard biometricAvailability.isAvailable else {
+            return L10n.string("biometric.settings.unavailableSubtitle")
+        }
+
+        guard !appPin.isEmpty else {
+            return L10n.string("biometric.settings.setPinFirst")
+        }
+
+        return biometricUnlockEnabled ? L10n.string("biometric.settings.unlocksLaunch") : L10n.string("biometric.settings.enableSubtitle")
+    }
+
+    private func setBiometricUnlock(_ enabled: Bool) {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+        guard enabled else {
+            biometricUnlockEnabled = false
+            return
+        }
+
+        guard biometricAvailability.isAvailable else {
+            biometricUnlockEnabled = false
+            return
+        }
+
+        guard !appPin.isEmpty else {
+            activeSheet = .changePin
+            return
+        }
+
+        Task {
+            let success = await biometricService.authenticate(reason: L10n.string("biometric.settings.enableReason"))
+            await MainActor.run {
+                if success {
+                    pinLockEnabled = true
+                    biometricUnlockEnabled = true
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                } else {
+                    biometricUnlockEnabled = false
+                    UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                }
             }
         }
     }
@@ -520,6 +697,16 @@ struct SettingsView: View {
         }
     }
 
+}
+
+private struct ActivityShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) { }
 }
 
 #Preview {

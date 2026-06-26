@@ -372,9 +372,3 @@ private func inlineText(for snapshot: WidgetBudgetSnapshot) -> String {
 
     return String(format: localized("widget.budget.inlineLeft"), amount)
 }
-
-#Preview(as: .systemSmall) {
-    FintraxBudgetWidget()
-} timeline: {
-    FintraxBudgetEntry(date: .now, snapshot: .placeholder)
-}
