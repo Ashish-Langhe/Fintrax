@@ -115,6 +115,8 @@
 		AA000111 /* WidgetBudgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000108 /* WidgetBudgetSnapshot.swift */; };
 		AA000112 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 902F87892FBB95E50093CBEF /* Localizable.xcstrings */; };
 		AA000113 /* FintraxWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AB000113 /* FintraxWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AA000114 /* BiometricAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000115 /* BiometricAuthService.swift */; };
+		AA000115 /* DeveloperDataBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000116 /* DeveloperDataBackupService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -260,6 +262,8 @@
 		AB000112 /* FintraxWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FintraxWidgets.entitlements; sourceTree = "<group>"; };
 		AB000113 /* FintraxWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FintraxWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB000114 /* ExpenseTracker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ExpenseTracker.entitlements; sourceTree = "<group>"; };
+		AB000115 /* BiometricAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthService.swift; sourceTree = "<group>"; };
+		AB000116 /* DeveloperDataBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperDataBackupService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -374,7 +378,9 @@
 			children = (
 				AB000009 /* BudgetService.swift */,
 				AB000010 /* CategoryService.swift */,
+				AB000115 /* BiometricAuthService.swift */,
 				AB000011 /* ConfigurationService.swift */,
+				AB000116 /* DeveloperDataBackupService.swift */,
 				AB000012 /* ExportService.swift */,
 				AB000100 /* ExpenseCSVExporter.swift */,
 				AB000101 /* FinancialPDFReportRenderer.swift */,
@@ -876,6 +882,8 @@
 				AA000107 /* SpotlightIndexingService.swift in Sources */,
 				AA000108 /* WidgetBudgetSnapshot.swift in Sources */,
 				AA000109 /* WidgetBudgetSnapshotService.swift in Sources */,
+				AA000114 /* BiometricAuthService.swift in Sources */,
+				AA000115 /* DeveloperDataBackupService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -972,6 +980,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Fintrax;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to unlock Fintrax securely.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1001,6 +1010,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Fintrax;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to unlock Fintrax securely.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

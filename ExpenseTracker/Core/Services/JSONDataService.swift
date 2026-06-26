@@ -212,6 +212,20 @@ class JSONDataService: ObservableObject, Sendable {
         budgets[index] = budget
         try await saveToFile(budgets, fileName: FileName.budgets)
     }
+
+    func upsertBudget(_ budget: Budget) async throws {
+        var budgets = try await loadBudgets()
+
+        if let index = budgets.firstIndex(where: { $0.id == budget.id }) {
+            budgets[index] = budget
+        } else if let index = budgets.firstIndex(where: { $0.categoryID == budget.categoryID }) {
+            budgets[index] = budget
+        } else {
+            budgets.append(budget)
+        }
+
+        try await saveToFile(budgets, fileName: FileName.budgets)
+    }
     
     /// Delete a budget from persistent storage
     /// - Parameter budgetID: ID of the budget to delete
