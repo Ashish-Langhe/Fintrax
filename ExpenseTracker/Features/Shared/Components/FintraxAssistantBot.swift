@@ -16,47 +16,6 @@ struct FintraxAssistantBot: View {
 
     var body: some View {
         ZStack {
-            assistantAura
-
-            RoundedRectangle(cornerRadius: size * 0.34, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            AppDesignSystem.Colors.elevatedSurface.opacity(0.82),
-                            AppDesignSystem.Colors.primary.opacity(0.18),
-                            AppDesignSystem.Colors.info.opacity(0.12)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: size * 1.02, height: size * 1.02)
-                .overlay {
-                    RoundedRectangle(cornerRadius: size * 0.34, style: .continuous)
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.48),
-                                    AppDesignSystem.Colors.info.opacity(0.26),
-                                    AppDesignSystem.Colors.primary.opacity(0.18)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
-                }
-                .shadow(color: AppDesignSystem.Colors.primary.opacity(0.18), radius: size * 0.22, x: 0, y: size * 0.12)
-                .scaleEffect(breath ? 1.015 : 0.985)
-                .offset(y: size * 0.05)
-
-            Ellipse()
-                .fill(Color.black.opacity(0.24))
-                .frame(width: size * 0.86, height: size * 0.19)
-                .blur(radius: size * 0.045)
-                .offset(y: size * 0.53)
-                .scaleEffect(x: hover ? 0.92 : 1.08, y: hover ? 0.82 : 1.0)
-
             Image("FintraxAssistantMascot")
                 .resizable()
                 .scaledToFit()
@@ -88,34 +47,6 @@ struct FintraxAssistantBot: View {
                 eyeGlint = true
             }
         }
-    }
-
-    private var assistantAura: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: size * 0.40, style: .continuous)
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            AppDesignSystem.Colors.info.opacity(isThinking ? 0.34 : 0.26),
-                            AppDesignSystem.Colors.primary.opacity(isThinking ? 0.24 : 0.18),
-                            Color.clear
-                        ],
-                        center: .center,
-                        startRadius: size * 0.12,
-                        endRadius: size * 0.78
-                    )
-                )
-                .frame(width: size * 1.48, height: size * 1.32)
-                .scaleEffect(breath ? 1.06 : 0.94)
-                .blur(radius: size * 0.035)
-
-            RoundedRectangle(cornerRadius: size * 0.38, style: .continuous)
-                .fill(AppDesignSystem.Colors.info.opacity(0.10))
-                .frame(width: size * 1.24, height: size * 1.14)
-                .scaleEffect(breath ? 1.04 : 0.98)
-                .blur(radius: size * 0.08)
-        }
-        .offset(y: size * 0.02)
     }
 
     private var animatedEyes: some View {
