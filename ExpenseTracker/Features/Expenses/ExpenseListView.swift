@@ -191,6 +191,7 @@ struct ExpenseListView: View {
                 presentPendingIntentDestinationIfNeeded()
             }
         }
+        .fintraxAssistantPresence()
     }
 
     private func presentPendingIntentDestinationIfNeeded() {
