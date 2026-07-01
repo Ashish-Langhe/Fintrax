@@ -97,7 +97,13 @@ enum AssistantInsightEngine {
             highestSpendDayInsight(expenses: expenses, totalSpend: totalSpend, calendar: calendar),
             bestSavingDayInsight(expenses: expenses, calendar: calendar),
             foodInsight(expenses: expenses, totalSpend: totalSpend, categoryMap: categoryMap),
-            budgetRiskInsight(expenses: expenses, monthlyBudget: snapshot.monthlyBudget, now: now, calendar: calendar),
+            budgetRiskInsight(
+                expenses: expenses,
+                activeBudgetAmount: snapshot.activeMonthlyBudgetAmount(),
+                isSyncedWithIncome: UserDefaults.standard.bool(forKey: BudgetCalculations.incomeBudgetSyncKey),
+                now: now,
+                calendar: calendar
+            ),
             cashFlowInsight(totalIncome: totalIncome, totalSpend: totalSpend, incomes: incomes, expenses: expenses),
             frequentSpendInsight(expenses: expenses, categoryMap: categoryMap)
         ]
@@ -131,12 +137,27 @@ enum AssistantInsightEngine {
 
     private static func bestSavingDayInsight(expenses: [Expense], calendar: Calendar) -> AssistantInsight {
         let today = calendar.startOfDay(for: Date())
-        let grouped = Dictionary(grouping: expenses) { calendar.startOfDay(for: $0.date) }
-        let daysWithSpend = grouped
-            .map { (date: $0.key, amount: $0.value.reduce(Decimal.zero) { $0 + $1.amount }, count: $0.value.count) }
-            .filter { $0.date <= today }
+        guard let month = calendar.dateInterval(of: .month, for: today) else {
+            return emptyInsight(promptID: "saving-day", message: L10n.string("No expense days found for this month yet."))
+        }
 
-        guard let lowest = daysWithSpend.min(by: { $0.amount < $1.amount }) else {
+        let grouped = Dictionary(grouping: expenses) { calendar.startOfDay(for: $0.date) }
+        let elapsedDays = dates(from: month.start, through: today, calendar: calendar)
+        let dailyTotals = elapsedDays.map { date in
+            let dayExpenses = grouped[date] ?? []
+            return (
+                date: date,
+                amount: dayExpenses.reduce(Decimal.zero) { $0 + $1.amount },
+                count: dayExpenses.count
+            )
+        }
+
+        guard let lowest = dailyTotals.min(by: {
+            if $0.amount != $1.amount {
+                return $0.amount < $1.amount
+            }
+            return $0.date > $1.date
+        }) else {
             return emptyInsight(promptID: "saving-day", message: L10n.string("No expense days found for this month yet."))
         }
 
@@ -150,7 +171,7 @@ enum AssistantInsightEngine {
             tint: AppDesignSystem.Colors.success,
             detailRows: [
                 AssistantInsightRow(icon: "indianrupeesign.circle.fill", title: "Lowest day total", value: CurrencyFormatter.format(lowest.amount)),
-                AssistantInsightRow(icon: "calendar", title: "Tracked spend days", value: "\(daysWithSpend.count)")
+                AssistantInsightRow(icon: "calendar", title: "Tracked days", value: "\(dailyTotals.count)")
             ]
         )
     }
@@ -183,14 +204,24 @@ enum AssistantInsightEngine {
         )
     }
 
-    private static func budgetRiskInsight(expenses: [Expense], monthlyBudget: MonthlyBudget?, now: Date, calendar: Calendar) -> AssistantInsight {
-        guard let monthlyBudget else {
+    private static func budgetRiskInsight(
+        expenses: [Expense],
+        activeBudgetAmount: Decimal?,
+        isSyncedWithIncome: Bool,
+        now: Date,
+        calendar: Calendar
+    ) -> AssistantInsight {
+        guard let activeBudgetAmount else {
             return AssistantInsight(
                 promptID: "budget-risk",
                 title: "Budget risk",
-                value: L10n.string("Budget not set"),
-                message: L10n.string("I can analyze budget pace once a monthly budget is configured."),
-                action: L10n.string("Set a monthly budget to unlock risk, safe daily spend, and month-end projection."),
+                value: isSyncedWithIncome ? L10n.string("Income not recorded") : L10n.string("Budget not set"),
+                message: isSyncedWithIncome
+                    ? L10n.string("I can analyze budget pace once income is recorded for this month.")
+                    : L10n.string("I can analyze budget pace once a monthly budget is configured."),
+                action: isSyncedWithIncome
+                    ? L10n.string("Add income this month so synced budget can use your available money.")
+                    : L10n.string("Set a monthly budget to unlock risk, safe daily spend, and month-end projection."),
                 icon: "target",
                 tint: AppDesignSystem.Colors.warning,
                 detailRows: []
@@ -198,14 +229,14 @@ enum AssistantInsightEngine {
         }
 
         let spent = expenses.reduce(Decimal.zero) { $0 + $1.amount }
-        let usage = monthlyBudget.amount > 0 ? NSDecimalNumber(decimal: spent / monthlyBudget.amount).doubleValue : 0
+        let usage = activeBudgetAmount > 0 ? NSDecimalNumber(decimal: spent / activeBudgetAmount).doubleValue : 0
         let range = calendar.range(of: .day, in: .month, for: now)
         let day = max(calendar.component(.day, from: now), 1)
         let totalDays = max(range?.count ?? day, day)
         let daysLeft = max(totalDays - day, 0)
         let currentDaily = spent / Decimal(day)
         let projected = currentDaily * Decimal(totalDays)
-        let remaining = monthlyBudget.amount - spent
+        let remaining = activeBudgetAmount - spent
         let safeDaily = daysLeft > 0 ? max(remaining, .zero) / Decimal(daysLeft) : .zero
         let tint: Color = usage >= 1 ? AppDesignSystem.Colors.error : usage >= 0.8 ? AppDesignSystem.Colors.warning : AppDesignSystem.Colors.info
 
@@ -220,7 +251,7 @@ enum AssistantInsightEngine {
             icon: usage >= 1 ? "exclamationmark.triangle.fill" : "target",
             tint: tint,
             detailRows: [
-                AssistantInsightRow(icon: "wallet.pass.fill", title: "Budget", value: CurrencyFormatter.format(monthlyBudget.amount)),
+                AssistantInsightRow(icon: "wallet.pass.fill", title: isSyncedWithIncome ? "Available money" : "Budget", value: CurrencyFormatter.format(activeBudgetAmount)),
                 AssistantInsightRow(icon: "arrow.down.forward.circle.fill", title: "Safe daily", value: CurrencyFormatter.format(safeDaily))
             ]
         )
@@ -313,5 +344,19 @@ enum AssistantInsightEngine {
             .filter { !$0.isEmpty }
             .prefix(3)
             .joined(separator: " ")
+    }
+
+    private static func dates(from startDate: Date, through endDate: Date, calendar: Calendar) -> [Date] {
+        var dates: [Date] = []
+        var date = calendar.startOfDay(for: startDate)
+        let end = calendar.startOfDay(for: endDate)
+
+        while date <= end {
+            dates.append(date)
+            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: date) else { break }
+            date = nextDate
+        }
+
+        return dates
     }
 }
