@@ -18,6 +18,14 @@ struct DashboardDataSnapshot: Sendable {
     let monthlyBudget: MonthlyBudget?
     let incomes: [IncomeRecord]
     let bills: [BillReminder]
+
+    func activeMonthlyBudgetAmount(userDefaults: UserDefaults = .standard) -> Decimal? {
+        BudgetCalculations.activeMonthlyBudgetAmount(
+            manualBudget: monthlyBudget,
+            incomes: incomes,
+            isSyncedWithIncome: userDefaults.bool(forKey: BudgetCalculations.incomeBudgetSyncKey)
+        )
+    }
 }
 
 /// Aggregates the finance data required by export/report generation.

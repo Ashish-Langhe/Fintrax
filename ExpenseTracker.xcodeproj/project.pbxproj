@@ -117,6 +117,8 @@
 		AA000113 /* FintraxWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AB000113 /* FintraxWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AA000114 /* BiometricAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000115 /* BiometricAuthService.swift */; };
 		AA000115 /* DeveloperDataBackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000116 /* DeveloperDataBackupService.swift */; };
+		AA000116 /* FinnyVoiceIOService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000117 /* FinnyVoiceIOService.swift */; };
+		AA000117 /* FinnyVoiceCommandService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000118 /* FinnyVoiceCommandService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -264,6 +266,8 @@
 		AB000114 /* ExpenseTracker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ExpenseTracker.entitlements; sourceTree = "<group>"; };
 		AB000115 /* BiometricAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthService.swift; sourceTree = "<group>"; };
 		AB000116 /* DeveloperDataBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperDataBackupService.swift; sourceTree = "<group>"; };
+		AB000117 /* FinnyVoiceIOService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnyVoiceIOService.swift; sourceTree = "<group>"; };
+		AB000118 /* FinnyVoiceCommandService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnyVoiceCommandService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -455,6 +459,8 @@
 					AB000077 /* FintraxAssistantBot.swift */,
 					AB000078 /* AssistantInsightComponents.swift */,
 					AB000079 /* AssistantInsightEngine.swift */,
+					AB000117 /* FinnyVoiceIOService.swift */,
+					AB000118 /* FinnyVoiceCommandService.swift */,
 				);
 			path = Components;
 			sourceTree = "<group>";
@@ -884,6 +890,8 @@
 				AA000109 /* WidgetBudgetSnapshotService.swift in Sources */,
 				AA000114 /* BiometricAuthService.swift in Sources */,
 				AA000115 /* DeveloperDataBackupService.swift in Sources */,
+				AA000116 /* FinnyVoiceIOService.swift in Sources */,
+				AA000117 /* FinnyVoiceCommandService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -981,6 +989,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Fintrax;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to unlock Fintrax securely.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Finny uses the microphone to understand your finance voice commands.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Finny uses speech recognition to turn your voice commands into finance actions.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -1011,6 +1021,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Fintrax;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to unlock Fintrax securely.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Finny uses the microphone to understand your finance voice commands.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Finny uses speech recognition to turn your voice commands into finance actions.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

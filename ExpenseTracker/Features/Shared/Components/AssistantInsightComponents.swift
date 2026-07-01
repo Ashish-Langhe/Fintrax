@@ -204,3 +204,141 @@ struct AssistantPromptChip: View {
         )
     }
 }
+
+struct VoiceWaveformView: View {
+    @State private var phase = false
+
+    private let heights: [CGFloat] = [16, 28, 20, 34, 24]
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(Array(heights.enumerated()), id: \.offset) { index, height in
+                Capsule()
+                    .fill(AppDesignSystem.Colors.primary.gradient)
+                    .frame(width: 4, height: phase ? height : max(8, height * 0.48))
+                    .animation(
+                        .easeInOut(duration: 0.52)
+                            .repeatForever(autoreverses: true)
+                            .delay(Double(index) * 0.06),
+                        value: phase
+                    )
+            }
+        }
+        .frame(width: 42, height: 38)
+        .onAppear {
+            phase = true
+        }
+    }
+}
+
+struct FinnyVoiceResponseCard: View {
+    let response: FinnyVoiceResponse
+    let isSaving: Bool
+    let onConfirm: (FinnyVoiceExpenseDraft) -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 13) {
+            HStack(alignment: .top, spacing: 11) {
+                Image(systemName: response.icon)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 38, height: 38)
+                    .background(response.tint.gradient, in: Circle())
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(response.title)
+                        .font(AppDesignSystem.Typography.calloutEmphasized)
+                        .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+
+                    Text(response.message)
+                        .font(AppDesignSystem.Typography.caption.weight(.medium))
+                        .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            if !response.detailRows.isEmpty {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                    ForEach(response.detailRows) { row in
+                        HStack(spacing: 8) {
+                            Image(systemName: row.icon)
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(response.tint)
+                                .frame(width: 24, height: 24)
+                                .background(response.tint.opacity(0.12), in: Circle())
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(row.title)
+                                    .font(AppDesignSystem.Typography.caption2.weight(.bold))
+                                    .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                                    .textCase(.uppercase)
+
+                                Text(row.value)
+                                    .font(AppDesignSystem.Typography.caption.weight(.bold))
+                                    .foregroundStyle(AppDesignSystem.Colors.textPrimary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                            }
+                        }
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AppDesignSystem.Colors.surfaceVariant.opacity(0.30), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                }
+            }
+
+            if let draft = response.pendingExpense {
+                HStack(spacing: 10) {
+                    Button {
+                        onConfirm(draft)
+                    } label: {
+                        HStack(spacing: 8) {
+                            if isSaving {
+                                ProgressView()
+                                    .tint(.white)
+                                    .controlSize(.small)
+                            } else {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.caption.weight(.bold))
+                            }
+
+                            Text(L10n.string("assistant.voice.saveExpense"))
+                                .font(AppDesignSystem.Typography.caption.weight(.bold))
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 11)
+                        .background(response.tint.gradient, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isSaving)
+
+                    Button {
+                        onDismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(AppDesignSystem.Colors.textSecondary)
+                            .frame(width: 42, height: 42)
+                            .background(AppDesignSystem.Colors.surfaceVariant.opacity(0.42), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isSaving)
+                    .accessibilityLabel(L10n.string("assistant.voice.dismiss"))
+                }
+            }
+        }
+        .padding(15)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(response.tint.opacity(0.08))
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(response.tint.opacity(0.16), lineWidth: 1)
+        }
+    }
+}

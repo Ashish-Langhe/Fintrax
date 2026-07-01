@@ -21,11 +21,7 @@ struct WidgetBudgetSnapshotService {
 
     func update(from snapshot: DashboardDataSnapshot) {
         let isSyncedWithIncome = userDefaults.bool(forKey: BudgetCalculations.incomeBudgetSyncKey)
-        let activeBudget = BudgetCalculations.activeMonthlyBudgetAmount(
-            manualBudget: snapshot.monthlyBudget,
-            incomes: snapshot.incomes,
-            isSyncedWithIncome: isSyncedWithIncome
-        )
+        let activeBudget = snapshot.activeMonthlyBudgetAmount(userDefaults: userDefaults)
         let spent = BudgetCalculations.calculateCurrentMonthExpenses(snapshot.expenses)
         let remaining = activeBudget.map { $0 - spent }
         let usage = activeBudget.map {

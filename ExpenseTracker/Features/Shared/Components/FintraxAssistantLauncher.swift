@@ -7,6 +7,7 @@ import SwiftUI
 
 struct FintraxAssistantLauncher: View {
     let entrance: FintraxAssistantEntrance
+    let dockSide: FintraxAssistantDockSide
     let action: () -> Void
     @State private var isBlinking = false
     @State private var shimmer = false
@@ -21,7 +22,7 @@ struct FintraxAssistantLauncher: View {
             }
         } label: {
             HStack(alignment: .bottom, spacing: 8) {
-                if showGreeting {
+                if showGreeting && dockSide == .trailing {
                     assistantGreeting
                         .transition(.asymmetric(
                             insertion: .opacity.combined(with: .move(edge: .trailing)).combined(with: .scale(scale: 0.96)),
@@ -35,6 +36,14 @@ struct FintraxAssistantLauncher: View {
                             arrivalTrail
                         }
                     }
+
+                if showGreeting && dockSide == .leading {
+                    assistantGreeting
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .move(edge: .leading)).combined(with: .scale(scale: 0.96)),
+                            removal: .opacity.combined(with: .scale(scale: 0.98))
+                        ))
+                }
             }
         }
         .buttonStyle(.plain)
@@ -84,11 +93,12 @@ struct FintraxAssistantLauncher: View {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.94))
             )
-            .overlay(alignment: .trailing) {
+            .overlay(alignment: dockSide == .trailing ? .trailing : .leading) {
                 TrianglePointer()
                     .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.94))
                     .frame(width: 10, height: 14)
-                    .offset(x: 8)
+                    .scaleEffect(x: dockSide == .trailing ? 1 : -1, y: 1)
+                    .offset(x: dockSide == .trailing ? 8 : -8)
             }
             .overlay {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -142,6 +152,11 @@ struct FintraxAssistantLauncher: View {
             }
         }
     }
+}
+
+enum FintraxAssistantDockSide {
+    case leading
+    case trailing
 }
 
 private struct TrianglePointer: Shape {
