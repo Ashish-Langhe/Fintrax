@@ -15,12 +15,18 @@ class ExpenseListViewModel: ObservableObject {
     @Published var expenses: [Expense] = []
     @Published var filteredExpenses: [Expense] = []
     @Published var isLoading = false
-    @Published var selectedCategory: UUID?
-    @Published var selectedDateRange: DateRangeOption = .allTime
+    @Published var selectedCategory: UUID? {
+        didSet { persistFilterSelection() }
+    }
+    @Published var selectedDateRange: DateRangeOption = ExpenseFilterPersistence.defaultDateRange {
+        didSet { persistFilterSelection() }
+    }
     @Published var searchText = ""
     @Published private(set) var smartSearchSummary: String?
     @Published var loadingState: LoadingState<Void> = .idle
-    @Published var sortOption: SortOption = .dateDescending
+    @Published var sortOption: SortOption = .dateDescending {
+        didSet { persistFilterSelection() }
+    }
     @Published var showingDeleteAlert = false
     @Published var expenseToDelete: Expense?
     @Published var isRefreshing = false
@@ -38,6 +44,10 @@ class ExpenseListViewModel: ObservableObject {
         // Initialize services without circular dependency
         self.repository = repository ?? FinanceDataRepository.shared
         self.categoryService = CategoryService.shared
+        let savedFilters = ExpenseFilterPersistence.load()
+        self.selectedCategory = savedFilters.categoryID
+        self.selectedDateRange = savedFilters.dateRange
+        self.sortOption = savedFilters.sortOption
     }
     
     // MARK: - Public Methods
@@ -57,6 +67,7 @@ class ExpenseListViewModel: ObservableObject {
             
             expenses = loadedExpenses
             categories = loadedCategories
+            clearUnavailablePersistedCategoryIfNeeded()
             currentPage = 0
             hasMorePages = loadedExpenses.count > pageSize
             
@@ -238,7 +249,7 @@ class ExpenseListViewModel: ObservableObject {
     /// Reset filters
     func resetFilters() {
         selectedCategory = nil
-        selectedDateRange = .allTime
+        selectedDateRange = ExpenseFilterPersistence.defaultDateRange
         searchText = ""
         sortOption = .dateDescending
         applyFilters()
@@ -257,9 +268,55 @@ class ExpenseListViewModel: ObservableObject {
     /// Check if any filters are applied
     func hasActiveFilters() -> Bool {
         return selectedCategory != nil || 
-               selectedDateRange != .allTime || 
+               selectedDateRange != ExpenseFilterPersistence.defaultDateRange ||
                !searchText.isEmpty ||
                sortOption != .dateDescending
+    }
+
+    private func persistFilterSelection() {
+        ExpenseFilterPersistence.save(
+            categoryID: selectedCategory,
+            dateRange: selectedDateRange,
+            sortOption: sortOption
+        )
+    }
+
+    private func clearUnavailablePersistedCategoryIfNeeded() {
+        guard let selectedCategory, !categories.contains(where: { $0.id == selectedCategory }) else { return }
+        self.selectedCategory = nil
+    }
+}
+
+private enum ExpenseFilterPersistence {
+    static let defaultDateRange: DateRangeOption = .thisMonth
+
+    private enum Key {
+        static let categoryID = "expenses.filter.selectedCategoryID"
+        static let dateRange = "expenses.filter.selectedDateRange"
+        static let sortOption = "expenses.filter.sortOption"
+    }
+
+    static func load(userDefaults: UserDefaults = .standard) -> (categoryID: UUID?, dateRange: DateRangeOption, sortOption: SortOption) {
+        let categoryID = userDefaults.string(forKey: Key.categoryID).flatMap(UUID.init(uuidString:))
+        let dateRange = DateRangeOption(rawValue: userDefaults.string(forKey: Key.dateRange) ?? "") ?? defaultDateRange
+        let sortOption = SortOption(rawValue: userDefaults.string(forKey: Key.sortOption) ?? "") ?? .dateDescending
+        return (categoryID, dateRange, sortOption)
+    }
+
+    static func save(
+        categoryID: UUID?,
+        dateRange: DateRangeOption,
+        sortOption: SortOption,
+        userDefaults: UserDefaults = .standard
+    ) {
+        if let categoryID {
+            userDefaults.set(categoryID.uuidString, forKey: Key.categoryID)
+        } else {
+            userDefaults.removeObject(forKey: Key.categoryID)
+        }
+
+        userDefaults.set(dateRange.rawValue, forKey: Key.dateRange)
+        userDefaults.set(sortOption.rawValue, forKey: Key.sortOption)
     }
 }
 

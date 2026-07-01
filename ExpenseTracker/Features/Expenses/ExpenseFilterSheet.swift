@@ -38,7 +38,7 @@ struct FilterSheet: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         selectedCategory = nil
-                        selectedDateRange = .allTime
+                        selectedDateRange = .thisMonth
                         sortOption = .dateDescending
                     } label: {
                         Text(L10n.Expenses.reset)
@@ -160,7 +160,7 @@ struct FilterSheet: View {
     }
 
     private var hasActiveFilters: Bool {
-        selectedCategory != nil || selectedDateRange != .allTime || sortOption != .dateDescending
+        selectedCategory != nil || selectedDateRange != .thisMonth || sortOption != .dateDescending
     }
 
     private var activeSummary: String {

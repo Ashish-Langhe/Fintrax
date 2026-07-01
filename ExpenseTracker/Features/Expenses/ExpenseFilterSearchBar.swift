@@ -19,7 +19,7 @@ struct FilterAndSearchBar: View {
     @Binding var showingFilterSheet: Bool
 
     private var hasActiveFilters: Bool {
-        selectedCategory != nil || selectedDateRange != .allTime
+        selectedCategory != nil || selectedDateRange != .thisMonth
     }
     
     var body: some View {
@@ -120,7 +120,7 @@ struct FilterAndSearchBar: View {
                         FilterChip(
                             title: selectedDateRange.localizedString,
                             icon: "calendar",
-                            isActive: selectedDateRange != .allTime,
+                            isActive: selectedDateRange != .thisMonth,
                             onTap: {
                                 showingFilterSheet = true
                             }
