@@ -21,13 +21,9 @@ struct FintraxAssistantLauncher: View {
                 action()
             }
         } label: {
-            HStack(alignment: .bottom, spacing: 8) {
-                if showGreeting && dockSide == .trailing {
-                    assistantGreeting
-                        .transition(.asymmetric(
-                            insertion: .opacity.combined(with: .move(edge: .trailing)).combined(with: .scale(scale: 0.96)),
-                            removal: .opacity.combined(with: .scale(scale: 0.98))
-                        ))
+            HStack(alignment: .bottom, spacing: 2) {
+                if dockSide == .trailing {
+                    greetingSlot
                 }
 
                 FintraxAssistantBot(size: 90, isBlinking: isBlinking, isThinking: shimmer)
@@ -37,12 +33,8 @@ struct FintraxAssistantLauncher: View {
                         }
                     }
 
-                if showGreeting && dockSide == .leading {
-                    assistantGreeting
-                        .transition(.asymmetric(
-                            insertion: .opacity.combined(with: .move(edge: .leading)).combined(with: .scale(scale: 0.96)),
-                            removal: .opacity.combined(with: .scale(scale: 0.98))
-                        ))
+                if dockSide == .leading {
+                    greetingSlot
                 }
             }
         }
@@ -98,13 +90,22 @@ struct FintraxAssistantLauncher: View {
                     .fill(AppDesignSystem.Colors.elevatedSurface.opacity(0.94))
                     .frame(width: 10, height: 14)
                     .scaleEffect(x: dockSide == .trailing ? 1 : -1, y: 1)
-                    .offset(x: dockSide == .trailing ? 8 : -8)
+                    .offset(x: dockSide == .trailing ? 11 : -11)
             }
             .overlay {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(AppDesignSystem.Colors.primary.opacity(0.16), lineWidth: 1)
             }
             .shadow(color: AppDesignSystem.Colors.primary.opacity(0.12), radius: 16, x: 0, y: 8)
+    }
+
+    private var greetingSlot: some View {
+        assistantGreeting
+            .opacity(showGreeting ? 1 : 0)
+            .scaleEffect(showGreeting ? 1 : 0.96, anchor: dockSide == .trailing ? .trailing : .leading)
+            .offset(x: showGreeting ? 0 : (dockSide == .trailing ? 8 : -8))
+            .accessibilityHidden(!showGreeting)
+            .allowsHitTesting(false)
     }
 
     private func startEntrance() {

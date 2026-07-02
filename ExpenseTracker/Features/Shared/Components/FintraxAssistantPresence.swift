@@ -11,7 +11,7 @@ struct FintraxAssistantPresenceModifier: ViewModifier {
     let entrance: FintraxAssistantEntrance
     @State private var isPresented = false
     @State private var dockCorner: FintraxAssistantDockCorner = .bottomTrailing
-    @State private var launcherSize = CGSize(width: 286, height: 132)
+    @State private var launcherSize = FintraxAssistantLauncherSizeKey.defaultValue
     @GestureState private var dragTranslation: CGSize = .zero
 
     func body(content: Content) -> some View {
@@ -139,7 +139,7 @@ private enum FintraxAssistantDockCorner: CaseIterable {
 }
 
 private struct FintraxAssistantLauncherSizeKey: PreferenceKey {
-    static var defaultValue: CGSize = CGSize(width: 286, height: 132)
+    static var defaultValue: CGSize = CGSize(width: 310, height: 116)
 
     static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
         value = nextValue()

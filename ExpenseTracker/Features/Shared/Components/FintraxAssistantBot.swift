@@ -34,7 +34,7 @@ struct FintraxAssistantBot: View {
                 sparkleField
             }
         }
-        .frame(width: size * 1.22, height: size * 1.28)
+        .frame(width: size * 1.04, height: size * 1.28)
         .onAppear {
             withAnimation(.easeInOut(duration: 2.15).repeatForever(autoreverses: true)) {
                 breath = true
