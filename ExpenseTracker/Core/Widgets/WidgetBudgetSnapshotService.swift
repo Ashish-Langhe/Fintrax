@@ -20,6 +20,8 @@ struct WidgetBudgetSnapshotService {
     }
 
     func update(from snapshot: DashboardDataSnapshot) {
+        guard userDefaults.bool(forKey: WidgetBudgetSnapshotStore.syncEnabledKey) else { return }
+
         let isSyncedWithIncome = userDefaults.bool(forKey: BudgetCalculations.incomeBudgetSyncKey)
         let activeBudget = snapshot.activeMonthlyBudgetAmount(userDefaults: userDefaults)
         let spent = BudgetCalculations.calculateCurrentMonthExpenses(snapshot.expenses)
@@ -39,6 +41,11 @@ struct WidgetBudgetSnapshotService {
         )
 
         store.saveSnapshot(widgetSnapshot)
+        WidgetCenter.shared.reloadTimelines(ofKind: WidgetBudgetSnapshotStore.budgetWidgetKind)
+    }
+
+    func clear() {
+        store.saveSnapshot(.empty)
         WidgetCenter.shared.reloadTimelines(ofKind: WidgetBudgetSnapshotStore.budgetWidgetKind)
     }
 }

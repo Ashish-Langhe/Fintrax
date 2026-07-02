@@ -30,6 +30,7 @@ struct SettingsView: View {
     @AppStorage("appPin") private var appPin = ""
     @AppStorage("biometricUnlockEnabled") private var biometricUnlockEnabled = false
     @AppStorage(DeveloperDataMode.mockDataEnabledKey) private var mockDataEnabled = false
+    @AppStorage(WidgetBudgetSnapshotStore.syncEnabledKey) private var widgetBudgetSyncEnabled = false
 
     @State private var activeSheet: SettingsSheet?
     @State private var spotlightSheet: SettingsSpotlightSheet?
@@ -87,6 +88,7 @@ struct SettingsView: View {
                     heroCard
                     financeSection
                     spotlightSection
+                    widgetSection
                     appearanceSection
                     securitySection
                     deviceSection
@@ -483,6 +485,34 @@ struct SettingsView: View {
         }
     }
 
+    private var widgetSection: some View {
+        SettingsSectionCard(
+            title: "settings.widgets.title",
+            subtitle: "settings.widgets.subtitle",
+            icon: "rectangle.inset.filled.and.person.filled",
+            tint: AppDesignSystem.Colors.info
+        ) {
+            SettingsToggleRow(
+                icon: "rectangle.grid.1x2.fill",
+                title: "settings.widgets.budgetSync.title",
+                subtitle: "settings.widgets.budgetSync.subtitle",
+                tint: AppDesignSystem.Colors.info,
+                isOn: Binding(
+                    get: { widgetBudgetSyncEnabled },
+                    set: { enabled in
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        widgetBudgetSyncEnabled = enabled
+                        if enabled {
+                            publishCurrentWidgetSnapshot()
+                        } else {
+                            WidgetBudgetSnapshotService.shared.clear()
+                        }
+                    }
+                )
+            )
+        }
+    }
+
     private func spotlightIcon(for destination: FintraxSpotlightDestination) -> String {
         switch destination {
         case .dashboard:
@@ -520,6 +550,16 @@ struct SettingsView: View {
             AppDesignSystem.Colors.success
         case .categories:
             AppDesignSystem.Colors.primaryLight
+        }
+    }
+
+    private func publishCurrentWidgetSnapshot() {
+        Task {
+            do {
+                _ = try await repository.loadDashboardSnapshot()
+            } catch {
+                ErrorLogger.log(error, context: "SettingsView.publishCurrentWidgetSnapshot")
+            }
         }
     }
 
