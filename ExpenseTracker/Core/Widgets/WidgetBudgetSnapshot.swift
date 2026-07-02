@@ -54,6 +54,7 @@ struct WidgetBudgetSnapshot: Codable, Sendable {
 struct WidgetBudgetSnapshotStore {
     static let budgetWidgetKind = "FintraxBudgetWidget"
     static let appGroupIdentifier = "group.com.globant.ExpenseTracker"
+    static let syncEnabledKey = "fintrax.widget.budgetSyncEnabled"
     private static let snapshotKey = "fintrax.widget.budgetSnapshot"
 
     private var defaults: UserDefaults {
