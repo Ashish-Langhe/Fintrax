@@ -424,15 +424,19 @@ final class FinanceDataRepository: DashboardSnapshotProviding,
     }
 
     func setMockDataEnabled(_ enabled: Bool) {
+        #if DEBUG
         DeveloperDataMode.isMockDataEnabled = enabled
         AppBadgeService.updateBillBadgeCount(from: enabled ? mockStore.snapshot.bills : (try? store.loadBillReminders()) ?? [])
         postAllDataChanged()
+        #endif
     }
 
     func resetMockData() {
+        #if DEBUG
         mockStore.reset()
         guard DeveloperDataMode.isMockDataEnabled else { return }
         postAllDataChanged()
+        #endif
     }
 
     private func postAllDataChanged() {

@@ -133,6 +133,7 @@ struct SettingsView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
+        #if DEBUG
         .sheet(item: $developerBackupShareItem) { item in
             ActivityShareSheet(activityItems: [item.fileURL])
         }
@@ -180,6 +181,7 @@ struct SettingsView: View {
         } message: {
             Text(developerBackupMessage)
         }
+        #endif
     }
 
     private var heroCard: some View {
@@ -219,21 +221,30 @@ struct SettingsView: View {
                 )
                 SettingsPill(icon: themeBinding.wrappedValue.iconName, title: themeBinding.wrappedValue.displayName, tint: AppDesignSystem.Colors.primary)
 
-                if mockDataEnabled {
-                    SettingsPill(icon: "testtube.2", title: "Mock Data", tint: AppDesignSystem.Colors.info)
-                } else if developerTapCount > 0 {
-                    SettingsPill(icon: "hammer.fill", title: L10n.format("settings.developer.accessProgress", developerTapCount), tint: AppDesignSystem.Colors.primaryDark)
-                }
+                #if DEBUG
+                developerStatusPill
+                #endif
             }
         }
         .padding(AppDesignSystem.Spacing.xl)
         .settingsPanel(accent: AppDesignSystem.Colors.primary)
         .contentShape(RoundedRectangle(cornerRadius: AppDesignSystem.CornerRadius.xxl, style: .continuous))
         .onTapGesture {
+            #if DEBUG
             handleDeveloperAccessTap()
+            #endif
         }
         .offset(y: appeared ? 0 : 14)
         .opacity(appeared ? 1 : 0)
+    }
+
+    @ViewBuilder
+    private var developerStatusPill: some View {
+        if mockDataEnabled {
+            SettingsPill(icon: "testtube.2", title: "Mock Data", tint: AppDesignSystem.Colors.info)
+        } else if developerTapCount > 0 {
+            SettingsPill(icon: "hammer.fill", title: L10n.format("settings.developer.accessProgress", developerTapCount), tint: AppDesignSystem.Colors.primaryDark)
+        }
     }
 
     private func handleDeveloperAccessTap() {

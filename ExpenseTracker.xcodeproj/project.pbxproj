@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		902F87882FBB95E50093CBEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 902F87872FBB95E50093CBEF /* Assets.xcassets */; };
 		902F878A2FBB95E50093CBEF /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 902F87892FBB95E50093CBEF /* Localizable.xcstrings */; };
+		AA000118 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AB000119 /* PrivacyInfo.xcprivacy */; };
+		AA000119 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AB000119 /* PrivacyInfo.xcprivacy */; };
 		AA000001 /* ExpenseTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* ExpenseTrackerApp.swift */; };
 		AA000002 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppSettings.swift */; };
 		AA000003 /* Budget.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* Budget.swift */; };
@@ -268,6 +270,7 @@
 		AB000116 /* DeveloperDataBackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperDataBackupService.swift; sourceTree = "<group>"; };
 		AB000117 /* FinnyVoiceIOService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnyVoiceIOService.swift; sourceTree = "<group>"; };
 		AB000118 /* FinnyVoiceCommandService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnyVoiceCommandService.swift; sourceTree = "<group>"; };
+		AB000119 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -633,6 +636,7 @@
 			isa = PBXGroup;
 			children = (
 				902F87892FBB95E50093CBEF /* Localizable.xcstrings */,
+				AB000119 /* PrivacyInfo.xcprivacy */,
 			);
 			path = ExpenseTracker/Resources;
 			sourceTree = "<group>";
@@ -773,6 +777,7 @@
 			files = (
 				902F87882FBB95E50093CBEF /* Assets.xcassets in Resources */,
 				902F878A2FBB95E50093CBEF /* Localizable.xcstrings in Resources */,
+				AA000118 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -781,6 +786,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000112 /* Localizable.xcstrings in Resources */,
+				AA000119 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -993,6 +999,7 @@
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Finny uses speech recognition to turn your voice commands into finance actions.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1025,6 +1032,7 @@
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Finny uses speech recognition to turn your voice commands into finance actions.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
